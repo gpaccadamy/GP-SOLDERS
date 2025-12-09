@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Live Classes - AcademyPro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #0a1a0f; color: white; margin:0; }
+    .header {
+      height: 60px; background: #1a3d2a; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; position: fixed; top:0; left:0; right:0; z-index:100;
+    }
+    .menu-btn { cursor: pointer; }
+    .sidebar {
+      position: fixed; top:0; left:-280px; width:280px; height:100%; background:#0f2418;
+      transition:0.4s; z-index:200; padding-top:80px;
+    }
+    .sidebar.active { left:0; }
+    .overlay {
+      position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7);
+      display:none; z-index:150;
+    }
+    .overlay.active { display:block; }
+    .subject-item {
+      padding:20px 30px; font-size:20px; font-weight:700; border-bottom:1px solid #2a4d3a;
+      transition:0.3s; background:#0f2418; cursor: pointer;
+    }
+    .subject-item:hover { background:#1a5f3a; padding-left:40px; }
+    .subject-item.active { background:#ff9933; color:black; }
+    .subject-section {
+      display: none;
+      margin: 20px;
+      padding: 20px;
+    }
+    .subject-section.active {
+      display: block;
+    }
+    .class-tabs {
+      display:flex; overflow-x:auto; background:#0f2418; padding:12px; gap:12px; white-space:nowrap;
+    }
+    .tab {
+      padding:12px 20px; background:#1a5f3a; border-radius:12px; font-weight:700; min-width:100px;
+      transition:0.3s; cursor: pointer;
+    }
+    .tab.active, .tab:active { background:#ff9933; color:black; }
+    .video-box {
+      margin:20px 0; background:black; border-radius:16px; overflow:hidden; height:280px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.8);
+    }
+    .header h1 {
+      font-size: 1.25rem; font-weight: bold;
+    }
+  </style>
+</head>
+<body class="bg-gray-900">
+  <!-- Header -->
+  <div class="header">
+    <div class="menu-btn" onclick="toggleMenu()">
+      <svg class="w-8 h-8" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24">
+        <path d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </div>
+    <h1>LIVE CLASSES</h1>
+    <div></div>
+  </div>
+
+  <!-- Side Menu -->
+  <div class="sidebar" id="sidebar">
+    <div class="subject-item active" onclick="selectSubject('english')">ENGLISH</div>
+    <div class="subject-item" onclick="selectSubject('kannada')">KANNADA</div>
+    <div class="subject-item" onclick="selectSubject('gk')">GENERAL KNOWLEDGE</div>
+  </div>
+  <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+  <!-- English Section -->
+  <div id="english-section" class="subject-section active">
+    <div class="header" style="position: static; height: auto; padding: 15px 20px; text-align: center; font-size: 22px; font-weight: 800; margin-bottom: 20px;">ENGLISH LIVE CLASS</div>
+    <div class="class-tabs">
+      <div class="tab active" onclick="playVideo('english', 'dQw4w9WgXcQ', this)">CLASS 1</div>
+      <div class="tab" onclick="playVideo('english', 'M7lc1UVf-VE', this)">CLASS 2</div>
+      <div class="tab" onclick="playVideo('english', 'jNQXAC9IVRw', this)">CLASS 3</div>
+      <div class="tab" onclick="playVideo('english', 'kXYiU_JCYtU', this)">CLASS 4</div>
+      <div class="tab" onclick="playVideo('english', 'fJ9rUzIMcZQ', this)">CLASS 5</div>
+    </div>
+    <div class="video-box">
+      <iframe id="english-player" width="100%" height="280" src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
+        frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <!-- Kannada Section -->
+  <div id="kannada-section" class="subject-section">
+    <div class="header" style="position: static; height: auto; padding: 15px 20px; text-align: center; font-size: 22px; font-weight: 800; margin-bottom: 20px;">KANNADA LIVE CLASS</div>
+    <div class="class-tabs">
+      <div class="tab active" onclick="playVideo('kannada', 'kannada1', this)">CLASS 1</div>
+      <div class="tab" onclick="playVideo('kannada', 'kannada2', this)">CLASS 2</div>
+      <div class="tab" onclick="playVideo('kannada', 'kannada3', this)">CLASS 3</div>
+      <div class="tab" onclick="playVideo('kannada', 'kannada4', this)">CLASS 4</div>
+      <div class="tab" onclick="playVideo('kannada', 'kannada5', this)">CLASS 5</div>
+    </div>
+    <div class="video-box">
+      <iframe id="kannada-player" width="100%" height="280" src="https://www.youtube.com/embed/kannada1?autoplay=1"
+        frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <!-- GK Section -->
+  <div id="gk-section" class="subject-section">
+    <div class="header" style="position: static; height: auto; padding: 15px 20px; text-align: center; font-size: 22px; font-weight: 800; margin-bottom: 20px;">GENERAL KNOWLEDGE LIVE CLASS</div>
+    <div class="class-tabs">
+      <div class="tab active" onclick="playVideo('gk', 'gk1', this)">CLASS 1</div>
+      <div class="tab" onclick="playVideo('gk', 'gk2', this)">CLASS 2</div>
+      <div class="tab" onclick="playVideo('gk', 'gk3', this)">CLASS 3</div>
+      <div class="tab" onclick="playVideo('gk', 'gk4', this)">CLASS 4</div>
+      <div class="tab" onclick="playVideo('gk', 'gk5', this)">CLASS 5</div>
+    </div>
+    <div class="video-box">
+      <iframe id="gk-player" width="100%" height="280" src="https://www.youtube.com/embed/gk1?autoplay=1"
+        frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <script>
+    function toggleMenu() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('overlay').classList.toggle('active');
+    }
+
+    function selectSubject(subject) {
+      // Hide all sections
+      document.querySelectorAll('.subject-section').forEach(sec => sec.classList.remove('active'));
+      // Show selected section
+      document.getElementById(subject + '-section').classList.add('active');
+      // Update sidebar active
+      document.querySelectorAll('.subject-item').forEach(item => item.classList.remove('active'));
+      event.target.classList.add('active');
+      // Close sidebar
+      document.getElementById('sidebar').classList.remove('active');
+      document.getElementById('overlay').classList.remove('active');
+    }
+
+    function playVideo(subject, videoId, tabElement) {
+      const playerId = subject + '-player';
+      document.getElementById(playerId).src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+      // Update active tab
+      const tabs = tabElement.parentElement.querySelectorAll('.tab');
+      tabs.forEach(t => t.classList.remove('active'));
+      tabElement.classList.add('active');
+    }
+  </script>
+</body>
+</html>
