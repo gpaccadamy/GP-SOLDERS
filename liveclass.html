@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; background: #0a1a0f; color: white; margin:0; padding-top: 80px; }
+    body { font-family: 'Inter', sans-serif; background: #0a1a0f; color: white; margin:0; padding-top: 60px; }
     .header {
       height: 60px; background: #1a3d2a; display: flex; align-items: center; justify-content: space-between;
       padding: 0 20px; position: fixed; top:0; left:0; right:0; z-index:100;
@@ -31,8 +31,8 @@
     .subject-item.active { background:#ff9933; color:black; }
     .subject-section {
       display: none;
-      margin: 20px;
-      padding: 20px;
+      margin: 20px 5px;
+      padding: 20px 10px;
     }
     .subject-section.active {
       display: block;
@@ -102,7 +102,7 @@
       <div class="tab" onclick="playVideo('english', 'fJ9rUzIMcZQ', this)">CLASS 5</div>
     </div>
     <div class="video-box">
-      <iframe class="responsive-iframe" id="english-player" src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
+      <iframe class="responsive-iframe" id="english-player" src=""
         frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
   </div>
@@ -111,14 +111,14 @@
   <div id="kannada-section" class="subject-section">
     <div class="subject-header">KANNADA LIVE CLASS</div>
     <div class="class-tabs">
-      <div class="tab active" onclick="playVideo('kannada', 'kannada1', this)">CLASS 1</div>
-      <div class="tab" onclick="playVideo('kannada', 'kannada2', this)">CLASS 2</div>
-      <div class="tab" onclick="playVideo('kannada', 'kannada3', this)">CLASS 3</div>
-      <div class="tab" onclick="playVideo('kannada', 'kannada4', this)">CLASS 4</div>
-      <div class="tab" onclick="playVideo('kannada', 'kannada5', this)">CLASS 5</div>
+      <div class="tab active" onclick="playVideo('kannada', 'M7lc1UVf-VE', this)">CLASS 1</div>
+      <div class="tab" onclick="playVideo('kannada', 'jNQXAC9IVRw', this)">CLASS 2</div>
+      <div class="tab" onclick="playVideo('kannada', 'kXYiU_JCYtU', this)">CLASS 3</div>
+      <div class="tab" onclick="playVideo('kannada', 'fJ9rUzIMcZQ', this)">CLASS 4</div>
+      <div class="tab" onclick="playVideo('kannada', 'dQw4w9WgXcQ', this)">CLASS 5</div>
     </div>
     <div class="video-box">
-      <iframe class="responsive-iframe" id="kannada-player" src="https://www.youtube.com/embed/kannada1?autoplay=1"
+      <iframe class="responsive-iframe" id="kannada-player" src=""
         frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
   </div>
@@ -127,14 +127,14 @@
   <div id="gk-section" class="subject-section">
     <div class="subject-header">GENERAL KNOWLEDGE LIVE CLASS</div>
     <div class="class-tabs">
-      <div class="tab active" onclick="playVideo('gk', 'gk1', this)">CLASS 1</div>
-      <div class="tab" onclick="playVideo('gk', 'gk2', this)">CLASS 2</div>
-      <div class="tab" onclick="playVideo('gk', 'gk3', this)">CLASS 3</div>
-      <div class="tab" onclick="playVideo('gk', 'gk4', this)">CLASS 4</div>
-      <div class="tab" onclick="playVideo('gk', 'gk5', this)">CLASS 5</div>
+      <div class="tab active" onclick="playVideo('gk', 'jNQXAC9IVRw', this)">CLASS 1</div>
+      <div class="tab" onclick="playVideo('gk', 'kXYiU_JCYtU', this)">CLASS 2</div>
+      <div class="tab" onclick="playVideo('gk', 'fJ9rUzIMcZQ', this)">CLASS 3</div>
+      <div class="tab" onclick="playVideo('gk', 'dQw4w9WgXcQ', this)">CLASS 4</div>
+      <div class="tab" onclick="playVideo('gk', 'M7lc1UVf-VE', this)">CLASS 5</div>
     </div>
     <div class="video-box">
-      <iframe class="responsive-iframe" id="gk-player" src="https://www.youtube.com/embed/gk1?autoplay=1"
+      <iframe class="responsive-iframe" id="gk-player" src=""
         frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
   </div>
@@ -145,6 +145,15 @@
       document.getElementById('overlay').classList.toggle('active');
     }
 
+    function getFirstVideoId(subject) {
+      switch(subject) {
+        case 'english': return 'dQw4w9WgXcQ';
+        case 'kannada': return 'M7lc1UVf-VE';
+        case 'gk': return 'jNQXAC9IVRw';
+        default: return 'dQw4w9WgXcQ';
+      }
+    }
+
     function selectSubject(subject) {
       // Hide all sections
       document.querySelectorAll('.subject-section').forEach(sec => sec.classList.remove('active'));
@@ -153,6 +162,11 @@
       // Update sidebar active
       document.querySelectorAll('.subject-item').forEach(item => item.classList.remove('active'));
       event.target.classList.add('active');
+      // Unload all videos to stop playback
+      document.querySelectorAll('iframe').forEach(iframe => iframe.src = '');
+      // Load the first video for the new subject
+      const player = document.getElementById(subject + '-player');
+      player.src = `https://www.youtube.com/embed/${getFirstVideoId(subject)}?autoplay=1`;
       // Close sidebar
       document.getElementById('sidebar').classList.remove('active');
       document.getElementById('overlay').classList.remove('active');
@@ -166,6 +180,11 @@
       tabs.forEach(t => t.classList.remove('active'));
       tabElement.classList.add('active');
     }
+
+    // Initial load for English
+    window.onload = function() {
+      document.getElementById('english-player').src = `https://www.youtube.com/embed/${getFirstVideoId('english')}?autoplay=1`;
+    };
   </script>
 </body>
 </html>
