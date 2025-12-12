@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GP Soldier Academy - Vijayapura, Karnataka</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Rajdhani', sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; margin: 0; overflow-x: hidden; }
+  .hero { background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1600880292203-5e4a7f0e8b61?ixlib=rb-4.0.3&auto=format&fit=crop&q=80'); background-size: cover; background-position: center; min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; }
+  .saffron { background: #FF9933; }
+  .white { background: #FFFFFF; color: #000; }
+  .green { background: #138808; }
+  .navy { background: #000080; }
+  .title { font-family: 'Orbitron', sans-serif; font-size: 4.5rem; text-shadow: 0 0 20px #FF9933, 0 0 40px #138808; }
+  .subtitle { font-size: 1.8rem; color: #FF9933; text-shadow: 2px 2px 10px #000; }
+  .btn-army { padding: 20px 40px; font-size: 1.5rem; font-weight: bold; border-radius: 15px; transition: all 0.4s; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .btn-army:hover { transform: translateY(-10px) scale(1.05); box-shadow: 0 20px 40px rgba(0,0,0,0.7); }
+  .emblem { width: 180px; height: 180px; object-fit: contain; filter: drop-shadow(0 0 20px #FF9933); }
+  .flag-wave { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.1; background: repeating-linear-gradient(45deg, #FF9933 0, #FF9933 10px, #FFFFFF 10px, #FFFFFF 20px, #138808 20px, #138808 30px); animation: wave 20s linear infinite; }
+  @keyframes wave { 0% { background-position: 0 0; } 100% { background-position: 1000px 0; } }
+</style>
+</head>
+<body>
+
+<div class="hero relative">
+  <div class="flag-wave"></div>
+  
+  <div class="text-center z-10 px-6">
+    <!-- Indian Army Emblem -->
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Indian_Army.svg/800px-Indian_Army.svg.png" alt="Indian Army" class="emblem mx-auto mb-6 animate-pulse">
+
+    <!-- Academy Name -->
+    <h1 class="title text-6xl md:text-8xl mb-4 tracking-wider">
+      GP SOLDIER ACADEMY
+    </h1>
+    <p class="subtitle mb-2">विजयपुर • ಕರ್ನಾಟಕ • Vijayapura, Karnataka</p>
+    <p class="text-2xl mb-12 opacity-90">"भारत माता की जय • Jai Hind"</p>
+
+    <!-- Tricolor Divider -->
+    <div class="flex justify-center mb-12">
+      <div class="h-3 w-32 saffron"></div>
+      <div class="h-3 w-32 white"></div>
+      <div class="h-3 w-32 green"></div>
+    </div>
+
+    <!-- Main Action Buttons -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+
+      <!-- Live & Recorded Classes -->
+      <a href="liveclass.html" class="block">
+        <div class="bg-gradient-to-br from-orange-600 to-red-700 btn-army text-white transform hover:scale-110 transition-all duration-300">
+          <div class="text-5xl mb-3">LIVE & RECORDED CLASSES</div>
+          <p class="text-lg opacity-90">Join Live Training Sessions</p>
+        </div>
+      </a>
+
+      <!-- Take Exam -->
+      <a href="exams.html" class="block">
+        <div class="bg-gradient-to-br from-green-700 to-green-900 btn-army text-white transform hover:scale-110 transition-all duration-300 border-4 border-yellow-400">
+          <div class="text-5xl mb-3">TAKE EXAM</div>
+          <p class="text-lg opacity-90">Test Your Preparation</p>
+        </div>
+      </a>
+
+      <!-- Profile & Results -->
+      <a href="profile.html" class="block">
+        <div class="bg-gradient-to-br from-blue-800 to-navy btn-army text-white transform hover:scale-110 transition-all duration-300">
+          <div class="text-5xl mb-3">PROFILE & RESULTS</div>
+          <p class="text-lg opacity-90">View Your Progress</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- NEW: LIVE CLASS BUTTON BELOW EXAM -->
+    <div class="mt-12">
+      <a href="liveclass.html" class="inline-block">
+        <div class="bg-gradient-to-r from-red-700 via-yellow-600 to-green-700 btn-army text-white text-6xl py-8 px-16 border-8 border-white shadow-2xl hover:scale-105 transition-all">
+          LIVE CLASS NOW
+          <div class="text-3xl mt-4 animate-pulse">JOIN IMMEDIATELY</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Footer Badge -->
+    <div class="mt-16 text-center">
+      <p class="text-xl opacity-80">Serving the Nation • Training Future Soldiers</p>
+      <p class="text-3xl font-bold mt-4 text-yellow-400">भारत माता की जय • जय हिंद</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
