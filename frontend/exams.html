@@ -2,76 +2,159 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Take Exam - GP Soldier Academy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GP Soldier Academy - Exam Portal</title>
 <style>
-  body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); margin:0; height:100vh; display:flex; align-items:center; justify-content:center; }
-  .container { width: 90%; max-width: 520px; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
-  header { background: #6366f1; color: white; padding: 28px; text-align: center; font-size: 26px; font-weight: bold; }
-  .form { padding: 35px; }
-  input, button { width: 100%; padding: 16px; margin: 12px 0; border: 1px solid #ddd; border-radius: 12px; font-size: 17px; }
-  button { background: #6366f1; color: white; border: none; cursor: pointer; font-weight: bold; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
+    min-height: 100vh;
+  }
+  header {
+    background: linear-gradient(to right, #FF9933, #138808);
+    padding: 20px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    position: relative;
+  }
+  .back-btn {
+    position: absolute; left: 15px; top: 18px;
+    background: rgba(255,255,255,0.2); padding: 10px 15px;
+    border-radius: 50%; font-size: 20px; cursor: pointer;
+  }
+  .container {
+    width: 95%; max-width: 600px; /* WIDER FOR PHONE */
+    margin: 20px auto;
+    background: white;
+    color: #1e293b;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+  }
+  .form { padding: 30px; }
+  input {
+    width: 100%; padding: 16px; margin: 12px 0;
+    border: 2px solid #ddd; border-radius: 12px; font-size: 18px;
+  }
+  button {
+    width: 100%; padding: 16px; margin: 15px 0;
+    background: #6366f1; color: white; border: none;
+    border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer;
+  }
   button:hover { background: #4f46e5; }
   .hidden { display: none; }
-  .exam-card { background: #f8fafc; padding: 20px; margin: 15px 0; border-radius: 14px; border-left: 6px solid #6366f1; }
-  .question { background: white; padding: 22px; margin: 20px 0; border-radius: 14px; border: 1px solid #e2e8f0; }
-  .option { display: flex; align-items: center; padding: 14px; background: #f8fafc; margin: 10px 0; border-radius: 10px; border: 2px solid #e2e8f0; cursor: pointer; }
+
+  .exam-card {
+    background: #f0f9ff; padding: 20px; margin: 15px 0;
+    border-radius: 15px; border-left: 6px solid #6366f1;
+    text-align: center;
+  }
+  .exam-card button {
+    background: #10b981; margin-top: 10px;
+  }
+  .exam-card button:disabled { background: #94a3b8; }
+
+  .timer {
+    text-align: center; font-size: 32px; font-weight: bold;
+    color: #dc2626; background: #fee2e2; padding: 15px;
+    border-radius: 15px; margin: 15px 0;
+  }
+
+  .question {
+    background: #f8fafc; padding: 20px; margin: 20px 0;
+    border-radius: 15px; border: 2px solid #e2e8f0;
+  }
+  .option {
+    display: flex; align-items: center; padding: 16px;
+    background: white; margin: 12px 0; border-radius: 12px;
+    border: 2px solid #e2e8f0; cursor: pointer; transition: 0.3s;
+  }
   .option:hover { border-color: #6366f1; background: #eef2ff; }
-  .option input { margin-right: 14px; transform: scale(1.4); accent-color: #6366f1; }
-  .option img { max-width: 100%; border-radius: 10px; margin-top: 12px; }
-  .timer { text-align: center; font-size: 28px; font-weight: bold; color: #dc2626; background: #fee2e2; padding: 12px; border-radius: 12px; margin: 15px 0; }
-  .result { text-align: center; padding: 40px; }
-  .result b { font-size: 48px; color: #10b981; }
+  .option input { margin-right: 15px; transform: scale(1.5); accent-color: #6366f1; }
+
+  .result {
+    text-align: center; padding: 40px; background: #f0fdf4;
+    color: #166534; border-radius: 20px; margin: 20px;
+  }
+  .result b { font-size: 60px; color: #10b981; display: block; margin: 15px 0; }
+  .score-bar {
+    height: 20px; background: #e5e7eb; border-radius: 10px; overflow: hidden; margin: 20px 0;
+  }
+  .score-fill { height: 100%; background: #10b981; width: 0%; transition: width 1.5s ease; }
+
+  .history {
+    margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 15px;
+  }
+  .history h3 { color: #1e293b; text-align: center; margin-bottom: 15px; }
+  .test-item { padding: 12px; background: white; margin: 8px 0; border-radius: 10px; }
 </style>
 </head>
 <body>
 
+<header>
+  <div class="back-btn" onclick="history.back()">Back</div>
+  GP SOLDIER ACADEMY - EXAM PORTAL
+</header>
+
 <div class="container">
-  <header>GP Soldier Academy - Exam</header>
 
+  <!-- Login -->
   <div id="loginForm" class="form">
-    <input id="rollNo" placeholder="Roll Number (e.g. 2101)" autocomplete="off">
-    <input id="password" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <p id="loginError" style="color:red; text-align:center; font-weight:600;"></p>
+    <h2 style="text-align:center; color:#1e293b; margin-bottom:20px;">Welcome Soldier</h2>
+    <input id="rollNo" placeholder="Enter Roll Number">
+    <input id="password" type="password" placeholder="Enter Password">
+    <button onclick="login()">LOGIN</button>
+    <p id="loginError" style="color:red; text-align:center;"></p>
   </div>
 
+  <!-- Exam List -->
   <div id="examList" class="form hidden">
-    <h2 style="text-align:center;">Welcome, <span id="studentName" style="color:#6366f1;"></span>!</h2>
-    <p style="text-align:center;">Class <span id="studentClass"></span></p>
+    <h2 style="text-align:center; color:#1e293b;">Welcome, <span id="studentName" style="color:#6366f1;"></span></h2>
+    <p style="text-align:center; font-size:18px;">Class <span id="studentClass"></span></p>
     <div id="examsContainer"></div>
-    <button style="background:#ef4444;" onclick="logout()">Logout</button>
   </div>
 
+  <!-- Taking Exam -->
   <div id="takingExam" class="hidden">
-    <div style="background:#1e293b; color:white; padding:20px;">
-      <h2 id="examTitleHeader" style="margin:0; text-align:center;"></h2>
+    <div style="background:#1e293b; color:white; padding:20px; text-align:center;">
+      <h2 id="examTitleHeader"></h2>
       <div class="timer">Time Left: <span id="time">00:00</span></div>
     </div>
-    <div style="padding:20px; max-height:65vh; overflow-y:auto;">
+    <div style="padding:20px;">
       <div id="questionsContainer"></div>
-      <div style="text-align:center; margin:30px 0;">
-        <button onclick="submitExam()">Submit Exam</button>
-      </div>
+      <button onclick="submitExam()">SUBMIT EXAM</button>
     </div>
   </div>
 
+  <!-- Result Screen -->
   <div id="resultScreen" class="hidden result">
-    <h2>Exam Completed!</h2>
-    <p>Your Score: <b id="score">0</b> / <span id="total">0</span></p>
-    <p id="percentage" style="font-size:20px;"></p>
-    <button onclick="logout()">Back to Login</button>
+    <h2>EXAM COMPLETED!</h2>
+    <b id="score">0</b> / <span id="total">0</span>
+    <p style="font-size:24px; margin:15px 0;">Your Score</p>
+    <div class="score-bar"><div id="scoreFill" class="score-fill"></div></div>
+    <p id="percentage" style="font-size:28px; margin:20px 0;"></p>
+    <p id="date" style="color:#666; margin:15px 0;"></p>
+
+    <div class="history">
+      <h3>Your Previous Tests</h3>
+      <div id="historyList"></div>
+    </div>
+
+    <button onclick="goToExams()">Back to Exams</button>
   </div>
 </div>
 
 <script>
-// YOUR BACKEND URL — 100% CORRECT
 const API = 'https://academy-backend-e02j.onrender.com/api';
-
 let currentStudent = null;
 let currentExam = null;
 let timerInterval = null;
 let timeLeft = 0;
+let examHistory = JSON.parse(localStorage.getItem('examHistory') || '[]');
 
 async function login() {
   const rollNo = document.getElementById('rollNo').value.trim();
@@ -80,26 +163,21 @@ async function login() {
 
   try {
     const res = await fetch(`${API}/students/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rollNo, password })
     });
-
     const data = await res.json();
     if (!res.ok) {
       document.getElementById('loginError').textContent = data.message || 'Login failed';
       return;
     }
-
     currentStudent = data.student;
     document.getElementById('studentName').textContent = data.student.name;
     document.getElementById('studentClass').textContent = data.student.class;
-
-    hideAll();
-    document.getElementById('examList').classList.remove('hidden');
+    hideAll(); document.getElementById('examList').classList.remove('hidden');
     loadExams();
   } catch (e) {
-    document.getElementById('loginError').textContent = 'Connection failed';
+    document.getElementById('loginError').textContent = 'Server error';
   }
 }
 
@@ -107,15 +185,14 @@ async function loadExams() {
   const res = await fetch(`${API}/exams/available/${currentStudent.class}`);
   const exams = await res.json();
   const container = document.getElementById('examsContainer');
-  container.innerHTML = exams.length === 0 ? '<p>No exams available.</p>' : '';
-
+  container.innerHTML = exams.length === 0 ? '<p style="text-align:center; color:#666;">No exams available right now.</p>' : '';
   exams.forEach(exam => {
     const taken = currentStudent.completedExams?.includes(exam._id);
     container.innerHTML += `
       <div class="exam-card">
-        <b>${exam.title}</b> (${exam.subject})<br>
-        Duration: ${exam.duration} mins | ${exam.questions.length} Questions
-        <button ${taken ? 'disabled style="background:#94a3b8;"' : `onclick="startExam('${exam._id}')"`}>
+        <h3>${exam.title}</h3>
+        <p>${exam.subject} • ${exam.duration} mins • ${exam.questions.length} Questions</p>
+        <button ${taken ? 'disabled' : `onclick="startExam('${exam._id}')"`}>
           ${taken ? 'Completed' : 'Start Exam'}
         </button>
       </div>`;
@@ -125,11 +202,8 @@ async function loadExams() {
 async function startExam(examId) {
   const res = await fetch(`${API}/exams/${examId}`);
   currentExam = await res.json();
-
-  hideAll();
-  document.getElementById('takingExam').classList.remove('hidden');
+  hideAll(); document.getElementById('takingExam').classList.remove('hidden');
   document.getElementById('examTitleHeader').textContent = currentExam.title;
-
   timeLeft = currentExam.duration * 60;
   startTimer();
   renderQuestions();
@@ -138,27 +212,25 @@ async function startExam(examId) {
 function renderQuestions() {
   const container = document.getElementById('questionsContainer');
   container.innerHTML = '';
-
   currentExam.questions.forEach((q, i) => {
     const qDiv = document.createElement('div');
     qDiv.className = 'question';
-    qDiv.innerHTML = `<h3>${i + 1}. ${q.type === 'image' ? `<img src="${q.questionImage}" style="max-width:100%;">` : q.questionText}</h3>`;
-
-    const optionsDiv = document.createElement('div');
+    qDiv.innerHTML = `<h3>${i + 1}. ${q.type === 'image' ? `<img src="${q.questionImage}" style="max-width:100%; border-radius:10px; margin:10px 0;">` : q.questionText}</h3>`;
+    const optsDiv = document.createElement('div');
     'ABCD'.split('').forEach((letter, idx) => {
-      const opt = q.options[idx];
-      const optType = q.optionsType[idx];
+      const opt = q.options[idx] || '';
+      const optType = q.optionsType[idx] || 'text';
       const optDiv = document.createElement('label');
       optDiv.className = 'option';
       optDiv.innerHTML = `
         <input type="radio" name="q${i}" value="${letter}">
         <span><strong>${letter}.</strong> 
-          ${optType === 'image' ? `<img src="${q.optionsImages[idx]}" style="max-width:100%;">` : opt}
+          ${optType === 'image' ? `<img src="${q.optionsImages[idx]}" style="max-width:100%; margin-top:10px; border-radius:8px;">` : opt}
         </span>
       `;
-      optionsDiv.appendChild(optDiv);
+      optsDiv.appendChild(optDiv);
     });
-    qDiv.appendChild(optionsDiv);
+    qDiv.appendChild(optsDiv);
     container.appendChild(qDiv);
   });
 }
@@ -168,49 +240,68 @@ function startTimer() {
   timerInterval = setInterval(() => {
     timeLeft--;
     updateTimerDisplay();
-    if (timeLeft <= 0) submitExam();
+    if (timeLeft <= 0) {
+      alert("Time's Up! Exam Auto-Submitted");
+      submitExam();
+    }
   }, 1000);
 }
 
 function updateTimerDisplay() {
-  const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-  const secs = (timeLeft % 60).toString().padStart(2, '0');
+  const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+  const secs = String(timeLeft % 60).padStart(2, '0');
   document.getElementById('time').textContent = `${mins}:${secs}`;
 }
 
 async function submitExam() {
   clearInterval(timerInterval);
   const answers = {};
-  document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
-    const qIndex = radio.name.replace('q', '');
-    answers[qIndex] = radio.value;
+  document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
+    const q = r.name.replace('q', '');
+    answers[q] = r.value;
   });
 
   const res = await fetch(`${API}/exams/submit`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      studentId: currentStudent._id,
-      examId: currentExam._id,
-      answers
-    })
+    body: JSON.stringify({ studentId: currentStudent._id, examId: currentExam._id, answers })
   });
-
   const result = await res.json();
+
+  // Save to history
+  const record = {
+    title: currentExam.title,
+    score: result.score,
+    total: result.totalQuestions,
+    percentage: result.percentage,
+    date: new Date().toLocaleDateString('en-IN')
+  };
+  examHistory.push(record);
+  localStorage.setItem('examHistory', JSON.stringify(examHistory));
+
+  // Show Result
   document.getElementById('score').textContent = result.score;
   document.getElementById('total').textContent = result.totalQuestions;
   document.getElementById('percentage').textContent = `Percentage: ${result.percentage}%`;
+  document.getElementById('date').textContent = `Date: ${record.date}`;
+  document.getElementById('scoreFill').style.width = result.percentage + '%';
+
+  // Show History
+  const hist = document.getElementById('historyList');
+  hist.innerHTML = examHistory.map(h => `
+    <div class="test-item">
+      <strong>${h.title}</strong> → ${h.score}/${h.total} (${h.percentage}%) on ${h.date}
+    </div>
+  `).reverse().join('');
 
   hideAll();
   document.getElementById('resultScreen').classList.remove('hidden');
 }
 
-function logout() {
-  currentStudent = null;
-  currentExam = null;
-  clearInterval(timerInterval);
+function goToExams() {
   hideAll();
-  document.getElementById('loginForm').classList.remove('hidden');
+  document.getElementById('examList').classList.remove('hidden');
+  loadExams();
 }
 
 function hideAll() {
