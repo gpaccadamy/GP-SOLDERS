@@ -1,7 +1,6 @@
 {
   "name": "academy-backend",
   "version": "1.0.0",
-  "description": "Academy Student Portal - Working Backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
