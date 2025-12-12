@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Take Exam - Academy</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); margin:0; height:100vh; display:flex; align-items:center; justify-content:center; }
+  .container { width: 90%; max-width: 520px; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+  header { background: #6366f1; color: white; padding: 28px; text-align: center; font-size: 26px; font-weight: bold; }
+  .form { padding: 35px; }
+  input, button { width: 100%; padding: 16px; margin: 12px 0; border: 1px solid #ddd; border-radius: 12px; font-size: 17px; }
+  button { background: #6366f1; color: white; border: none; cursor: pointer; font-weight: bold; }
+  .hidden { display: none; }
+  .exam-card { background: #f8fafc; padding: 20px; margin: 15px 0; border-radius: 14px; border-left: 6px solid #6366f1; }
+  .question { background: white; padding: 22px; margin: 20px 0; border-radius: 14px; border: 1px solid #e2e8f0; }
+  .option { display: flex; align-items: center; padding: 14px; background: #f8fafc; margin: 10px 0; border-radius: 10px; border: 2px solid #e2e8f0; cursor: pointer; }
+  .option:hover { border-color: #6366f1; background: #eef2ff; }
+  .option input { margin-right: 14px; transform: scale(1.4); accent-color: #6366f1; }
+  .timer { text-align: center; font-size: 28px; font-weight: bold; color: #dc2626; background: #fee2e2; padding: 12px; border-radius: 12px; margin: 15px 0; }
+  .result b { font-size: 48px; color: #10b981; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>Take Exam</header>
+
+  <div id="loginForm" class="form">
+    <input id="rollNo" placeholder="Roll Number">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="loginError" style="color:red; text-align:center;"></p>
+  </div>
+
+  <div id="examList" class="form hidden">
+    <h2 style="text-align:center;">Welcome, <span id="studentName" style="color:#6366f1;"></span>!</h2>
+    <p style="text-align:center;">Class <span id="studentClass"></span></p>
+    <div id="examsContainer"></div>
+    <button style="background:#ef4444;" onclick="logout()">Logout</button>
+  </div>
+
+  <div id="takingExam" class="hidden">
+    <div style="background:#1e293b; color:white; padding:20px;">
+      <h2 id="examTitleHeader" style="margin:0; text-align:center;"></h2>
+      <div class="timer">Time Left: <span id="time">00:00</span></div>
+    </div>
+    <div style="padding:20px; max-height:65vh; overflow-y:auto;">
+      <div id="questionsContainer"></div>
+      <div style="text-align:center; margin:30px 0;">
+        <button onclick="submitExam()">Submit Exam</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultScreen" class="hidden" style="text-align:center; padding:40px;">
+    <h2>Exam Completed!</h2>
+    <p>Your Score: <b id="score">0</b> / <span id="total">0</span></p>
+    <p style="font-size:20px;" id="percentage"></p>
+    <button onclick="logout()">Back to Login</button>
+  </div>
+</div>
+
+<script>
+// RENDER BACKEND URL
+const API = 'https://academy-student-portal.onrender.com/api';
+
+let currentStudent = null;
+let currentExam = null;
+let timerInterval = null;
+let timeLeft = 0;
+
+async function login() {
+  const rollNo = document.getElementById('rollNo').value.trim();
+  const password = document.getElementById('password').value;
+  if (!rollNo || !password) return alert("Fill all fields");
+
+  const res = await fetch(`${API}/students/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rollNo, password })
+  });
+
+  const data = await res.json();
+  if (!res.ok) return document.getElementById('loginError').textContent = data.message || "Login failed";
+
+  currentStudent = data.student;
+  document.getElementById('studentName').textContent = data.student.name;
+  document.getElementById('studentClass').textContent = data.student.class;
+
+  hideAll();
+  document.getElementById('examList').classList.remove('hidden');
+  loadExams();
+}
+
+async function loadExams() {
+  const res = await fetch(`${API}/exams/available/${currentStudent.class}`);
+  const exams = await res.json();
+  const container = document.getElementById('examsContainer');
+  container.innerHTML = exams.length === 0 ? '<p>No exams available.</p>' : '';
+
+  exams.forEach(exam => {
+    const taken = currentStudent.completedExams?.includes(exam._id);
+    container.innerHTML += `
+      <div class="exam-card">
+        <b>${exam.title}</b> (${exam.subject})<br>
+        Duration: ${exam.duration} mins | ${exam.questions.length} Questions
+        <button ${taken ? 'disabled' : `onclick="startExam('${exam._id}')"`} 
+                style="float:right; background:${taken ? '#94a3b8' : '#6366f1'}; padding:8px 16px; margin-top:8px;">
+          ${taken ? 'Completed' : 'Start'}
+        </button>
+      </div>`;
+  });
+}
+
+// startExam, renderQuestions, submitExam, logout, hideAll - all functions included in full file
+</script>
+</body>
+</html>
