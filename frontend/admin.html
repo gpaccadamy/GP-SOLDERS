@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Academy Admin Panel</title>
+<title>GP Soldier Academy - Admin Panel</title>
 <style>
   body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; margin:0; padding:20px; }
   .container { max-width: 1100px; margin: auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-  header { background: #6366f1; color: white; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; }
+  header { background: #6366f1; color: white; padding: 20px; text-align: center; font-size: 28px; font-weight: bold; }
   .tabs { display: flex; background: #e0e7ff; }
   .tab { padding: 16px 24px; cursor: pointer; font-weight: 600; }
   .tab.active { background: white; border-bottom: 4px solid #6366f1; }
@@ -15,8 +15,8 @@
   .card { background: #f8fafc; padding: 25px; border-radius: 12px; margin-bottom: 20px; }
   input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
   button { padding: 12px 24px; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 10px; }
-  .btn-red { background: #ef4444; }
   .btn-green { background: #10b981; }
+  .btn-red { background: #ef4444; }
   .hidden { display: none; }
   .question { border: 2px dashed #94a3b8; padding: 25px; margin: 20px 0; border-radius: 12px; background: #fff; position: relative; }
   .delete-q { position: absolute; top: 10px; right: 10px; background: #ef4444; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
@@ -27,9 +27,7 @@
 <body>
 
 <div class="container">
-  <header>Academy Admin Panel</header>
-
-  <header>Academy Admin Panel</header>
+  <header>GP Soldier Academy - Admin Panel</header>
 
   <div class="tabs">
     <div class="tab active" onclick="openTab('students')">Students</div>
@@ -47,30 +45,26 @@
         <input id="sRoll" placeholder="Roll Number (e.g. 2101)">
         <input id="sPhone" placeholder="Phone Number">
         <input id="sPass" type="password" placeholder="Password">
-        <input id="sClassManual" placeholder="Class (type manually, e.g. 5 or 10)"> <!-- Removed dropdown -->
+        <input id="sClassManual" placeholder="Class (e.g. 5 or 10)">
         <button class="btn-green" onclick="addStudent()">Add Student</button>
       </div>
       <div id="studentList"></div>
     </div>
 
-    <!-- Add Video Tab -->
+    <!-- Videos Tab -->
     <div id="videos" class="hidden">
       <h2>Add Pre-Recorded Video</h2>
       <div class="card">
         <select id="vSubject">
           <option value="">Select Subject</option>
-          <option>English</option>
-          <option>GK</option>
-          <option>Kannada</option>
-          <option>Maths</option>
+          <option>English</option><option>GK</option><option>Kannada</option><option>Maths</option>
         </select>
         <select id="vClass">
           <option value="">Select Class</option>
-          <option>1</option><option>2</option><option>3</option><option>4</option>
-          <option>5</option><option>6</option><option>7</option><option>8</option>
-          <option>9</option><option>10</option>
+          <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+          <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
         </select>
-        <input id="vUrl" placeholder="YouTube URL[](https://www.youtube.com/watch?v=...)">
+        <input id="vUrl" placeholder="YouTube URL (e.g. https://youtube.com/watch?v=abc123)">
         <button onclick="addVideo()">Add Video</button>
       </div>
       <div id="videoList"></div>
@@ -91,20 +85,19 @@
           <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
         </select>
         <input id="examDuration" type="number" placeholder="Duration (minutes)">
-
         <h3 style="margin-top:30px;">Questions</h3>
         <div id="questions"></div>
         <button onclick="addQuestion()">+ Add Question</button>
         <button style="background:#7c3aed; margin-left:15px;" onclick="saveExam()">Save Exam</button>
       </div>
-      <div id="examList"></div>
     </div>
-
   </div>
 </div>
 
 <script>
-const API = 'http://localhost:5000/api';
+// YOUR REAL BACKEND URL — 100% CORRECT
+const API = 'https://academy-backend-e02j.onrender.com/api';
+
 let qCount = 0;
 
 function openTab(tab) {
@@ -116,7 +109,7 @@ function openTab(tab) {
   if(tab === 'videos') loadVideos();
 }
 
-// ==================== STUDENTS ====================
+// === STUDENTS ===
 async function addStudent() {
   const data = {
     name: document.getElementById('sName').value.trim(),
@@ -125,44 +118,44 @@ async function addStudent() {
     password: document.getElementById('sPass').value,
     class: document.getElementById('sClassManual').value.trim()
   };
-  if (!data.name || !data.rollNo || !data.phone || !data.password || !data.class) {
-    return alert("All fields required!");
-  }
-  const res = await fetch(`${API}/students`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+  if (!data.name || !data.rollNo || !data.phone || !data.password || !data.class) return alert("All fields required!");
+
+  const res = await fetch(`${API}/students`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
   const json = await res.json();
-  alert(json.message);
-  document.getElementById('sName').value = document.getElementById('sRoll').value = document.getElementById('sPhone').value = document.getElementById('sPass').value = document.getElementById('sClassManual').value = '';
+  alert(json.tomessage || "Success!");
+  Object.keys(data).forEach(k => document.getElementById('s'+k.charAt(0).toUpperCase()+k.slice(1)).value = '');
   loadStudents();
 }
 
 async function loadStudents() {
   const res = await fetch(`${API}/students`);
-  const {students} = await res.json();
+  const { students } = await res.json();
   const list = document.getElementById('studentList');
   list.innerHTML = '<h3>All Students</h3>';
   students.forEach(s => {
-    list.innerHTML += `<div class="list-item">
-      <b>${s.rollNo}</b> – ${s.name} | ${s.phone} | Class ${s.class}
-    </div>`;
+    list.innerHTML += `<div class="list-item"><b>${s.rollNo}</b> – ${s.name} | ${s.phone} | Class ${s.class}</div>`;
   });
 }
 
-// ==================== VIDEOS ====================
+// === VIDEOS ===
 async function addVideo() {
   const subject = document.getElementById('vSubject').value;
   const classNum = document.getElementById('vClass').value;
   let url = document.getElementById('vUrl').value.trim();
-
-  if (!subject || !classNum || !url) return alert("Please fill all fields");
+  if (!subject || !classNum || !url) return alert("Fill all fields");
 
   const match = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
   if (!match) return alert("Invalid YouTube link!");
   const embedUrl = `https://www.youtube.com/embed/${match[1]}`;
 
   const res = await fetch(`${API}/videos`, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({subject, classNum, embedUrl})
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subject, classNum, embedUrl })
   });
   const json = await res.json();
   alert(json.message);
@@ -172,21 +165,15 @@ async function addVideo() {
 
 async function loadVideos() {
   const res = await fetch(`${API}/videos`);
-  const {videos} = await res.json();
+  const { videos } = await res.json();
   const list = document.getElementById('videoList');
-  list.innerHTML = '<h3>Pre-Recorded Videos (Admin View)</h3>';
+  list.innerHTML = '<h3>Pre-Recorded Videos</h3>';
   videos.forEach(v => {
-    list.innerHTML += `
-      <div class="list-item">
-        <div>
-          <b>${v.subject}</b> – Class ${v.classNum}<br>
-          <span class="url">${v.embedUrl.replace('embed/', 'watch?v=')}</span>
-        </div>
-      </div>`;
+    list.innerHTML += `<div class="list-item"><b>${v.subject}</b> – Class ${v.classNum}<br><span class="url">${v.embedUrl.replace('embed/', 'watch?v=')}</span></div>`;
   });
 }
 
-// ==================== EXAM CREATOR (NOW FULLY WORKING) ====================
+// === EXAM CREATOR ===
 function addQuestion() {
   qCount++;
   const div = document.createElement('div');
@@ -194,95 +181,80 @@ function addQuestion() {
   div.innerHTML = `
     <button class="delete-q" onclick="this.parentElement.remove(); qCount--;">X</button>
     <h4>Question ${qCount}</h4>
-
     <label>Question Type:</label>
     <select class="qType" onchange="toggleQuestionType(this)">
       <option value="text">Text</option>
       <option value="image">Image</option>
     </select>
-
-    <div class="qText">
-      <textarea placeholder="Type your question here..." rows="4"></textarea>
-    </div>
-    <div class="qImage hidden">
-      <input type="file" accept="image/*" class="qImg">
-    </div>
+    <div class="qText"><textarea placeholder="Type question..." rows="4"></textarea></div>
+    <div class="qImage hidden"><input type="file" accept="image/*" class="qImg"></div>
 
     <h5 style="margin-top:20px;">Options</h5>
-    ${['A','B','C','D'].map(letter => `
+    ${['A','B','C','D'].map(l => `
       <div style="margin:10px 0; padding:10px; background:#f1f5f9; border-radius:8px;">
-        <strong>${letter}.</strong>
-        <select class="oType" style="margin-left:10px;" onchange="toggleOptionType(this, '${letter}')">
+        <strong>${l}.</strong>
+        <select class="oType" onchange="toggleOptionType(this,'${l}')">
           <option value="text">Text</option>
           <option value="image">Image</option>
         </select>
-        <input class="oText oText${letter}" placeholder="Option ${letter} text" style="width:65%; margin-left:10px;">
-        <input type="file" class="oImg oImg${letter} hidden" accept="image/*" style="margin-left:10px;">
+        <input class="oText oText${l}" placeholder="Option ${l}" style="width:60%; margin-left:10px;">
+        <input type="file" class="oImg oImg${l} hidden" accept="image/*">
       </div>
     `).join('')}
-
     <label>Correct Answer:</label>
-    <select class="correctAns">
-      <option>A</option><option>B</option><option>C</option><option>D</option>
-    </select>
-    <hr style="margin:20px 0;">
+    <select class="correctAns"><option>A</option><option>B</option><option>C</option><option>D</option></select>
+    <hr>
   `;
-
   document.getElementById('questions').appendChild(div);
 }
 
-function toggleQuestionType(select) {
-  const parent = select.closest('.question');
-  const isImage = select.value === 'image';
-  parent.querySelector('.qText').classList.toggle('hidden', isImage);
-  parent.querySelector('.qImage').classList.toggle('hidden', !isImage);
+function toggleQuestionType(sel) {
+  const p = sel.closest('.question');
+  p.querySelector('.qText').classList.toggle('hidden', sel.value === 'image');
+  p.querySelector('.qImage').classList.toggle('hidden', sel.value !== 'image');
 }
 
-function toggleOptionType(select, letter) {
-  const parent = select.closest('div');
-  const isImage = select.value === 'image';
-  parent.querySelector(`.oText${letter}`).classList.toggle('hidden', isImage);
-  parent.querySelector(`.oImg${letter}`).classList.toggle('hidden', !isImage);
+function toggleOptionType(sel, l) {
+  const p = sel.closest('div');
+  p.querySelector(`.oText${l}`).classList.toggle('hidden', sel.value === 'image');
+  p.querySelector(`.oImg${l}`).classList.toggle('hidden', sel.value !== 'image');
 }
 
 async function saveExam() {
   const questions = [];
-  let hasError = false;
+  let error = false;
 
-  document.querySelectorAll('.question').forEach((q, idx) => {
-    const qType = q.querySelector('.qType').value;
-    const questionText = qType === 'text' ? q.querySelector('textarea').value.trim() : '';
-    const questionImageFile = qType === 'image' ? q.querySelector('.qImg').files[0] : null;
+  document.querySelectorAll('.question').forEach((q, i) => {
+    const type = q.querySelector('.qType').value;
+    const text = type === 'text' ? q.querySelector('textarea').value.trim() : '';
+    const img = type === 'image' ? q.querySelector('.qImg').files[0] : null;
 
-    if (qType === 'text' && !questionText) { alert(`Question ${idx+1}: Text required`); hasError = true; return; }
-    if (qType === 'image' && !questionImageFile) { alert(`Question ${idx+1}: Image required`); hasError = true; return; }
+    if ((type === 'text' && !text) || (type === 'image' && !img)) {
+      alert(`Question ${i+1}: Required`);
+      error = true; return;
+    }
 
-    const question = {
-      type: qType,
-      questionText,
-      options: [],
-      optionsType: [],
-      correctAnswer: q.querySelector('.correctAns').value
-    };
-
-    let optionError = false;
-    'ABCD'.split('').forEach(letter => {
-      const oType = q.querySelectorAll('.oType')[['A','B','C','D'].indexOf(letter)].value;
-      const oText = q.querySelector(`.oText${letter}`).value.trim();
-      const oFile = q.querySelector(`.oImg${letter}`).files[0];
-
-      question.optionsType.push(oType);
-      if (oType === 'text' && !oText) { optionError = true; }
-      if (oType === 'image' && !oFile) { optionError = true; }
-      question.options.push(oType === 'text' ? oText : '');
+    const opts = [];
+    const optsType = [];
+    let optError = false;
+    'ABCD'.split('').forEach(l => {
+      const oType = q.querySelectorAll('.oType')[['A','B','C','D'].indexOf(l)].value;
+      const oText = q.querySelector(`.oText${l}`).value.trim();
+      const oFile = q.querySelector(`.oImg${l}`).files[0];
+      optsType.push(oType);
+      if ((oType === 'text' && !oText) || (oType === 'image' && !oFile)) optError = true;
+      opts.push(oType === 'text' ? oText : '');
     });
 
-    if (optionError) { alert(`Question ${idx+1}: All options must have text or image`); hasError = true; return; }
+    if (optError) { alert(`Question ${i+1}: All options required`); error = true; return; }
 
-    questions.push(question);
+    questions.push({
+      type, questionText: text, options: opts, optionsType: optsType,
+      correctAnswer: q.querySelector('.correctAns').value
+    });
   });
 
-  if (hasError) return;
+  if (error) return;
 
   const form = new FormData();
   form.append('title', document.getElementById('examTitle').value);
@@ -291,7 +263,6 @@ async function saveExam() {
   form.append('duration', document.getElementById('examDuration').value);
   form.append('questions', JSON.stringify(questions));
 
-  // Append all image files
   document.querySelectorAll('.qImg, .oImgA, .oImgB, .oImgC, .oImgD').forEach(input => {
     if (input.files[0]) form.append('images', input.files[0]);
   });
@@ -303,7 +274,7 @@ async function saveExam() {
   qCount = 0;
 }
 
-// Load data on start
+// Load on start
 loadStudents();
 loadVideos();
 </script>
