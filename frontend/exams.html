@@ -14,12 +14,8 @@
   }
   header {
     background: linear-gradient(to right, #FF9933, #138808);
-    padding: 20px;
-    text-align: center;
-    font-size: 28px;
-    font-weight: bold;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    position: relative;
+    padding: 20px; text-align: center; font-size: 28px; font-weight: bold;
+    position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
   }
   .back-btn {
     position: absolute; left: 15px; top: 18px;
@@ -27,24 +23,17 @@
     border-radius: 50%; font-size: 20px; cursor: pointer;
   }
   .container {
-    width: 95%; max-width: 600px; /* WIDER FOR PHONE */
-    margin: 20px auto;
-    background: white;
-    color: #1e293b;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+    width: 95%; max-width: 600px; margin: 20px auto;
+    background: white; color: #1e293b; border-radius: 20px;
+    overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.4);
   }
   .form { padding: 30px; }
-  input {
+  input, button {
     width: 100%; padding: 16px; margin: 12px 0;
-    border: 2px solid #ddd; border-radius: 12px; font-size: 18px;
+    border-radius: 12px; font-size: 18px; font-weight: bold;
   }
-  button {
-    width: 100%; padding: 16px; margin: 15px 0;
-    background: #6366f1; color: white; border: none;
-    border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer;
-  }
+  input { border: 2px solid #ddd; }
+  button { background: #6366f1; color: white; border: none; cursor: pointer; }
   button:hover { background: #4f46e5; }
   .hidden { display: none; }
 
@@ -53,10 +42,9 @@
     border-radius: 15px; border-left: 6px solid #6366f1;
     text-align: center;
   }
-  .exam-card button {
-    background: #10b981; margin-top: 10px;
-  }
-  .exam-card button:disabled { background: #94a3b8; }
+  .btn-start { background: #10b981; }
+  .btn-view { background: #f59e0b; margin-top: 10px; }
+  .btn-start:disabled, .btn-view:disabled { background: #94a3b8; }
 
   .timer {
     text-align: center; font-size: 32px; font-weight: bold;
@@ -77,20 +65,19 @@
   .option input { margin-right: 15px; transform: scale(1.5); accent-color: #6366f1; }
 
   .result {
-    text-align: center; padding: 40px; background: #f0fdf4;
-    color: #166534; border-radius: 20px; margin: 20px;
+    text-align: center; padding: 40px; background: #f0fdf4; color: #166534;
+    border-radius: 20px; margin: 20px;
   }
   .result b { font-size: 60px; color: #10b981; display: block; margin: 15px 0; }
-  .score-bar {
-    height: 20px; background: #e5e7eb; border-radius: 10px; overflow: hidden; margin: 20px 0;
-  }
-  .score-fill { height: 100%; background: #10b981; width: 0%; transition: width 1.5s ease; }
+  .score-bar { height: 25px; background: #e5e7eb; border-radius: 12px; overflow: hidden; margin: 20px 0; }
+  .score-fill { height: 100%; background: linear-gradient(to right, #10b981, #22c55e); width: 0%; transition: width 1.8s ease; }
 
-  .history {
-    margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 15px;
+  .progress-graph {
+    margin: 30px 0; padding: 20px; background: #f8fafc; border-radius: 15px;
   }
-  .history h3 { color: #1e293b; text-align: center; margin-bottom: 15px; }
-  .test-item { padding: 12px; background: white; margin: 8px 0; border-radius: 10px; }
+  .graph-title { text-align: center; color: #1e293b; font-size: 20px; margin-bottom: 15px; }
+  .bar { height: 30px; background: #e0e0e0; border-radius: 15px; margin: 12px 0; overflow: hidden; }
+  .bar-fill { height: 100%; background: linear-gradient(to right, #f59e0b, #f97316); text-align: right; padding-right: 10px; color: white; font-weight: bold; line-height: 30px; }
 </style>
 </head>
 <body>
@@ -130,7 +117,7 @@
     </div>
   </div>
 
-  <!-- Result Screen -->
+  <!-- Result + Progress -->
   <div id="resultScreen" class="hidden result">
     <h2>EXAM COMPLETED!</h2>
     <b id="score">0</b> / <span id="total">0</span>
@@ -139,9 +126,9 @@
     <p id="percentage" style="font-size:28px; margin:20px 0;"></p>
     <p id="date" style="color:#666; margin:15px 0;"></p>
 
-    <div class="history">
-      <h3>Your Previous Tests</h3>
-      <div id="historyList"></div>
+    <div class="progress-graph">
+      <div class="graph-title">Your Progress Over Time</div>
+      <div id="graphContainer"></div>
     </div>
 
     <button onclick="goToExams()">Back to Exams</button>
@@ -185,16 +172,28 @@ async function loadExams() {
   const res = await fetch(`${API}/exams/available/${currentStudent.class}`);
   const exams = await res.json();
   const container = document.getElementById('examsContainer');
-  container.innerHTML = exams.length === 0 ? '<p style="text-align:center; color:#666;">No exams available right now.</p>' : '';
+  container.innerHTML = exams.length === 0 ? '<p style="text-align:center; color:#666;">No exams available.</p>' : '';
+
   exams.forEach(exam => {
     const taken = currentStudent.completedExams?.includes(exam._id);
+    const historyEntry = examHistory.find(h => h.examId === exam._id);
+
     container.innerHTML += `
       <div class="exam-card">
         <h3>${exam.title}</h3>
         <p>${exam.subject} • ${exam.duration} mins • ${exam.questions.length} Questions</p>
-        <button ${taken ? 'disabled' : `onclick="startExam('${exam._id}')"`}>
-          ${taken ? 'Completed' : 'Start Exam'}
-        </button>
+        ${taken ? `
+          <button class="btn-view" onclick="viewScore('${exam._id}')">
+            VIEW MY SCORE
+          </button>
+          <p style="margin-top:8px; color:#f59e0b;">
+            ${historyEntry ? `${historyEntry.score}/${historyEntry.total} (${historyEntry.percentage}%)` : 'Score saved'}
+          </p>
+        ` : `
+          <button class="btn-start" onclick="startExam('${exam._id}')">
+            START EXAM
+          </button>
+        `}
       </div>`;
   });
 }
@@ -202,6 +201,7 @@ async function loadExams() {
 async function startExam(examId) {
   const res = await fetch(`${API}/exams/${examId}`);
   currentExam = await res.json();
+  currentExam._id = examId; // Save ID
   hideAll(); document.getElementById('takingExam').classList.remove('hidden');
   document.getElementById('examTitleHeader').textContent = currentExam.title;
   timeLeft = currentExam.duration * 60;
@@ -270,29 +270,41 @@ async function submitExam() {
 
   // Save to history
   const record = {
+    examId: currentExam._id,
     title: currentExam.title,
     score: result.score,
     total: result.totalQuestions,
     percentage: result.percentage,
     date: new Date().toLocaleDateString('en-IN')
   };
+  examHistory = examHistory.filter(h => h.examId !== currentExam._id); // Remove old
   examHistory.push(record);
   localStorage.setItem('examHistory', JSON.stringify(examHistory));
 
-  // Show Result
-  document.getElementById('score').textContent = result.score;
-  document.getElementById('total').textContent = result.totalQuestions;
-  document.getElementById('percentage').textContent = `Percentage: ${result.percentage}%`;
-  document.getElementById('date').textContent = `Date: ${record.date}`;
-  document.getElementById('scoreFill').style.width = result.percentage + '%';
+  showResult(record);
+}
 
-  // Show History
-  const hist = document.getElementById('historyList');
-  hist.innerHTML = examHistory.map(h => `
-    <div class="test-item">
-      <strong>${h.title}</strong> → ${h.score}/${h.total} (${h.percentage}%) on ${h.date}
+function viewScore(examId) {
+  const record = examHistory.find(h => h.examId === examId);
+  if (record) showResult(record);
+}
+
+function showResult(record) {
+  document.getElementById('score').textContent = record.score;
+  document.getElementById('total').textContent = record.total;
+  document.getElementById('percentage').textContent = `Percentage: ${record.percentage}%`;
+  document.getElementById('date').textContent = `Date: ${record.date}`;
+  document.getElementById('scoreFill').style.width = record.percentage + '%';
+
+  // Draw Progress Graph
+  const graph = document.getElementById('graphContainer');
+  graph.innerHTML = examHistory.map((h, i) => `
+    <div class="bar">
+      <div class="bar-fill" style="width:${h.percentage}%">
+        Test ${i+1}: ${h.percentage}%
+      </div>
     </div>
-  `).reverse().join('');
+  `).join('');
 
   hideAll();
   document.getElementById('resultScreen').classList.remove('hidden');
