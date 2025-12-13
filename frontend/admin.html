@@ -69,19 +69,15 @@
       <div id="videoList"></div>
     </div>
 
-    <!-- Exam -->
+    <!-- Exam — FIXED FOR testNumber -->
     <div id="exam" class="hidden">
       <h2>Create New Exam</h2>
       <div class="card">
         <input id="examTitle" placeholder="Exam Title">
+        <input id="testNumber" type="number" placeholder="TEST NUMBER (e.g. 1, 2, 3) - UNIQUE" required>
         <select id="examSubject">
           <option value="">Subject</option>
           <option>English</option><option>GK</option><option>Kannada</option><option>Maths</option>
-        </select>
-        <select id="examClass">
-          <option value="">Class</option>
-          <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-          <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
         </select>
         <input id="examDuration" type="number" placeholder="Duration (minutes)">
         <h3 style="margin-top:30px;">Questions</h3>
@@ -106,7 +102,7 @@ function openTab(tab) {
   if(tab === 'videos') loadVideos();
 }
 
-// STUDENTS — FIXED
+// STUDENTS
 async function addStudent() {
   const data = {
     name: document.getElementById('sName').value.trim(),
@@ -115,14 +111,14 @@ async function addStudent() {
     password: document.getElementById('sPass').value,
     class: document.getElementById('sClassManual').value.trim()
   };
-  if (!data.name || !data.rollNo || !data.phone || !data.password || !data.class) return alert("All fields required!");
+  if (Object.values(data).some(v => !v)) return alert("All fields required!");
   const res = await fetch(`${API}/students`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
   const json = await res.json();
-  alert(json.message || "Success!");
+  alert(json.message);
   document.getElementById('sName').value = document.getElementById('sRoll').value = document.getElementById('sPhone').value = document.getElementById('sPass').value = document.getElementById('sClassManual').value = '';
   loadStudents();
 }
@@ -137,7 +133,7 @@ async function loadStudents() {
   });
 }
 
-// VIDEOS — FIXED
+// VIDEOS
 async function addVideo() {
   const subject = document.getElementById('vSubject').value;
   const classNum = document.getElementById('vClass').value;
@@ -167,7 +163,7 @@ async function loadVideos() {
   });
 }
 
-// EXAM — FIXED 400 ERROR
+// EXAM — FIXED FOR testNumber
 function addQuestion() {
   qCount++;
   const div = document.createElement('div');
@@ -216,53 +212,37 @@ function toggleOptionType(sel, l) {
 async function saveExam() {
   const questions = [];
   let error = false;
-
   document.querySelectorAll('.question').forEach((q, i) => {
     const type = q.querySelector('.qType').value;
     const questionText = type === 'text' ? q.querySelector('textarea').value.trim() : '';
     const questionImageFile = type === 'image' ? q.querySelector('.qImg').files[0] : null;
-
     if ((type === 'text' && !questionText) || (type === 'image' && !questionImageFile)) {
-      alert(`Question ${i+1}: Missing question`);
+      alert(`Question ${i+1}: Required`);
       error = true; return;
     }
-
     const options = [];
     const optionsType = [];
     let optError = false;
-
     'ABCD'.split('').forEach(l => {
       const oType = q.querySelectorAll('.oType')[['A','B','C','D'].indexOf(l)].value;
       const oText = q.querySelector(`.oText${l}`).value.trim();
       const oFile = q.querySelector(`.oImg${l}`).files[0];
-
       optionsType.push(oType);
-      if ((oType === 'text' && !oText) || (oType === 'image' && !oFile)) {
-        optError = true;
-      }
+      if ((oType === 'text' && !oText) || (oType === 'image' && !oFile)) optError = true;
       options.push(oType === 'text' ? oText : '');
     });
-
-    if (optError) {
-      alert(`Question ${i+1}: All options must be filled`);
-      error = true; return;
-    }
-
+    if (optError) { alert(`Question ${i+1}: All options required`); error = true; return; }
     questions.push({
-      type,
-      questionText,
-      options,
-      optionsType,
+      type, questionText, options, optionsType,
       correctAnswer: q.querySelector('.correctAns').value
     });
   });
-
   if (error) return;
 
   const form = new FormData();
   form.append('title', document.getElementById('examTitle').value.trim());
   form.append('subject', document.getElementById('examSubject').value);
-  form.append('classNum', document.getElementById('examClass').value);
+  form.append('testNumber', document.getElementById('testNumber').value); // FIXED: now sending testNumber
   form.append('duration', document.getElementById('examDuration').value);
   form.append('questions', JSON.stringify(questions));
 
@@ -270,18 +250,18 @@ async function saveExam() {
     if (input.files[0]) form.append('images', input.files[0]);
   });
 
-  try {
-    const res = await fetch(`${API}/exams`, { method: 'POST', body: form });
-    const json = await res.json();
-    if (!res.ok) {
-      alert("Error: " + (json.message || "Failed to save"));
-    } else {
-      alert(json.message || "Exam saved successfully!");
-      document.getElementById('questions').innerHTML = '';
-      qCount = 0;
-    }
-  } catch (err) {
-    alert("Network error. Check internet.");
+  const res = await fetch(`${API}/exams`, { method: 'POST', body: form });
+  const json = await res.json();
+  if (!res.ok) {
+    alert("Error: " + json.message);
+  } else {
+    alert(json.message || "Exam saved successfully!");
+    document.getElementById('questions').innerHTML = '';
+    qCount = 0;
+    document.getElementById('examTitle').value = '';
+    document.getElementById('testNumber').value = '';
+    document.getElementById('examSubject').value = '';
+    document.getElementById('examDuration').value = '';
   }
 }
 
