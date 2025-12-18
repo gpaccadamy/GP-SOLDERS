@@ -1,324 +1,331 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GP Soldier Academy - Exam Portal</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-    color: white;
-    min-height: 100vh;
-  }
-  header {
-    background: linear-gradient(to right, #FF9933, #138808);
-    padding: 20px; text-align: center; font-size: 28px; font-weight: bold;
-    position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  }
-  .back-btn {
-    position: absolute; left: 15px; top: 18px;
-    background: rgba(255,255,255,0.2); padding: 10px 15px;
-    border-radius: 50%; font-size: 20px; cursor: pointer;
-  }
-  .container {
-    width: 95%; max-width: 600px; margin: 20px auto;
-    background: white; color: #1e293b; border-radius: 20px;
-    overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-  }
-  .form { padding: 30px; }
-  input, button {
-    width: 100%; padding: 16px; margin: 12px 0;
-    border-radius: 12px; font-size: 18px; font-weight: bold;
-  }
-  input { border: 2px solid #ddd; }
-  button { background: #6366f1; color: white; border: none; cursor: pointer; }
-  button:hover { background: #4f46e5; }
-  .hidden { display: none; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Portal - EduApp</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+    body { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); min-height: 100vh; color: #333; }
 
-  .exam-card {
-    background: #f0f9ff; padding: 20px; margin: 15px 0;
-    border-radius: 15px; border-left: 6px solid #6366f1;
-    text-align: center;
-  }
-  .btn-start { background: #10b981; }
-  .btn-view { background: #f59e0b; margin-top: 10px; }
-  .btn-start:disabled, .btn-view:disabled { background: #94a3b8; }
+    /* Header */
+    header {
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    header h1 { font-size: 22px; flex-grow: 1; text-align: center; margin-left: -50px; }
+    .hamburger { font-size: 28px; cursor: pointer; }
 
-  .timer {
-    text-align: center; font-size: 32px; font-weight: bold;
-    color: #dc2626; background: #fee2e2; padding: 15px;
-    border-radius: 15px; margin: 15px 0;
-  }
+    /* Side Navigation */
+    .sidenav {
+      height: 100%;
+      width: 0;
+      position: fixed;
+      z-index: 1001;
+      top: 0;
+      left: 0;
+      background: rgba(0,0,0,0.95);
+      overflow-x: hidden;
+      transition: 0.4s;
+      padding-top: 80px;
+    }
+    .sidenav a {
+      padding: 16px 30px;
+      text-decoration: none;
+      font-size: 20px;
+      color: #fff;
+      display: block;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidenav a:hover { background: rgba(255,255,255,0.1); }
+    .closebtn { position: absolute; top: 15px; right: 25px; font-size: 36px; cursor: pointer; }
 
-  .question {
-    background: #f8fafc; padding: 20px; margin: 20px 0;
-    border-radius: 15px; border: 2px solid #e2e8f0;
-  }
-  .option {
-    display: flex; align-items: center; padding: 16px;
-    background: white; margin: 12px 0; border-radius: 12px;
-    border: 2px solid #e2e8f0; cursor: pointer; transition: 0.3s;
-  }
-  .option:hover { border-color: #6366f1; background: #eef2ff; }
-  .option input { margin-right: 15px; transform: scale(1.5); accent-color: #6366f1; }
+    /* Main Content */
+    .main { margin-top: 70px; padding: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      transition: 0.3s;
+    }
+    .card:hover { transform: translateY(-5px); }
+    .card h2, .card h3 { color: #444; margin-bottom: 20px; text-align: center; }
+    input, select {
+      width: 100%;
+      padding: 16px;
+      margin: 15px 0;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      font-size: 18px;
+      background: #f8f9fa;
+    }
+    .btn {
+      background: linear-gradient(to right, #f093fb, #f5576c);
+      color: white;
+      padding: 16px;
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      cursor: pointer;
+      margin: 15px 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .btn:hover { transform: translateY(-3px); }
+    .logout-btn { background: #e74c3c; }
+    img { max-width: 100%; border-radius: 12px; margin: 20px 0; box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
+    .exam-card {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 15px 0;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .exam-card:hover { background: #e8f4fd; transform: scale(1.02); }
+    .option-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .option-btn {
+      background: #667eea;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    .option-btn:hover { background: #764ba2; }
 
-  .result {
-    text-align: center; padding: 40px; background: #f0fdf4; color: #166534;
-    border-radius: 20px; margin: 20px;
-  }
-  .result b { font-size: 60px; color: #10b981; display: block; margin: 15px 0; }
-  .score-bar { height: 25px; background: #e5e7eb; border-radius: 12px; overflow: hidden; margin: 20px 0; }
-  .score-fill { height: 100%; background: linear-gradient(to right, #10b981, #22c55e); width: 0%; transition: width 1.8s ease; }
-
-  .progress-graph {
-    margin: 30px 0; padding: 20px; background: #f8fafc; border-radius: 15px;
-  }
-  .graph-title { text-align: center; color: #1e293b; font-size: 20px; margin-bottom: 15px; }
-  .bar { height: 30px; background: #e0e0e0; border-radius: 15px; margin: 12px 0; overflow: hidden; }
-  .bar-fill { height: 100%; background: linear-gradient(to right, #f59e0b, #f97316); text-align: right; padding-right: 10px; color: white; font-weight: bold; line-height: 30px; }
-</style>
+    @media (max-width: 768px) {
+      header h1 { font-size: 20px; margin-left: -40px; }
+      .card { padding: 25px; }
+      .option-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <div class="back-btn" onclick="history.back()">Back</div>
-  GP SOLDIER ACADEMY - EXAM PORTAL
-</header>
+  <!-- Header -->
+  <header>
+    <div class="hamburger" onclick="openNav()">☰</div>
+    <h1>Student Portal</h1>
+  </header>
 
-<div class="container">
-
-  <!-- Login -->
-  <div id="loginForm" class="form">
-    <h2 style="text-align:center; color:#1e293b; margin-bottom:20px;">Welcome Soldier</h2>
-    <input id="rollNo" placeholder="Enter Roll Number">
-    <input id="password" type="password" placeholder="Enter Password">
-    <button onclick="login()">LOGIN</button>
-    <p id="loginError" style="color:red; text-align:center;"></p>
+  <!-- Side Menu -->
+  <div id="mySidenav" class="sidenav">
+    <span class="closebtn" onclick="closeNav()">×</span>
+    <a href="#" onclick="showSection('videos')">📺 Video Lessons</a>
+    <a href="#" onclick="showSection('exams')">📝 Online Exams</a>
+    <a href="#" onclick="logout()">🚪 Logout</a>
   </div>
 
-  <!-- Exam List -->
-  <div id="examList" class="form hidden">
-    <h2 style="text-align:center; color:#1e293b;">Welcome, <span id="studentName" style="color:#6366f1;"></span></h2>
-    <p style="text-align:center; font-size:18px;">Class <span id="studentClass"></span></p>
-    <div id="examsContainer"></div>
-  </div>
+  <!-- Main Content -->
+  <div class="main">
 
-  <!-- Taking Exam -->
-  <div id="takingExam" class="hidden">
-    <div style="background:#1e293b; color:white; padding:20px; text-align:center;">
-      <h2 id="examTitleHeader"></h2>
-      <div class="timer">Time Left: <span id="time">00:00</span></div>
-    </div>
-    <div style="padding:20px;">
-      <div id="questionsContainer"></div>
-      <button onclick="submitExam()">SUBMIT EXAM</button>
-    </div>
-  </div>
-
-  <!-- Result + Progress -->
-  <div id="resultScreen" class="hidden result">
-    <h2>EXAM COMPLETED!</h2>
-    <b id="score">0</b> / <span id="total">0</span>
-    <p style="font-size:24px; margin:15px 0;">Your Score</p>
-    <div class="score-bar"><div id="scoreFill" class="score-fill"></div></div>
-    <p id="percentage" style="font-size:28px; margin:20px 0;"></p>
-    <p id="date" style="color:#666; margin:15px 0;"></p>
-
-    <div class="progress-graph">
-      <div class="graph-title">Your Progress Over Time</div>
-      <div id="graphContainer"></div>
+    <!-- Login Card -->
+    <div id="loginSection" class="card">
+      <h2>🎓 Welcome Back!</h2>
+      <p style="text-align:center; margin-bottom:20px; color:#666;">Login with your mobile and password</p>
+      <input type="tel" id="mobile" placeholder="Mobile Number">
+      <input type="password" id="password" placeholder="Password">
+      <button class="btn" onclick="studentLogin()">Login</button>
+      <p id="loginError" style="color:red; margin-top:15px; display:none;">Invalid mobile or password!</p>
     </div>
 
-    <button onclick="goToExams()">Back to Exams</button>
-  </div>
-</div>
+    <!-- Dashboard (hidden until login) -->
+    <div id="dashboard" style="display:none;">
 
-<script>
-const API = 'https://academy-backend-e02j.onrender.com/api';
-let currentStudent = null;
-let currentExam = null;
-let timerInterval = null;
-let timeLeft = 0;
-let examHistory = JSON.parse(localStorage.getItem('examHistory') || '[]');
-
-async function login() {
-  const rollNo = document.getElementById('rollNo').value.trim();
-  const password = document.getElementById('password').value;
-  if (!rollNo || !password) return alert("Fill all fields");
-
-  try {
-    const res = await fetch(`${API}/students/login`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rollNo, password })
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      document.getElementById('loginError').textContent = data.message || 'Login failed';
-      return;
-    }
-    currentStudent = data.student;
-    document.getElementById('studentName').textContent = data.student.name;
-    document.getElementById('studentClass').textContent = data.student.class;
-    hideAll(); document.getElementById('examList').classList.remove('hidden');
-    loadExams();
-  } catch (e) {
-    document.getElementById('loginError').textContent = 'Server error';
-  }
-}
-
-async function loadExams() {
-  const res = await fetch(`${API}/exams/available/${currentStudent.class}`);
-  const exams = await res.json();
-  const container = document.getElementById('examsContainer');
-  container.innerHTML = exams.length === 0 ? '<p style="text-align:center; color:#666;">No exams available.</p>' : '';
-
-  exams.forEach(exam => {
-    const taken = currentStudent.completedExams?.includes(exam._id);
-    const historyEntry = examHistory.find(h => h.examId === exam._id);
-
-    container.innerHTML += `
-      <div class="exam-card">
-        <h3>${exam.title}</h3>
-        <p>${exam.subject} • ${exam.duration} mins • ${exam.questions.length} Questions</p>
-        ${taken ? `
-          <button class="btn-view" onclick="viewScore('${exam._id}')">
-            VIEW MY SCORE
-          </button>
-          <p style="margin-top:8px; color:#f59e0b;">
-            ${historyEntry ? `${historyEntry.score}/${historyEntry.total} (${historyEntry.percentage}%)` : 'Score saved'}
-          </p>
-        ` : `
-          <button class="btn-start" onclick="startExam('${exam._id}')">
-            START EXAM
-          </button>
-        `}
-      </div>`;
-  });
-}
-
-async function startExam(examId) {
-  const res = await fetch(`${API}/exams/${examId}`);
-  currentExam = await res.json();
-  currentExam._id = examId; // Save ID
-  hideAll(); document.getElementById('takingExam').classList.remove('hidden');
-  document.getElementById('examTitleHeader').textContent = currentExam.title;
-  timeLeft = currentExam.duration * 60;
-  startTimer();
-  renderQuestions();
-}
-
-function renderQuestions() {
-  const container = document.getElementById('questionsContainer');
-  container.innerHTML = '';
-  currentExam.questions.forEach((q, i) => {
-    const qDiv = document.createElement('div');
-    qDiv.className = 'question';
-    qDiv.innerHTML = `<h3>${i + 1}. ${q.type === 'image' ? `<img src="${q.questionImage}" style="max-width:100%; border-radius:10px; margin:10px 0;">` : q.questionText}</h3>`;
-    const optsDiv = document.createElement('div');
-    'ABCD'.split('').forEach((letter, idx) => {
-      const opt = q.options[idx] || '';
-      const optType = q.optionsType[idx] || 'text';
-      const optDiv = document.createElement('label');
-      optDiv.className = 'option';
-      optDiv.innerHTML = `
-        <input type="radio" name="q${i}" value="${letter}">
-        <span><strong>${letter}.</strong> 
-          ${optType === 'image' ? `<img src="${q.optionsImages[idx]}" style="max-width:100%; margin-top:10px; border-radius:8px;">` : opt}
-        </span>
-      `;
-      optsDiv.appendChild(optDiv);
-    });
-    qDiv.appendChild(optsDiv);
-    container.appendChild(qDiv);
-  });
-}
-
-function startTimer() {
-  updateTimerDisplay();
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    updateTimerDisplay();
-    if (timeLeft <= 0) {
-      alert("Time's Up! Exam Auto-Submitted");
-      submitExam();
-    }
-  }, 1000);
-}
-
-function updateTimerDisplay() {
-  const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
-  const secs = String(timeLeft % 60).padStart(2, '0');
-  document.getElementById('time').textContent = `${mins}:${secs}`;
-}
-
-async function submitExam() {
-  clearInterval(timerInterval);
-  const answers = {};
-  document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
-    const q = r.name.replace('q', '');
-    answers[q] = r.value;
-  });
-
-  const res = await fetch(`${API}/exams/submit`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ studentId: currentStudent._id, examId: currentExam._id, answers })
-  });
-  const result = await res.json();
-
-  // Save to history
-  const record = {
-    examId: currentExam._id,
-    title: currentExam.title,
-    score: result.score,
-    total: result.totalQuestions,
-    percentage: result.percentage,
-    date: new Date().toLocaleDateString('en-IN')
-  };
-  examHistory = examHistory.filter(h => h.examId !== currentExam._id); // Remove old
-  examHistory.push(record);
-  localStorage.setItem('examHistory', JSON.stringify(examHistory));
-
-  showResult(record);
-}
-
-function viewScore(examId) {
-  const record = examHistory.find(h => h.examId === examId);
-  if (record) showResult(record);
-}
-
-function showResult(record) {
-  document.getElementById('score').textContent = record.score;
-  document.getElementById('total').textContent = record.total;
-  document.getElementById('percentage').textContent = `Percentage: ${record.percentage}%`;
-  document.getElementById('date').textContent = `Date: ${record.date}`;
-  document.getElementById('scoreFill').style.width = record.percentage + '%';
-
-  // Draw Progress Graph
-  const graph = document.getElementById('graphContainer');
-  graph.innerHTML = examHistory.map((h, i) => `
-    <div class="bar">
-      <div class="bar-fill" style="width:${h.percentage}%">
-        Test ${i+1}: ${h.percentage}%
+      <div class="card">
+        <h2>Hello, <span id="studentName" style="color:#f5576c;">Student</span>! 👋</h2>
       </div>
+
+      <!-- Video Lessons -->
+      <div id="videos" class="section">
+        <div class="card">
+          <h3>📺 Video Lessons</h3>
+          <select id="classSelect" onchange="loadSubjects()">
+            <option value="">Select Your Class</option>
+            <option value="1">Class 1</option>
+            <option value="2">Class 2</option>
+            <option value="3">Class 3</option>
+            <option value="4">Class 4</option>
+            <option value="5">Class 5</option>
+            <option value="6">Class 6</option>
+          </select>
+          <select id="subjectSelect" onchange="playVideo()">
+            <option value="">Select Subject</option>
+            <option value="english">English</option>
+            <option value="kannada">Kannada</option>
+            <option value="gk">GK</option>
+            <option value="maths">Maths</option>
+          </select>
+          <div style="text-align:center; margin-top:30px;">
+            <iframe id="videoPlayer" width="100%" height="400" style="border-radius:16px; box-shadow:0 8px 20px rgba(0,0,0,0.2);" src="" allowfullscreen></iframe>
+            <p id="noVideoText" style="color:#888; margin-top:20px; display:none;">No video available yet for this subject.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exams -->
+      <div id="exams" class="section" style="display:none;">
+        <div class="card">
+          <h3>📝 Available Exams</h3>
+          <div id="examList">Loading exams...</div>
+        </div>
+      </div>
+
     </div>
-  `).join('');
+  </div>
 
-  hideAll();
-  document.getElementById('resultScreen').classList.remove('hidden');
-}
+  <script>
+    const API_URL = "http://localhost:5000";
+    let currentStudent = null;
+    let allVideos = [];
+    let allExams = [];
 
-function goToExams() {
-  hideAll();
-  document.getElementById('examList').classList.remove('hidden');
-  loadExams();
-}
+    function openNav() { document.getElementById("mySidenav").style.width = "280px"; }
+    function closeNav() { document.getElementById("mySidenav").style.width = "0"; }
 
-function hideAll() {
-  document.querySelectorAll('#loginForm, #examList, #takingExam, #resultScreen').forEach(el => el.classList.add('hidden'));
-}
-</script>
+    function showSection(id) {
+      document.getElementById('videos').style.display = 'none';
+      document.getElementById('exams').style.display = 'none';
+      if (document.getElementById(id)) document.getElementById(id).style.display = 'block';
+      if (id === 'exams') loadExams();
+    }
+
+    // Check if already logged in
+    window.onload = () => {
+      currentStudent = JSON.parse(localStorage.getItem('currentStudent'));
+      if (currentStudent) {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        document.getElementById('studentName').textContent = currentStudent.name;
+        loadVideos();
+        showSection('videos');
+      }
+    };
+
+    async function studentLogin() {
+      const mobile = document.getElementById('mobile').value.trim();
+      const password = document.getElementById('password').value;
+      if (!mobile || !password) return;
+
+      try {
+        const res = await fetch(`${API_URL}/students`);
+        const students = await res.json();
+        currentStudent = students.find(s => s.mobile === mobile && s.password === password);
+
+        if (currentStudent) {
+          localStorage.setItem('currentStudent', JSON.stringify(currentStudent));
+          document.getElementById('loginSection').style.display = 'none';
+          document.getElementById('dashboard').style.display = 'block';
+          document.getElementById('studentName').textContent = currentStudent.name;
+          loadVideos();
+          showSection('videos');
+        } else {
+          document.getElementById('loginError').style.display = 'block';
+        }
+      } catch (err) {
+        alert("Cannot connect to server. Is backend running?");
+      }
+    }
+
+    async function loadVideos() {
+      try {
+        const res = await fetch(`${API_URL}/videos`);
+        allVideos = await res.json();
+      } catch (err) { console.log("Video load error"); }
+    }
+
+    function loadSubjects() {
+      // Just reset subject when class changes
+      document.getElementById('subjectSelect').value = "";
+      document.getElementById('videoPlayer').src = "";
+    }
+
+    function playVideo() {
+      const classNum = document.getElementById('classSelect').value;
+      const subject = document.getElementById('subjectSelect').value;
+      if (!classNum || !subject) return;
+
+      const video = allVideos.find(v => v.class == classNum && v.subject === subject);
+      const player = document.getElementById('videoPlayer');
+      const noText = document.getElementById('noVideoText');
+
+      if (video) {
+        player.src = `https://www.youtube.com/embed/${video.videoId}`;
+        noText.style.display = 'none';
+      } else {
+        player.src = "";
+        noText.style.display = 'block';
+      }
+    }
+
+    async function loadExams() {
+      try {
+        const res = await fetch(`${API_URL}/exams`);
+        allExams = await res.json();
+        const container = document.getElementById('examList');
+        container.innerHTML = allExams.length === 0 ? "<p>No exams available yet.</p>" : "";
+
+        allExams.forEach(exam => {
+          const div = document.createElement('div');
+          div.className = 'exam-card';
+          div.innerHTML = `
+            <h3>${exam.title}</h3>
+            <p><strong>${exam.subject.toUpperCase()} - Class ${exam.class}</strong><br>${exam.totalQuestions} Questions</p>
+            <button class="btn" style="margin-top:15px; background:#4CAF50;" onclick='startExam("${exam._id}")'>Start Exam</button>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        document.getElementById('examList').innerHTML = "<p>Error loading exams.</p>";
+      }
+    }
+
+    function startExam(examId) {
+      const exam = allExams.find(e => e._id === examId);
+      if (!exam) return;
+
+      let html = `<div class="card"><h2>${exam.title}</h2><p>${exam.subject} - Class ${exam.class}</p>`;
+      exam.questions.forEach((q, i) => {
+        html += `
+          <div style="margin:40px 0; padding:20px; background:#f8f9fa; border-radius:12px;">
+            <h4>Question ${i+1}</h4>
+            <img src="${API_URL}/uploads/${q.questionImage}">
+            <img src="${API_URL}/uploads/${q.optionsImage}">
+            <div class="option-grid">
+              <button class="option-btn">A</button>
+              <button class="option-btn">B</button>
+              <button class="option-btn">C</button>
+              <button class="option-btn">D</button>
+            </div>
+          </div>
+        `;
+      });
+      html += `<button class="btn" style="background:#4CAF50;">Submit Exam</button></div>`;
+      document.getElementById('examList').innerHTML = html;
+    }
+
+    function logout() {
+      localStorage.removeItem('currentStudent');
+      location.reload();
+    }
+  </script>
 </body>
 </html>
