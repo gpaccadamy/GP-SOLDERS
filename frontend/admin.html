@@ -43,22 +43,83 @@
   </div>
 
   <div class="main">
+    <!-- Students -->
     <div id="students" class="section">
-      <div class="card"><h3>👥 Add Student</h3><input type="text" id="sName" placeholder="Name"><input type="text" id="sRoll" placeholder="Roll"><input type="tel" id="sMobile" placeholder="Mobile"><input type="password" id="sPass" placeholder="Password"><button class="action-btn" onclick="addStudent()">Add</button></div>
-      <div class="card"><h3>📋 List</h3><table><thead><tr><th>Name</th><th>Roll</th><th>Mobile</th><th>Action</th></tr></thead><tbody id="studentsList"></tbody></table></div>
+      <div class="card">
+        <h3>👥 Add New Student</h3>
+        <input type="text" id="sName" placeholder="Name">
+        <input type="text" id="sRoll" placeholder="Roll Number">
+        <input type="tel" id="sMobile" placeholder="Mobile Number">
+        <input type="password" id="sPass" placeholder="Password">
+        <button class="action-btn" onclick="addStudent()">Add Student</button>
+      </div>
+      <div class="card">
+        <h3>📋 Students List</h3>
+        <table>
+          <thead><tr><th>Name</th><th>Roll</th><th>Mobile</th><th>Action</th></tr></thead>
+          <tbody id="studentsList"></tbody>
+        </table>
+      </div>
     </div>
 
+    <!-- Videos -->
     <div id="videos" class="section" style="display:none;">
-      <div class="card"><h3>📺 Add Video</h3><select id="vSubject"><option value="">Subject</option><option>english</option><option>kannada</option><option>gk</option><option>maths</option></select><select id="vClass"><option value="">Class</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select><input type="text" id="vUrl" placeholder="YouTube URL"><input type="text" id="vTitle" placeholder="Title"><button class="action-btn" onclick="saveVideo()">Save</button></div>
-      <div class="card"><h3>Current Videos</h3><table><thead><tr><th>Subject</th><th>Class</th><th>Title</th></tr></thead><tbody id="videosList"></tbody></table></div>
+      <div class="card">
+        <h3>📺 Add Video Lesson</h3>
+        <select id="vSubject">
+          <option value="">Select Subject</option>
+          <option value="english">English</option>
+          <option value="kannada">Kannada</option>
+          <option value="gk">GK</option>
+          <option value="maths">Maths</option>
+        </select>
+        <select id="vClass">
+          <option value="">Select Class</option>
+          <option value="1">Class 1</option><option value="2">Class 2</option><option value="3">Class 3</option>
+          <option value="4">Class 4</option><option value="5">Class 5</option><option value="6">Class 6</option>
+        </select>
+        <input type="text" id="vUrl" placeholder="Full YouTube Link">
+        <input type="text" id="vTitle" placeholder="Title (optional)">
+        <button class="action-btn" onclick="saveVideo()">Save / Update</button>
+      </div>
+      <div class="card">
+        <h3>Current Videos</h3>
+        <table>
+          <thead><tr><th>Subject</th><th>Class</th><th>Title</th></tr></thead>
+          <tbody id="videosList"></tbody>
+        </table>
+      </div>
     </div>
 
+    <!-- Create Exam -->
     <div id="createExam" class="section" style="display:none;">
-      <div class="card"><h3>📝 Create Exam</h3><input type="text" id="examTitle" placeholder="Title"><select id="examSubject"><option value="">Subject</option><option>english</option><option>kannada</option><option>gk</option><option>maths</option></select><select id="examClass"><option value="">Class</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select><div id="questionsList"></div><button class="action-btn" style="background:#4CAF50;" onclick="addQuestionForm()">+ Add Question</button><button class="action-btn" style="background:#FF9800;" onclick="saveDraft()">Save Draft</button></div>
+      <div class="card">
+        <h3>📝 Create Question Paper</h3>
+        <input type="text" id="examTitle" placeholder="Exam Title">
+        <select id="examSubject">
+          <option value="">Subject</option>
+          <option value="english">English</option>
+          <option value="kannada">Kannada</option>
+          <option value="gk">GK</option>
+          <option value="maths">Maths</option>
+        </select>
+        <select id="examClass">
+          <option value="">Class</option>
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+        </select>
+        <div id="questionsList"></div>
+        <button class="action-btn" style="background:#4CAF50;" onclick="addQuestionForm()">➕ Add Question</button>
+        <button class="action-btn" style="background:#FF9800;" onclick="saveDraft()">💾 Save Draft</button>
+      </div>
     </div>
 
+    <!-- Drafts -->
     <div id="drafts" class="section" style="display:none;">
-      <div class="card"><h3>📄 Drafts</h3><div id="draftsList">Loading...</div></div>
+      <div class="card">
+        <h3>📄 Saved Drafts</h3>
+        <div id="draftsList">Loading...</div>
+      </div>
     </div>
   </div>
 
@@ -77,8 +138,188 @@
       if (id === 'drafts') loadDrafts();
     }
 
-    // All functions (addStudent, loadStudents, saveVideo, addQuestionForm, uploadImage, saveDraft, loadDrafts, etc.) from previous versions go here
+    // =============== STUDENTS ===============
+    async function loadStudents() {
+      try {
+        const res = await fetch(`${API_URL}/students`);
+        const data = await res.json();
+        const tb = document.getElementById('studentsList');
+        tb.innerHTML = '';
+        data.forEach(s => {
+          tb.innerHTML += `<tr><td>${s.name}</td><td>${s.roll}</td><td>${s.mobile}</td><td><button style="background:#d32f2f;color:white;padding:8px;border:none;border-radius:4px;cursor:pointer;" onclick="deleteStudent('${s._id}')">Delete</button></td></tr>`;
+        });
+      } catch (err) {
+        alert("Cannot load students. Is server running?");
+      }
+    }
 
+    async function addStudent() {
+      const name = document.getElementById('sName').value.trim();
+      const roll = document.getElementById('sRoll').value.trim();
+      const mobile = document.getElementById('sMobile').value.trim();
+      const password = document.getElementById('sPass').value;
+      if (!name || !roll || !mobile || !password) return alert("Fill all fields");
+      try {
+        const res = await fetch(`${API_URL}/students`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, roll, mobile, password })
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+        document.getElementById('sName').value = document.getElementById('sRoll').value = document.getElementById('sMobile').value = document.getElementById('sPass').value = '';
+        loadStudents();
+      } catch (err) {
+        alert("Error adding student");
+      }
+    }
+
+    async function deleteStudent(id) {
+      if (confirm("Delete this student?")) {
+        await fetch(`${API_URL}/students/${id}`, { method: 'DELETE' });
+        loadStudents();
+      }
+    }
+
+    // =============== VIDEOS ===============
+    async function loadVideos() {
+      try {
+        const res = await fetch(`${API_URL}/videos`);
+        const data = await res.json();
+        const tb = document.getElementById('videosList');
+        tb.innerHTML = '';
+        data.forEach(v => tb.innerHTML += `<tr><td>${v.subject}</td><td>${v.class}</td><td>${v.title || 'No title'}</td></tr>`);
+      } catch (err) {
+        alert("Cannot load videos");
+      }
+    }
+
+    async function saveVideo() {
+      const subject = document.getElementById('vSubject').value;
+      const classNum = document.getElementById('vClass').value;
+      const youtubeUrl = document.getElementById('vUrl').value.trim();
+      const title = document.getElementById('vTitle').value.trim();
+      if (!subject || !classNum || !youtubeUrl) return alert("Fill all fields");
+      try {
+        const res = await fetch(`${API_URL}/videos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subject, classNum, youtubeUrl, title })
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+        loadVideos();
+      } catch (err) {
+        alert("Error saving video");
+      }
+    }
+
+    // =============== EXAM CREATION ===============
+    function addQuestionForm() {
+      const idx = currentQuestions.length;
+      const container = document.getElementById('questionsList');
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.style.marginTop = '20px';
+      div.innerHTML = `
+        <h4>Question ${idx + 1}</h4>
+        <label>Question Photo</label>
+        <input type="file" accept="image/*" onchange="uploadImage(event, 'question', ${idx})">
+        <img id="qImg${idx}" style="display:none;">
+        <label>Options Photo (a,b,c,d)</label>
+        <input type="file" accept="image/*" onchange="uploadImage(event, 'options', ${idx})">
+        <img id="oImg${idx}" style="display:none;">
+        <label>Correct Answer</label>
+        <div style="display:flex; gap:10px;">
+          <button type="button" onclick="setCorrect(${idx}, 'a')" class="action-btn" style="flex:1;">A</button>
+          <button type="button" onclick="setCorrect(${idx}, 'b')" class="action-btn" style="flex:1;">B</button>
+          <button type="button" onclick="setCorrect(${idx}, 'c')" class="action-btn" style="flex:1;">C</button>
+          <button type="button" onclick="setCorrect(${idx}, 'd')" class="action-btn" style="flex:1;">D</button>
+        </div>
+        <p>Correct: <b id="correct${idx}">Not selected</b></p>
+        <button type="button" style="background:#d32f2f;" onclick="this.parentElement.remove(); currentQuestions.splice(${idx},1)">Remove Question</button>
+      `;
+      container.appendChild(div);
+      currentQuestions.push({ questionImage: "", optionsImage: "", correctAnswer: "" });
+    }
+
+    async function uploadImage(event, type, idx) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const fd = new FormData();
+      fd.append(type === 'question' ? 'questionImage' : 'optionsImage', file);
+      const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: fd });
+      const data = await res.json();
+      const key = type === 'question' ? 'questionImage' : 'optionsImage';
+      currentQuestions[idx][key] = data[key];
+      const img = document.getElementById(type === 'question' ? `qImg${idx}` : `oImg${idx}`);
+      img.src = `${API_URL}/uploads/${data[key]}`;
+      img.style.display = 'block';
+    }
+
+    function setCorrect(idx, ans) {
+      currentQuestions[idx].correctAnswer = ans;
+      document.getElementById(`correct${idx}`).textContent = ans.toUpperCase();
+    }
+
+    async function saveDraft() {
+      const title = document.getElementById('examTitle').value.trim();
+      const subject = document.getElementById('examSubject').value;
+      const classNum = document.getElementById('examClass').value;
+      if (!title || !subject || !classNum || currentQuestions.length === 0) return alert("Fill all details and add questions");
+      if (currentQuestions.some(q => !q.questionImage || !q.optionsImage || !q.correctAnswer)) return alert("Complete all questions");
+      try {
+        const res = await fetch(`${API_URL}/drafts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, subject, classNum, questions: currentQuestions })
+        });
+        const data = await res.json();
+        alert(data.message);
+        currentQuestions = [];
+        document.getElementById('questionsList').innerHTML = '';
+        loadDrafts();
+      } catch (err) {
+        alert("Error saving draft");
+      }
+    }
+
+    async function loadDrafts() {
+      try {
+        const res = await fetch(`${API_URL}/drafts`);
+        const drafts = await res.json();
+        const container = document.getElementById('draftsList');
+        container.innerHTML = drafts.length === 0 ? "<p>No drafts yet</p>" : "";
+        drafts.forEach(d => {
+          const div = document.createElement('div');
+          div.className = 'card';
+          div.style.marginBottom = '15px';
+          div.innerHTML = `
+            <h4>${d.title} (${d.subject} - Class ${d.class})</h4>
+            <p>${d.totalQuestions} questions</p>
+            <button class="action-btn" style="background:#FF9800;" onclick="alert('Continue editing not fully implemented yet')">Continue Editing</button>
+            <button class="action-btn" style="background:#d32f2f;" onclick="conductExam('${d._id}')">Conduct Exam</button>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        document.getElementById('draftsList').innerHTML = "<p>Error loading drafts</p>";
+      }
+    }
+
+    async function conductExam(draftId) {
+      if (!confirm("Conduct this exam? It will be visible to students!")) return;
+      try {
+        const res = await fetch(`${API_URL}/conduct/${draftId}`, { method: 'POST' });
+        const data = await res.json();
+        alert(data.message || data.error);
+        loadDrafts();
+      } catch (err) {
+        alert("Error conducting exam");
+      }
+    }
+
+    // Start
     showSection('students');
   </script>
 </body>
