@@ -7,12 +7,12 @@ const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
-app.use(cors({
-  origin: '*' // Allow your frontend domain
-}));
+
+// Allow frontend from different domain
+app.use(cors());
 app.use(express.json());
 
-// Uploads folder
+// Create uploads folder
 const uploadDir = './uploads';
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
@@ -22,8 +22,9 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// MongoDB Connection
+// MongoDB Connection (from Render environment variable)
 const MONGO_URI = process.env.MONGO_URI;
+
 if (!MONGO_URI) {
   console.error("❌ MONGO_URI not set in environment variables");
   process.exit(1);
@@ -35,11 +36,17 @@ mongoose.connect(MONGO_URI)
 
 // Models
 const Student = mongoose.model('Student', new mongoose.Schema({
-  name: String, roll: String, mobile: String, password: String
+  name: String,
+  roll: String,
+  mobile: String,
+  password: String
 }));
 
 const Video = mongoose.model('Video', new mongoose.Schema({
-  subject: String, class: Number, videoId: String, title: String
+  subject: String,
+  class: Number,
+  videoId: String,
+  title: String
 }));
 
 const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
@@ -47,7 +54,11 @@ const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   subject: String,
   class: Number,
   totalQuestions: { type: Number, default: 0 },
-  questions: [{ questionImage: String, optionsImage: String, correctAnswer: String }],
+  questions: [{
+    questionImage: String,
+    optionsImage: String,
+    correctAnswer: String
+  }],
   createdAt: { type: Date, default: Date.now }
 }));
 
@@ -56,41 +67,49 @@ const Exam = mongoose.model('Exam', new mongoose.Schema({
   subject: String,
   class: Number,
   totalQuestions: Number,
-  questions: [{ questionImage: String, optionsImage: String, correctAnswer: String }],
+  questions: [{
+    questionImage: String,
+    optionsImage: String,
+    correctAnswer: String
+  }],
   conductedAt: { type: Date, default: Date.now }
 }));
 
 // Routes
 app.get('/students', async (req, res) => res.json(await Student.find()));
+
 app.post('/students', async (req, res) => {
   const { name, roll, mobile, password } = req.body;
-  if (await Student.findOne({ $or: [{ roll }, { mobile }] })) return res.status(400).json({ error: "Exists" });
+  if (await Student.findOne({ $or: [{ roll }, { mobile }] })) return res.status(400).json({ error: "Already exists" });
   await new Student({ name, roll, mobile, password }).save();
-  res.json({ message: "Added" });
+  res.json({ message: "Student added" });
 });
+
 app.delete('/students/:id', async (req, res) => {
   await Student.findByIdAndDelete(req.params.id);
   res.json({ message: "Deleted" });
 });
 
 app.get('/videos', async (req, res) => res.json(await Video.find()));
+
 app.post('/videos', async (req, res) => {
   const { subject, classNum, youtubeUrl, title } = req.body;
   const match = youtubeUrl.match(/(?:v=|\/embed\/|youtu\.be\/|watch\?v=)([^#\&\?]{11})/);
-  if (!match) return res.status(400).json({ error: "Invalid URL" });
+  if (!match) return res.status(400).json({ error: "Invalid YouTube URL" });
   const videoId = match[1];
   const existing = await Video.findOne({ subject, class: classNum });
   if (existing) {
     existing.videoId = videoId;
     existing.title = title || "Lesson";
     await existing.save();
-    return res.json({ message: "Updated" });
+    return res.json({ message: "Video updated" });
   }
   await new Video({ subject, class: classNum, videoId, title: title || "Lesson" }).save();
-  res.json({ message: "Saved" });
+  res.json({ message: "Video saved" });
 });
 
 app.get('/drafts', async (req, res) => res.json(await DraftExam.find().sort({ createdAt: -1 })));
+
 app.post('/drafts', async (req, res) => {
   const { title, subject, classNum, questions } = req.body;
   let draft = await DraftExam.findOne({ title });
@@ -108,7 +127,7 @@ app.post('/drafts', async (req, res) => {
 
 app.post('/conduct/:draftId', async (req, res) => {
   const draft = await DraftExam.findById(req.params.draftId);
-  if (!draft) return res.status(404).json({ error: "Not found" });
+  if (!draft) return res.status(404).json({ error: "Draft not found" });
   if (await Exam.findOne({ title: draft.title })) return res.status(400).json({ error: "Already conducted" });
   await new Exam(draft.toObject()).save();
   await DraftExam.findByIdAndDelete(req.params.draftId);
@@ -117,7 +136,10 @@ app.post('/conduct/:draftId', async (req, res) => {
 
 app.get('/exams', async (req, res) => res.json(await Exam.find().sort({ conductedAt: -1 })));
 
-app.post('/upload', upload.fields([{ name: 'questionImage' }, { name: 'optionsImage' }]), (req, res) => {
+app.post('/upload', upload.fields([
+  { name: 'questionImage', maxCount: 1 },
+  { name: 'optionsImage', maxCount: 1 }
+]), (req, res) => {
   const files = req.files;
   res.json({
     questionImage: files.questionImage ? files.questionImage[0].filename : null,
