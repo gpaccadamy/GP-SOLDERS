@@ -8,18 +8,19 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
     body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-    header { background: rgba(0,0,0,0.8); color: white; padding: 15px 20px; display: flex; align-items: center; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
+    header { background: rgba(0,0,0,0.8); color: white; padding: 15px 20px; display: flex; align-items: center; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     header h1 { font-size: 22px; flex-grow: 1; text-align: center; margin-left: -50px; }
     .hamburger { font-size: 28px; cursor: pointer; }
     .sidenav { height: 100%; width: 0; position: fixed; z-index: 1001; top: 0; left: 0; background: rgba(0,0,0,0.95); overflow-x: hidden; transition: 0.4s; padding-top: 80px; }
-    .sidenav a { padding: 16px 30px; text-decoration: none; font-size: 20px; color: #fff; display: block; }
+    .sidenav a { padding: 16px 30px; text-decoration: none; font-size: 20px; color: #fff; display: block; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .sidenav a:hover { background: rgba(255,255,255,0.1); }
     .closebtn { position: absolute; top: 15px; right: 25px; font-size: 36px; cursor: pointer; }
     .main { margin-top: 70px; padding: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
     .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
     .card h3 { color: #333; margin-bottom: 20px; font-size: 22px; border-bottom: 3px solid #667eea; padding-bottom: 10px; }
     input, select { width: 100%; padding: 14px; margin: 12px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; background: #f8f9fa; }
-    .action-btn { background: linear-gradient(to right, #667eea, #764ba2); color: white; padding: 16px; width: 100%; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; margin: 15px 0; }
+    .action-btn { background: linear-gradient(to right, #667eea, #764ba2); color: white; padding: 16px; width: 100%; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; margin: 15px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .action-btn:hover { transform: translateY(-3px); }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { padding: 14px; text-align: left; border-bottom: 1px solid #eee; }
     th { background: #f0f0f5; }
@@ -46,37 +47,66 @@
         <h3>Add Student</h3>
         <input type="text" id="sName" placeholder="Name">
         <input type="text" id="sRoll" placeholder="Roll Number">
-        <input type="tel" id="sMobile" placeholder="Mobile">
+        <input type="tel" id="sMobile" placeholder="Mobile Number">
         <input type="password" id="sPass" placeholder="Password">
         <button class="action-btn" onclick="addStudent()">Add Student</button>
       </div>
       <div class="card">
         <h3>Students List</h3>
-        <table><thead><tr><th>Name</th><th>Roll</th><th>Mobile</th><th>Action</th></tr></thead><tbody id="studentsList"></tbody></table>
+        <table>
+          <thead><tr><th>Name</th><th>Roll</th><th>Mobile</th><th>Action</th></tr></thead>
+          <tbody id="studentsList"></tbody>
+        </table>
       </div>
     </div>
 
     <div id="videos" class="section" style="display:none;">
       <div class="card">
-        <h3>Add Video</h3>
-        <select id="vSubject"><option value="">Subject</option><option value="english">English</option><option value="kannada">Kannada</option><option value="gk">GK</option><option value="maths">Maths</option></select>
-        <select id="vClass"><option value="">Class</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
-        <input type="text" id="vUrl" placeholder="YouTube URL">
-        <input type="text" id="vTitle" placeholder="Title">
-        <button class="action-btn" onclick="saveVideo()">Save</button>
+        <h3>Add Video Lesson</h3>
+        <select id="vSubject">
+          <option value="">Select Subject</option>
+          <option value="english">English</option>
+          <option value="kannada">Kannada</option>
+          <option value="gk">GK</option>
+          <option value="maths">Maths</option>
+        </select>
+        <select id="vClass">
+          <option value="">Select Class</option>
+          <option value="1">Class 1</option>
+          <option value="2">Class 2</option>
+          <option value="3">Class 3</option>
+          <option value="4">Class 4</option>
+          <option value="5">Class 5</option>
+          <option value="6">Class 6</option>
+        </select>
+        <input type="text" id="vUrl" placeholder="Full YouTube Link">
+        <input type="text" id="vTitle" placeholder="Title (optional)">
+        <button class="action-btn" onclick="saveVideo()">Save / Update</button>
       </div>
       <div class="card">
         <h3>Current Videos</h3>
-        <table><thead><tr><th>Subject</th><th>Class</th><th>Title</th></tr></thead><tbody id="videosList"></tbody></table>
+        <table>
+          <thead><tr><th>Subject</th><th>Class</th><th>Title</th></tr></thead>
+          <tbody id="videosList"></tbody>
+        </table>
       </div>
     </div>
 
     <div id="createExam" class="section" style="display:none;">
       <div class="card">
-        <h3>Create Exam</h3>
-        <input type="text" id="examTitle" placeholder="Title">
-        <select id="examSubject"><option value="">Subject</option><option value="english">English</option><option value="kannada">Kannada</option><option value="gk">GK</option><option value="maths">Maths</option></select>
-        <select id="examClass"><option value="">Class</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
+        <h3>Create Question Paper</h3>
+        <input type="text" id="examTitle" placeholder="Exam Title">
+        <select id="examSubject">
+          <option value="">Subject</option>
+          <option value="english">English</option>
+          <option value="kannada">Kannada</option>
+          <option value="gk">GK</option>
+          <option value="maths">Maths</option>
+        </select>
+        <select id="examClass">
+          <option value="">Class</option>
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option>
+        </select>
         <div id="questionsList"></div>
         <button class="action-btn" style="background:#4CAF50;" onclick="addQuestionForm()">+ Add Question</button>
         <button class="action-btn" style="background:#FF9800;" onclick="saveDraft()">Save Draft</button>
@@ -85,19 +115,24 @@
 
     <div id="drafts" class="section" style="display:none;">
       <div class="card">
-        <h3>Drafts</h3>
-        <div id="draftsList"></div>
+        <h3>Saved Drafts</h3>
+        <div id="draftsList">Loading...</div>
       </div>
     </div>
   </div>
 
   <script>
-    const API_URL = "https://academy-backend-e02j.onrender.com"; // LIVE BACKEND
+    const API_URL = "https://academy-backend-e02j.onrender.com";
 
     let currentQuestions = [];
 
-    function openNav() { document.getElementById("mySidenav").style.width = "280px"; }
-    function closeNav() { document.getElementById("mySidenav").style.width = "0"; }
+    function openNav() {
+      document.getElementById("mySidenav").style.width = "280px";
+    }
+
+    function closeNav() {
+      document.getElementById("mySidenav").style.width = "0";
+    }
 
     function showSection(id) {
       document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
@@ -107,7 +142,196 @@
       if (id === 'drafts') loadDrafts();
     }
 
-    // Full JavaScript functions (addStudent, loadStudents, saveVideo, addQuestionForm, uploadImage, saveDraft, loadDrafts, conductExam) from previous version
+    // Students
+    async function loadStudents() {
+      try {
+        const res = await fetch(`${API_URL}/students`);
+        const data = await res.json();
+        const tb = document.getElementById('studentsList');
+        tb.innerHTML = '';
+        data.forEach(s => {
+          tb.innerHTML += `
+            <tr>
+              <td>${s.name}</td>
+              <td>${s.roll}</td>
+              <td>${s.mobile}</td>
+              <td><button style="background:#d32f2f;color:white;padding:8px;border:none;border-radius:4px;cursor:pointer;" onclick="deleteStudent('${s._id}')">Delete</button></td>
+            </tr>`;
+        });
+      } catch (err) {
+        alert("Cannot load students");
+      }
+    }
+
+    async function addStudent() {
+      const name = document.getElementById('sName').value.trim();
+      const roll = document.getElementById('sRoll').value.trim();
+      const mobile = document.getElementById('sMobile').value.trim();
+      const password = document.getElementById('sPass').value;
+      if (!name || !roll || !mobile || !password) return alert("Fill all fields");
+      try {
+        const res = await fetch(`${API_URL}/students`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, roll, mobile, password })
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+        document.getElementById('sName').value = document.getElementById('sRoll').value = document.getElementById('sMobile').value = document.getElementById('sPass').value = '';
+        loadStudents();
+      } catch (err) {
+        alert("Error adding student");
+      }
+    }
+
+    async function deleteStudent(id) {
+      if (!confirm("Delete this student?")) return;
+      try {
+        await fetch(`${API_URL}/students/${id}`, { method: 'DELETE' });
+        loadStudents();
+      } catch (err) {
+        alert("Error deleting");
+      }
+    }
+
+    // Videos
+    async function loadVideos() {
+      try {
+        const res = await fetch(`${API_URL}/videos`);
+        const data = await res.json();
+        const tb = document.getElementById('videosList');
+        tb.innerHTML = '';
+        data.forEach(v => {
+          tb.innerHTML += `<tr><td>${v.subject}</td><td>${v.class}</td><td>${v.title || 'No title'}</td></tr>`;
+        });
+      } catch (err) {
+        alert("Cannot load videos");
+      }
+    }
+
+    async function saveVideo() {
+      const subject = document.getElementById('vSubject').value;
+      const classNum = document.getElementById('vClass').value;
+      const youtubeUrl = document.getElementById('vUrl').value.trim();
+      const title = document.getElementById('vTitle').value.trim();
+      if (!subject || !classNum || !youtubeUrl) return alert("Fill all fields");
+      try {
+        const res = await fetch(`${API_URL}/videos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subject, classNum, youtubeUrl, title })
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+        loadVideos();
+      } catch (err) {
+        alert("Error saving video");
+      }
+    }
+
+    // Exam Creation
+    function addQuestionForm() {
+      const idx = currentQuestions.length;
+      const container = document.getElementById('questionsList');
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.style.marginTop = '20px';
+      div.innerHTML = `
+        <h4>Question ${idx + 1}</h4>
+        <label>Question Photo</label>
+        <input type="file" accept="image/*" onchange="uploadImage(event, 'question', ${idx})">
+        <img id="qImg${idx}" style="display:none;max-width:100%;">
+        <label>Options Photo</label>
+        <input type="file" accept="image/*" onchange="uploadImage(event, 'options', ${idx})">
+        <img id="oImg${idx}" style="display:none;max-width:100%;">
+        <label>Correct Answer</label>
+        <div style="display:flex; gap:10px;">
+          <button type="button" onclick="setCorrect(${idx}, 'a')" class="action-btn" style="flex:1;">A</button>
+          <button type="button" onclick="setCorrect(${idx}, 'b')" class="action-btn" style="flex:1;">B</button>
+          <button type="button" onclick="setCorrect(${idx}, 'c')" class="action-btn" style="flex:1;">C</button>
+          <button type="button" onclick="setCorrect(${idx}, 'd')" class="action-btn" style="flex:1;">D</button>
+        </div>
+        <p>Correct: <b id="correct${idx}">Not selected</b></p>
+        <button type="button" style="background:#d32f2f;color:white;" onclick="this.parentElement.remove(); currentQuestions.splice(${idx},1)">Remove</button>
+      `;
+      container.appendChild(div);
+      currentQuestions.push({ questionImage: "", optionsImage: "", correctAnswer: "" });
+    }
+
+    async function uploadImage(event, type, idx) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const fd = new FormData();
+      fd.append(type === 'question' ? 'questionImage' : 'optionsImage', file);
+      const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: fd });
+      const data = await res.json();
+      const key = type === 'question' ? 'questionImage' : 'optionsImage';
+      currentQuestions[idx][key] = data[key];
+      const img = document.getElementById(type === 'question' ? `qImg${idx}` : `oImg${idx}`);
+      img.src = `${API_URL}/uploads/${data[key]}`;
+      img.style.display = 'block';
+    }
+
+    function setCorrect(idx, ans) {
+      currentQuestions[idx].correctAnswer = ans;
+      document.getElementById(`correct${idx}`).textContent = ans.toUpperCase();
+    }
+
+    async function saveDraft() {
+      const title = document.getElementById('examTitle').value.trim();
+      const subject = document.getElementById('examSubject').value;
+      const classNum = document.getElementById('examClass').value;
+      if (!title || !subject || !classNum || currentQuestions.length === 0) return alert("Fill all and add questions");
+      if (currentQuestions.some(q => !q.questionImage || !q.optionsImage || !q.correctAnswer)) return alert("Complete all questions");
+      try {
+        const res = await fetch(`${API_URL}/drafts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, subject, classNum, questions: currentQuestions })
+        });
+        const data = await res.json();
+        alert(data.message);
+        currentQuestions = [];
+        document.getElementById('questionsList').innerHTML = '';
+        loadDrafts();
+      } catch (err) {
+        alert("Error saving draft");
+      }
+    }
+
+    async function loadDrafts() {
+      try {
+        const res = await fetch(`${API_URL}/drafts`);
+        const drafts = await res.json();
+        const container = document.getElementById('draftsList');
+        container.innerHTML = drafts.length === 0 ? "<p>No drafts</p>" : "";
+        drafts.forEach(d => {
+          const div = document.createElement('div');
+          div.className = 'card';
+          div.style.marginBottom = '15px';
+          div.innerHTML = `
+            <h4>${d.title} (${d.subject} - Class ${d.class}) - ${d.totalQuestions} questions</h4>
+            <button class="action-btn" style="background:#FF9800;" onclick="alert('Continue editing coming soon')">Continue</button>
+            <button class="action-btn" style="background:#d32f2f;" onclick="conductExam('${d._id}')">Conduct Exam</button>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        container.innerHTML = "<p>Error loading drafts</p>";
+      }
+    }
+
+    async function conductExam(draftId) {
+      if (!confirm("Conduct this exam now?")) return;
+      try {
+        const res = await fetch(`${API_URL}/conduct/${draftId}`, { method: 'POST' });
+        const data = await res.json();
+        alert(data.message || data.error);
+        loadDrafts();
+      } catch (err) {
+        alert("Error conducting exam");
+      }
+    }
 
     showSection('students');
   </script>
