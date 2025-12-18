@@ -4,244 +4,62 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel - EduApp</title>
+  <link rel="icon" href="data:,">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 0; }
-
-    /* Header with Hamburger */
-    header {
-      background: rgba(0,0,0,0.8);
-      color: white;
-      padding: 15px 20px;
-      display: flex;
-      align-items: center;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 1000;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+    header { background: rgba(0,0,0,0.8); color: white; padding: 15px 20px; display: flex; align-items: center; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     header h1 { font-size: 22px; flex-grow: 1; text-align: center; margin-left: -50px; }
-    .hamburger {
-      font-size: 28px;
-      cursor: pointer;
-      padding: 5px;
-    }
-
-    /* Side Navigation Drawer */
-    .sidenav {
-      height: 100%;
-      width: 0;
-      position: fixed;
-      z-index: 1001;
-      top: 0;
-      left: 0;
-      background: rgba(0,0,0,0.95);
-      overflow-x: hidden;
-      transition: 0.4s;
-      padding-top: 80px;
-    }
-    .sidenav a {
-      padding: 16px 20px;
-      text-decoration: none;
-      font-size: 20px;
-      color: #fff;
-      display: block;
-      transition: 0.3s;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
+    .hamburger { font-size: 28px; cursor: pointer; }
+    .sidenav { height: 100%; width: 0; position: fixed; z-index: 1001; top: 0; left: 0; background: rgba(0,0,0,0.95); overflow-x: hidden; transition: 0.4s; padding-top: 80px; }
+    .sidenav a { padding: 16px 30px; text-decoration: none; font-size: 20px; color: #fff; display: block; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .sidenav a:hover { background: rgba(255,255,255,0.1); }
-    .closebtn {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      font-size: 36px;
-      color: white;
-      cursor: pointer;
-    }
-
-    /* Main Content Area */
-    .main {
-      margin-top: 70px;
-      padding: 20px;
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 25px;
-      margin-bottom: 25px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-      transition: transform 0.3s;
-    }
-    .card:hover { transform: translateY(-5px); }
-    .card h3 {
-      color: #333;
-      margin-bottom: 20px;
-      font-size: 22px;
-      border-bottom: 3px solid #667eea;
-      padding-bottom: 10px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 14px;
-      margin: 12px 0;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 16px;
-      background: #f8f9fa;
-    }
-    .action-btn {
-      background: linear-gradient(to right, #667eea, #764ba2);
-      color: white;
-      padding: 16px;
-      width: 100%;
-      border: none;
-      border-radius: 12px;
-      font-size: 18px;
-      cursor: pointer;
-      margin: 15px 0;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      transition: 0.3s;
-    }
-    .action-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    }
-    .secondary-btn {
-      background: #28a745;
-    }
-    .warning-btn {
-      background: #ff9800;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      padding: 14px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-    }
-    th { background: #f0f0f5; font-weight: 600; color: #333; }
-    img { max-width: 100%; border-radius: 12px; margin: 15px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-
-    /* Mobile Optimization - Wide & Comfortable */
-    @media (max-width: 768px) {
-      .main { padding: 15px; }
-      header h1 { font-size: 20px; margin-left: -40px; }
-      .card { padding: 20px; }
-      input, .action-btn { font-size: 17px; }
-    }
+    .closebtn { position: absolute; top: 15px; right: 25px; font-size: 36px; cursor: pointer; }
+    .main { margin-top: 70px; padding: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
+    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .card h3 { color: #333; margin-bottom: 20px; font-size: 22px; border-bottom: 3px solid #667eea; padding-bottom: 10px; }
+    input, select { width: 100%; padding: 14px; margin: 12px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; background: #f8f9fa; }
+    .action-btn { background: linear-gradient(to right, #667eea, #764ba2); color: white; padding: 16px; width: 100%; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; margin: 15px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .action-btn:hover { transform: translateY(-3px); }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 14px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f0f0f5; }
+    img { max-width: 100%; border-radius: 12px; margin: 15px 0; }
+    @media (max-width: 768px) { header h1 { font-size: 20px; margin-left: -40px; } .card { padding: 20px; } }
   </style>
 </head>
 <body>
-
-  <!-- Hamburger Menu -->
   <header>
     <div class="hamburger" onclick="openNav()">☰</div>
     <h1>Admin Panel</h1>
   </header>
 
-  <!-- Side Navigation -->
   <div id="mySidenav" class="sidenav">
     <span class="closebtn" onclick="closeNav()">×</span>
     <a href="#" onclick="showSection('students'); closeNav()">👥 Students</a>
-    <a href="#" onclick="showSection('videos'); closeNav()">📺 Video Lessons</a>
+    <a href="#" onclick="showSection('videos'); closeNav()">📺 Videos</a>
     <a href="#" onclick="showSection('createExam'); closeNav()">📝 Create Exam</a>
-    <a href="#" onclick="showSection('drafts'); closeNav()">📄 Drafts & Conduct</a>
+    <a href="#" onclick="showSection('drafts'); closeNav()">📄 Drafts</a>
   </div>
 
-  <!-- Main Content -->
   <div class="main">
-
-    <!-- Students Section -->
     <div id="students" class="section">
-      <div class="card">
-        <h3>👥 Add New Student</h3>
-        <input type="text" id="sName" placeholder="Student Name">
-        <input type="text" id="sRoll" placeholder="Roll Number">
-        <input type="tel" id="sMobile" placeholder="Mobile Number">
-        <input type="password" id="sPass" placeholder="Password">
-        <button class="action-btn" onclick="addStudent()">Add Student</button>
-      </div>
-
-      <div class="card">
-        <h3>📋 Students List</h3>
-        <table>
-          <thead><tr><th>Name</th><th>Roll</th><th>Mobile</th><th>Action</th></tr></thead>
-          <tbody id="studentsList"></tbody>
-        </table>
-      </div>
+      <div class="card"><h3>👥 Add Student</h3><input type="text" id="sName" placeholder="Name"><input type="text" id="sRoll" placeholder="Roll"><input type="tel" id="sMobile" placeholder="Mobile"><input type="password" id="sPass" placeholder="Password"><button class="action-btn" onclick="addStudent()">Add</button></div>
+      <div class="card"><h3>📋 List</h3><table><thead><tr><th>Name</th><th>Roll</th><th>Mobile</th><th>Action</th></tr></thead><tbody id="studentsList"></tbody></table></div>
     </div>
 
-    <!-- Videos Section -->
     <div id="videos" class="section" style="display:none;">
-      <div class="card">
-        <h3>📺 Upload Video Lesson</h3>
-        <select id="vSubject">
-          <option value="">Select Subject</option>
-          <option value="english">English</option>
-          <option value="kannada">Kannada</option>
-          <option value="gk">GK</option>
-          <option value="maths">Maths</option>
-        </select>
-        <select id="vClass">
-          <option value="">Select Class</option>
-          <option value="1">Class 1</option><option value="2">Class 2</option><option value="3">Class 3</option>
-          <option value="4">Class 4</option><option value="5">Class 5</option><option value="6">Class 6</option>
-        </select>
-        <input type="text" id="vUrl" placeholder="Full YouTube Link">
-        <input type="text" id="vTitle" placeholder="Video Title (optional)">
-        <button class="action-btn" onclick="saveVideo()">Save / Update Video</button>
-      </div>
-
-      <div class="card">
-        <h3>📋 Current Videos</h3>
-        <table>
-          <thead><tr><th>Subject</th><th>Class</th><th>Title</th></tr></thead>
-          <tbody id="videosList"></tbody>
-        </table>
-      </div>
+      <div class="card"><h3>📺 Add Video</h3><select id="vSubject"><option value="">Subject</option><option>english</option><option>kannada</option><option>gk</option><option>maths</option></select><select id="vClass"><option value="">Class</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select><input type="text" id="vUrl" placeholder="YouTube URL"><input type="text" id="vTitle" placeholder="Title"><button class="action-btn" onclick="saveVideo()">Save</button></div>
+      <div class="card"><h3>Current Videos</h3><table><thead><tr><th>Subject</th><th>Class</th><th>Title</th></tr></thead><tbody id="videosList"></tbody></table></div>
     </div>
 
-    <!-- Create Exam Section -->
     <div id="createExam" class="section" style="display:none;">
-      <div class="card">
-        <h3>📝 Create New Exam Paper</h3>
-        <input type="text" id="examTitle" placeholder="Exam Title (e.g. Unit Test 1)">
-        <select id="examSubject">
-          <option value="">Subject</option>
-          <option value="english">English</option><option value="kannada">Kannada</option>
-          <option value="gk">GK</option><option value="maths">Maths</option>
-        </select>
-        <select id="examClass">
-          <option value="">Class</option>
-          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-        </select>
-
-        <div id="questionsList" style="margin-top:20px;"></div>
-
-        <button class="action-btn secondary-btn" onclick="addQuestionForm()">➕ Add New Question</button>
-        <button class="action-btn warning-btn" onclick="saveDraft()">💾 Save as Draft</button>
-      </div>
+      <div class="card"><h3>📝 Create Exam</h3><input type="text" id="examTitle" placeholder="Title"><select id="examSubject"><option value="">Subject</option><option>english</option><option>kannada</option><option>gk</option><option>maths</option></select><select id="examClass"><option value="">Class</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select><div id="questionsList"></div><button class="action-btn" style="background:#4CAF50;" onclick="addQuestionForm()">+ Add Question</button><button class="action-btn" style="background:#FF9800;" onclick="saveDraft()">Save Draft</button></div>
     </div>
 
-    <!-- Drafts Section -->
     <div id="drafts" class="section" style="display:none;">
-      <div class="card">
-        <h3>📄 Saved Drafts</h3>
-        <div id="draftsList">Loading drafts...</div>
-      </div>
+      <div class="card"><h3>📄 Drafts</h3><div id="draftsList">Loading...</div></div>
     </div>
-
   </div>
 
   <script>
@@ -251,28 +69,17 @@
     function openNav() { document.getElementById("mySidenav").style.width = "280px"; }
     function closeNav() { document.getElementById("mySidenav").style.width = "0"; }
 
-    function showSection(sectionId) {
+    function showSection(id) {
       document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-      document.getElementById(sectionId).style.display = 'block';
-
-      if (sectionId === 'students') loadStudents();
-      if (sectionId === 'videos') loadVideos();
-      if (sectionId === 'drafts') loadDrafts();
+      document.getElementById(id).style.display = 'block';
+      if (id === 'students') loadStudents();
+      if (id === 'videos') loadVideos();
+      if (id === 'drafts') loadDrafts();
     }
 
-    // Rest of your JavaScript (Students, Videos, Exam functions) - same as before
-    // (I'm keeping it short here, but copy-paste all the <script> from previous version inside this <script> tag)
+    // All functions (addStudent, loadStudents, saveVideo, addQuestionForm, uploadImage, saveDraft, loadDrafts, etc.) from previous versions go here
 
-    // For example:
-    async function loadStudents() { /* same code */ }
-    async function addStudent() { /* same code */ }
-    // ... all other functions (saveVideo, addQuestionForm, uploadImage, saveDraft, loadDrafts, etc.)
-
-    // Start with Students section open
     showSection('students');
   </script>
-
-  <!-- Paste ALL your previous JavaScript functions here (from loadStudents to loadDrafts) -->
-
 </body>
 </html>
