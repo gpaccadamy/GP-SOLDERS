@@ -3,197 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Portal - EduApp</title>
+  <title>Student Portal - Academy</title>
+  <link rel="icon" href="data:,">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-    body { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); min-height: 100vh; color: #333; }
-
-    /* Header */
-    header {
-      background: rgba(0,0,0,0.8);
-      color: white;
-      padding: 15px 20px;
-      display: flex;
-      align-items: center;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 1000;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
+    body { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); min-height: 100vh; }
+    header { background: rgba(0,0,0,0.8); color: white; padding: 15px 20px; display: flex; align-items: center; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
     header h1 { font-size: 22px; flex-grow: 1; text-align: center; margin-left: -50px; }
     .hamburger { font-size: 28px; cursor: pointer; }
-
-    /* Side Navigation */
-    .sidenav {
-      height: 100%;
-      width: 0;
-      position: fixed;
-      z-index: 1001;
-      top: 0;
-      left: 0;
-      background: rgba(0,0,0,0.95);
-      overflow-x: hidden;
-      transition: 0.4s;
-      padding-top: 80px;
-    }
-    .sidenav a {
-      padding: 16px 30px;
-      text-decoration: none;
-      font-size: 20px;
-      color: #fff;
-      display: block;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    .sidenav a:hover { background: rgba(255,255,255,0.1); }
+    .sidenav { height: 100%; width: 0; position: fixed; z-index: 1001; top: 0; left: 0; background: rgba(0,0,0,0.95); overflow-x: hidden; transition: 0.4s; padding-top: 80px; }
+    .sidenav a { padding: 16px 30px; text-decoration: none; font-size: 20px; color: #fff; display: block; }
     .closebtn { position: absolute; top: 15px; right: 25px; font-size: 36px; cursor: pointer; }
-
-    /* Main Content */
     .main { margin-top: 70px; padding: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 30px;
-      margin-bottom: 25px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      transition: 0.3s;
-    }
-    .card:hover { transform: translateY(-5px); }
-    .card h2, .card h3 { color: #444; margin-bottom: 20px; text-align: center; }
-    input, select {
-      width: 100%;
-      padding: 16px;
-      margin: 15px 0;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      font-size: 18px;
-      background: #f8f9fa;
-    }
-    .btn {
-      background: linear-gradient(to right, #f093fb, #f5576c);
-      color: white;
-      padding: 16px;
-      width: 100%;
-      border: none;
-      border-radius: 12px;
-      font-size: 18px;
-      cursor: pointer;
-      margin: 15px 0;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    .btn:hover { transform: translateY(-3px); }
-    .logout-btn { background: #e74c3c; }
-    img { max-width: 100%; border-radius: 12px; margin: 20px 0; box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
-    .exam-card {
-      background: #f8f9fa;
-      padding: 20px;
-      border-radius: 12px;
-      margin: 15px 0;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    .exam-card:hover { background: #e8f4fd; transform: scale(1.02); }
-    .option-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-top: 20px;
-    }
-    .option-btn {
-      background: #667eea;
-      color: white;
-      padding: 20px;
-      font-size: 24px;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-    }
-    .option-btn:hover { background: #764ba2; }
-
-    @media (max-width: 768px) {
-      header h1 { font-size: 20px; margin-left: -40px; }
-      .card { padding: 25px; }
-      .option-grid { grid-template-columns: 1fr; }
-    }
+    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; }
+    input, select { width: 100%; padding: 16px; margin: 15px 0; border-radius: 12px; border: 1px solid #ddd; font-size: 18px; }
+    .btn { background: linear-gradient(to right, #f093fb, #f5576c); color: white; padding: 16px; width: 100%; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; margin: 15px 0; }
+    img { max-width: 100%; border-radius: 12px; margin: 20px 0; }
+    .exam-card { background: #f8f9fa; padding: 20px; border-radius: 12px; margin: 15px 0; cursor: pointer; }
+    .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+    .option-btn { background: #667eea; color: white; padding: 20px; font-size: 24px; border: none; border-radius: 12px; cursor: pointer; }
   </style>
 </head>
 <body>
-
-  <!-- Header -->
   <header>
     <div class="hamburger" onclick="openNav()">☰</div>
     <h1>Student Portal</h1>
   </header>
 
-  <!-- Side Menu -->
   <div id="mySidenav" class="sidenav">
     <span class="closebtn" onclick="closeNav()">×</span>
-    <a href="#" onclick="showSection('videos')">📺 Video Lessons</a>
-    <a href="#" onclick="showSection('exams')">📝 Online Exams</a>
-    <a href="#" onclick="logout()">🚪 Logout</a>
+    <a href="#" onclick="showSection('videos')">Video Lessons</a>
+    <a href="#" onclick="showSection('exams')">Online Exams</a>
+    <a href="#" onclick="logout()">Logout</a>
   </div>
 
-  <!-- Main Content -->
   <div class="main">
-
-    <!-- Login Card -->
     <div id="loginSection" class="card">
-      <h2>🎓 Welcome Back!</h2>
-      <p style="text-align:center; margin-bottom:20px; color:#666;">Login with your mobile and password</p>
+      <h2>Welcome!</h2>
       <input type="tel" id="mobile" placeholder="Mobile Number">
       <input type="password" id="password" placeholder="Password">
       <button class="btn" onclick="studentLogin()">Login</button>
-      <p id="loginError" style="color:red; margin-top:15px; display:none;">Invalid mobile or password!</p>
+      <p id="loginError" style="color:red;display:none;">Invalid credentials</p>
     </div>
 
-    <!-- Dashboard (hidden until login) -->
     <div id="dashboard" style="display:none;">
+      <div class="card"><h2>Hello, <span id="studentName">Student</span>!</h2></div>
 
-      <div class="card">
-        <h2>Hello, <span id="studentName" style="color:#f5576c;">Student</span>! 👋</h2>
-      </div>
-
-      <!-- Video Lessons -->
       <div id="videos" class="section">
         <div class="card">
-          <h3>📺 Video Lessons</h3>
+          <h3>Video Lessons</h3>
           <select id="classSelect" onchange="loadSubjects()">
-            <option value="">Select Your Class</option>
-            <option value="1">Class 1</option>
-            <option value="2">Class 2</option>
-            <option value="3">Class 3</option>
-            <option value="4">Class 4</option>
-            <option value="5">Class 5</option>
-            <option value="6">Class 6</option>
+            <option value="">Select Class</option>
+            <option value="1">Class 1</option><option value="2">Class 2</option><option value="3">Class 3</option>
+            <option value="4">Class 4</option><option value="5">Class 5</option><option value="6">Class 6</option>
           </select>
           <select id="subjectSelect" onchange="playVideo()">
             <option value="">Select Subject</option>
-            <option value="english">English</option>
-            <option value="kannada">Kannada</option>
-            <option value="gk">GK</option>
-            <option value="maths">Maths</option>
+            <option value="english">English</option><option value="kannada">Kannada</option><option value="gk">GK</option><option value="maths">Maths</option>
           </select>
-          <div style="text-align:center; margin-top:30px;">
-            <iframe id="videoPlayer" width="100%" height="400" style="border-radius:16px; box-shadow:0 8px 20px rgba(0,0,0,0.2);" src="" allowfullscreen></iframe>
-            <p id="noVideoText" style="color:#888; margin-top:20px; display:none;">No video available yet for this subject.</p>
-          </div>
+          <iframe id="videoPlayer" width="100%" height="400" style="border-radius:16px;margin-top:30px;" src="" allowfullscreen></iframe>
         </div>
       </div>
 
-      <!-- Exams -->
       <div id="exams" class="section" style="display:none;">
         <div class="card">
-          <h3>📝 Available Exams</h3>
-          <div id="examList">Loading exams...</div>
+          <h3>Available Exams</h3>
+          <div id="examList">Loading...</div>
         </div>
       </div>
-
     </div>
   </div>
 
   <script>
-    const API_URL = "http://localhost:5000";
+    const API_URL = "https://academy-backend-e02j.onrender.com"; // LIVE BACKEND
+
     let currentStudent = null;
     let allVideos = [];
     let allExams = [];
@@ -204,11 +87,10 @@
     function showSection(id) {
       document.getElementById('videos').style.display = 'none';
       document.getElementById('exams').style.display = 'none';
-      if (document.getElementById(id)) document.getElementById(id).style.display = 'block';
+      document.getElementById(id).style.display = 'block';
       if (id === 'exams') loadExams();
     }
 
-    // Check if already logged in
     window.onload = () => {
       currentStudent = JSON.parse(localStorage.getItem('currentStudent'));
       if (currentStudent) {
@@ -223,100 +105,45 @@
     async function studentLogin() {
       const mobile = document.getElementById('mobile').value.trim();
       const password = document.getElementById('password').value;
-      if (!mobile || !password) return;
-
-      try {
-        const res = await fetch(`${API_URL}/students`);
-        const students = await res.json();
-        currentStudent = students.find(s => s.mobile === mobile && s.password === password);
-
-        if (currentStudent) {
-          localStorage.setItem('currentStudent', JSON.stringify(currentStudent));
-          document.getElementById('loginSection').style.display = 'none';
-          document.getElementById('dashboard').style.display = 'block';
-          document.getElementById('studentName').textContent = currentStudent.name;
-          loadVideos();
-          showSection('videos');
-        } else {
-          document.getElementById('loginError').style.display = 'block';
-        }
-      } catch (err) {
-        alert("Cannot connect to server. Is backend running?");
+      const res = await fetch(`${API_URL}/students`);
+      const students = await res.json();
+      currentStudent = students.find(s => s.mobile === mobile && s.password === password);
+      if (currentStudent) {
+        localStorage.setItem('currentStudent', JSON.stringify(currentStudent));
+        location.reload();
+      } else {
+        document.getElementById('loginError').style.display = 'block';
       }
     }
 
     async function loadVideos() {
-      try {
-        const res = await fetch(`${API_URL}/videos`);
-        allVideos = await res.json();
-      } catch (err) { console.log("Video load error"); }
-    }
-
-    function loadSubjects() {
-      // Just reset subject when class changes
-      document.getElementById('subjectSelect').value = "";
-      document.getElementById('videoPlayer').src = "";
+      allVideos = await (await fetch(`${API_URL}/videos`)).json();
     }
 
     function playVideo() {
       const classNum = document.getElementById('classSelect').value;
       const subject = document.getElementById('subjectSelect').value;
-      if (!classNum || !subject) return;
-
       const video = allVideos.find(v => v.class == classNum && v.subject === subject);
       const player = document.getElementById('videoPlayer');
-      const noText = document.getElementById('noVideoText');
-
-      if (video) {
-        player.src = `https://www.youtube.com/embed/${video.videoId}`;
-        noText.style.display = 'none';
-      } else {
-        player.src = "";
-        noText.style.display = 'block';
-      }
+      player.src = video ? `https://www.youtube.com/embed/${video.videoId}` : '';
     }
 
     async function loadExams() {
-      try {
-        const res = await fetch(`${API_URL}/exams`);
-        allExams = await res.json();
-        const container = document.getElementById('examList');
-        container.innerHTML = allExams.length === 0 ? "<p>No exams available yet.</p>" : "";
-
-        allExams.forEach(exam => {
-          const div = document.createElement('div');
-          div.className = 'exam-card';
-          div.innerHTML = `
-            <h3>${exam.title}</h3>
-            <p><strong>${exam.subject.toUpperCase()} - Class ${exam.class}</strong><br>${exam.totalQuestions} Questions</p>
-            <button class="btn" style="margin-top:15px; background:#4CAF50;" onclick='startExam("${exam._id}")'>Start Exam</button>
-          `;
-          container.appendChild(div);
-        });
-      } catch (err) {
-        document.getElementById('examList').innerHTML = "<p>Error loading exams.</p>";
-      }
+      allExams = await (await fetch(`${API_URL}/exams`)).json();
+      const list = document.getElementById('examList');
+      list.innerHTML = allExams.length === 0 ? '<p>No exams available</p>' : '';
+      allExams.forEach(exam => {
+        const div = document.createElement('div');
+        div.className = 'exam-card';
+        div.innerHTML = `<h3>${exam.title}</h3><p>${exam.subject} - Class ${exam.class} (${exam.totalQuestions} Qs)</p><button class="btn" style="background:#4CAF50;" onclick="startExam(exam)">Start</button>`;
+        list.appendChild(div);
+      });
     }
 
-    function startExam(examId) {
-      const exam = allExams.find(e => e._id === examId);
-      if (!exam) return;
-
-      let html = `<div class="card"><h2>${exam.title}</h2><p>${exam.subject} - Class ${exam.class}</p>`;
+    function startExam(exam) {
+      let html = `<div class="card"><h2>${exam.title}</h2>`;
       exam.questions.forEach((q, i) => {
-        html += `
-          <div style="margin:40px 0; padding:20px; background:#f8f9fa; border-radius:12px;">
-            <h4>Question ${i+1}</h4>
-            <img src="${API_URL}/uploads/${q.questionImage}">
-            <img src="${API_URL}/uploads/${q.optionsImage}">
-            <div class="option-grid">
-              <button class="option-btn">A</button>
-              <button class="option-btn">B</button>
-              <button class="option-btn">C</button>
-              <button class="option-btn">D</button>
-            </div>
-          </div>
-        `;
+        html += `<div style="margin:40px 0;"><h4>Question ${i+1}</h4><img src="${API_URL}/uploads/${q.questionImage}"><img src="${API_URL}/uploads/${q.optionsImage}"><div class="option-grid"><button class="option-btn">A</button><button class="option-btn">B</button><button class="option-btn">C</button><button class="option-btn">D</button></div></div>`;
       });
       html += `<button class="btn" style="background:#4CAF50;">Submit Exam</button></div>`;
       document.getElementById('examList').innerHTML = html;
