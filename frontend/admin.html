@@ -10,59 +10,69 @@
     body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
     header { background: rgba(0,0,0,0.8); color: white; padding: 15px 20px; display: flex; align-items: center; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     header h1 { font-size: 22px; flex-grow: 1; text-align: center; margin-left: -50px; }
-    .hamburger { font-size: 28px; cursor: pointer; }
+    .hamburger { font-size: 28px; cursor: pointer; padding: 5px 10px; }
     .sidenav { height: 100%; width: 0; position: fixed; z-index: 1001; top: 0; left: 0; background: rgba(0,0,0,0.95); overflow-x: hidden; transition: 0.4s; padding-top: 80px; }
-    .sidenav a { padding: 16px 30px; text-decoration: none; font-size: 20px; color: #fff; display: block; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .sidenav a:hover { background: rgba(255,255,255,0.1); }
-    .closebtn { position: absolute; top: 15px; right: 25px; font-size: 36px; cursor: pointer; }
+    .sidenav a { padding: 18px 30px; text-decoration: none; font-size: 20px; color: #fff; display: block; border-bottom: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+    .sidenav a:hover { background: rgba(255,255,255,0.1); padding-left: 40px; }
+    .closebtn { position: absolute; top: 15px; right: 25px; font-size: 36px; cursor: pointer; color: white; }
     .main { margin-top: 70px; padding: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
-    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: 0.3s; }
+    .card:hover { transform: translateY(-5px); }
     .card h3 { color: #333; margin-bottom: 20px; font-size: 22px; border-bottom: 3px solid #667eea; padding-bottom: 10px; }
     input, select { width: 100%; padding: 14px; margin: 12px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; background: #f8f9fa; }
-    .action-btn { background: linear-gradient(to right, #667eea, #764ba2); color: white; padding: 16px; width: 100%; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; margin: 15px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-    .action-btn:hover { transform: translateY(-3px); }
+    .action-btn { background: linear-gradient(to right, #667eea, #764ba2); color: white; padding: 16px; width: 100%; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; margin: 15px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s; }
+    .action-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { padding: 14px; text-align: left; border-bottom: 1px solid #eee; }
-    th { background: #f0f0f5; }
-    img { max-width: 100%; border-radius: 12px; margin: 15px 0; }
+    th { background: #f0f0f5; font-weight: 600; }
+    img { max-width: 100%; border-radius: 12px; margin: 15px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    @media (max-width: 768px) { header h1 { font-size: 20px; margin-left: -40px; } .card { padding: 20px; } .sidenav a { font-size: 18px; } }
   </style>
 </head>
 <body>
+  <!-- Header with Hamburger -->
   <header>
     <div class="hamburger" onclick="openNav()">☰</div>
     <h1>Admin Panel</h1>
   </header>
 
+  <!-- Side Navigation Menu -->
   <div id="mySidenav" class="sidenav">
     <span class="closebtn" onclick="closeNav()">×</span>
-    <a href="#" onclick="showSection('students'); closeNav()">Students</a>
-    <a href="#" onclick="showSection('videos'); closeNav()">Videos</a>
-    <a href="#" onclick="showSection('createExam'); closeNav()">Create Exam</a>
-    <a href="#" onclick="showSection('drafts'); closeNav()">Drafts</a>
+    <a href="#" onclick="showSection('students'); closeNav()">👥 Students</a>
+    <a href="#" onclick="showSection('videos'); closeNav()">📺 Video Lessons</a>
+    <a href="#" onclick="showSection('createExam'); closeNav()">📝 Create Exam</a>
+    <a href="#" onclick="showSection('drafts'); closeNav()">📄 Drafts & Conduct</a>
   </div>
 
+  <!-- Main Content -->
   <div class="main">
+
+    <!-- Students Section -->
     <div id="students" class="section">
       <div class="card">
-        <h3>Add Student</h3>
-        <input type="text" id="sName" placeholder="Name">
+        <h3>👥 Add New Student</h3>
+        <input type="text" id="sName" placeholder="Student Name">
         <input type="text" id="sRoll" placeholder="Roll Number">
         <input type="tel" id="sMobile" placeholder="Mobile Number">
         <input type="password" id="sPass" placeholder="Password">
         <button class="action-btn" onclick="addStudent()">Add Student</button>
       </div>
       <div class="card">
-        <h3>Students List</h3>
+        <h3>📋 Students List</h3>
         <table>
-          <thead><tr><th>Name</th><th>Roll</th><th>Mobile</th><th>Action</th></tr></thead>
+          <thead>
+            <tr><th>Name</th><th>Roll</th><th>Mobile</th><th>Action</th></tr>
+          </thead>
           <tbody id="studentsList"></tbody>
         </table>
       </div>
     </div>
 
+    <!-- Videos Section -->
     <div id="videos" class="section" style="display:none;">
       <div class="card">
-        <h3>Add Video Lesson</h3>
+        <h3>📺 Upload Video Lesson</h3>
         <select id="vSubject">
           <option value="">Select Subject</option>
           <option value="english">English</option>
@@ -79,12 +89,12 @@
           <option value="5">Class 5</option>
           <option value="6">Class 6</option>
         </select>
-        <input type="text" id="vUrl" placeholder="Full YouTube Link">
-        <input type="text" id="vTitle" placeholder="Title (optional)">
-        <button class="action-btn" onclick="saveVideo()">Save / Update</button>
+        <input type="text" id="vUrl" placeholder="Paste Full YouTube Link">
+        <input type="text" id="vTitle" placeholder="Video Title (optional)">
+        <button class="action-btn" onclick="saveVideo()">Save / Update Video</button>
       </div>
       <div class="card">
-        <h3>Current Videos</h3>
+        <h3>📋 Current Videos</h3>
         <table>
           <thead><tr><th>Subject</th><th>Class</th><th>Title</th></tr></thead>
           <tbody id="videosList"></tbody>
@@ -92,33 +102,41 @@
       </div>
     </div>
 
+    <!-- Create Exam Section -->
     <div id="createExam" class="section" style="display:none;">
       <div class="card">
-        <h3>Create Question Paper</h3>
-        <input type="text" id="examTitle" placeholder="Exam Title">
+        <h3>📝 Create New Question Paper</h3>
+        <input type="text" id="examTitle" placeholder="Exam Title (e.g. Monthly Test)">
         <select id="examSubject">
-          <option value="">Subject</option>
+          <option value="">Select Subject</option>
           <option value="english">English</option>
           <option value="kannada">Kannada</option>
           <option value="gk">GK</option>
           <option value="maths">Maths</option>
         </select>
         <select id="examClass">
-          <option value="">Class</option>
-          <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="">Select Class</option>
+          <option value="1">Class 1</option>
+          <option value="2">Class 2</option>
+          <option value="3">Class 3</option>
+          <option value="4">Class 4</option>
+          <option value="5">Class 5</option>
+          <option value="6">Class 6</option>
         </select>
-        <div id="questionsList"></div>
-        <button class="action-btn" style="background:#4CAF50;" onclick="addQuestionForm()">+ Add Question</button>
-        <button class="action-btn" style="background:#FF9800;" onclick="saveDraft()">Save Draft</button>
+        <div id="questionsList" style="margin-top:20px;"></div>
+        <button class="action-btn" style="background:#4CAF50;" onclick="addQuestionForm()">➕ Add New Question</button>
+        <button class="action-btn" style="background:#FF9800;" onclick="saveDraft()">💾 Save as Draft</button>
       </div>
     </div>
 
+    <!-- Drafts Section -->
     <div id="drafts" class="section" style="display:none;">
       <div class="card">
-        <h3>Saved Drafts</h3>
-        <div id="draftsList">Loading...</div>
+        <h3>📄 Saved Drafts & Conduct Exam</h3>
+        <div id="draftsList">Loading drafts...</div>
       </div>
     </div>
+
   </div>
 
   <script>
@@ -150,16 +168,10 @@
         const tb = document.getElementById('studentsList');
         tb.innerHTML = '';
         data.forEach(s => {
-          tb.innerHTML += `
-            <tr>
-              <td>${s.name}</td>
-              <td>${s.roll}</td>
-              <td>${s.mobile}</td>
-              <td><button style="background:#d32f2f;color:white;padding:8px;border:none;border-radius:4px;cursor:pointer;" onclick="deleteStudent('${s._id}')">Delete</button></td>
-            </tr>`;
+          tb.innerHTML += `<tr><td>${s.name}</td><td>${s.roll}</td><td>${s.mobile}</td><td><button style="background:#d32f2f;color:white;padding:8px;border:none;border-radius:4px;cursor:pointer;" onclick="deleteStudent('${s._id}')">Delete</button></td></tr>`;
         });
       } catch (err) {
-        alert("Cannot load students");
+        alert("Cannot load students – check if backend is running");
       }
     }
 
@@ -201,9 +213,7 @@
         const data = await res.json();
         const tb = document.getElementById('videosList');
         tb.innerHTML = '';
-        data.forEach(v => {
-          tb.innerHTML += `<tr><td>${v.subject}</td><td>${v.class}</td><td>${v.title || 'No title'}</td></tr>`;
-        });
+        data.forEach(v => tb.innerHTML += `<tr><td>${v.subject}</td><td>${v.class}</td><td>${v.title || 'No title'}</td></tr>`);
       } catch (err) {
         alert("Cannot load videos");
       }
@@ -214,7 +224,7 @@
       const classNum = document.getElementById('vClass').value;
       const youtubeUrl = document.getElementById('vUrl').value.trim();
       const title = document.getElementById('vTitle').value.trim();
-      if (!subject || !classNum || !youtubeUrl) return alert("Fill all fields");
+      if (!subject || !classNum || !youtubeUrl) return alert("Fill subject, class and URL");
       try {
         const res = await fetch(`${API_URL}/videos`, {
           method: 'POST',
@@ -241,7 +251,7 @@
         <label>Question Photo</label>
         <input type="file" accept="image/*" onchange="uploadImage(event, 'question', ${idx})">
         <img id="qImg${idx}" style="display:none;max-width:100%;">
-        <label>Options Photo</label>
+        <label>Options Photo (a,b,c,d)</label>
         <input type="file" accept="image/*" onchange="uploadImage(event, 'options', ${idx})">
         <img id="oImg${idx}" style="display:none;max-width:100%;">
         <label>Correct Answer</label>
@@ -252,7 +262,7 @@
           <button type="button" onclick="setCorrect(${idx}, 'd')" class="action-btn" style="flex:1;">D</button>
         </div>
         <p>Correct: <b id="correct${idx}">Not selected</b></p>
-        <button type="button" style="background:#d32f2f;color:white;" onclick="this.parentElement.remove(); currentQuestions.splice(${idx},1)">Remove</button>
+        <button type="button" style="background:#d32f2f;color:white;" onclick="this.parentElement.remove(); currentQuestions.splice(${idx},1)">Remove Question</button>
       `;
       container.appendChild(div);
       currentQuestions.push({ questionImage: "", optionsImage: "", correctAnswer: "" });
@@ -281,8 +291,8 @@
       const title = document.getElementById('examTitle').value.trim();
       const subject = document.getElementById('examSubject').value;
       const classNum = document.getElementById('examClass').value;
-      if (!title || !subject || !classNum || currentQuestions.length === 0) return alert("Fill all and add questions");
-      if (currentQuestions.some(q => !q.questionImage || !q.optionsImage || !q.correctAnswer)) return alert("Complete all questions");
+      if (!title || !subject || !classNum || currentQuestions.length === 0) return alert("Fill all details and add at least one question");
+      if (currentQuestions.some(q => !q.questionImage || !q.optionsImage || !q.correctAnswer)) return alert("Complete every question with photo and correct answer");
       try {
         const res = await fetch(`${API_URL}/drafts`, {
           method: 'POST',
@@ -304,25 +314,26 @@
         const res = await fetch(`${API_URL}/drafts`);
         const drafts = await res.json();
         const container = document.getElementById('draftsList');
-        container.innerHTML = drafts.length === 0 ? "<p>No drafts</p>" : "";
+        container.innerHTML = drafts.length === 0 ? "<p>No saved drafts</p>" : "";
         drafts.forEach(d => {
           const div = document.createElement('div');
           div.className = 'card';
           div.style.marginBottom = '15px';
           div.innerHTML = `
-            <h4>${d.title} (${d.subject} - Class ${d.class}) - ${d.totalQuestions} questions</h4>
-            <button class="action-btn" style="background:#FF9800;" onclick="alert('Continue editing coming soon')">Continue</button>
-            <button class="action-btn" style="background:#d32f2f;" onclick="conductExam('${d._id}')">Conduct Exam</button>
+            <h4>${d.title} (${d.subject.toUpperCase()} - Class ${d.class})</h4>
+            <p>${d.totalQuestions} questions • Saved on ${new Date(d.createdAt).toLocaleDateString()}</p>
+            <button class="action-btn" style="background:#FF9800;margin:5px 0;" onclick="alert('Continue editing feature coming soon')">Continue Editing</button>
+            <button class="action-btn" style="background:#d32f2f;margin:5px 0;" onclick="conductExam('${d._id}')">Conduct Exam Now</button>
           `;
           container.appendChild(div);
         });
       } catch (err) {
-        container.innerHTML = "<p>Error loading drafts</p>";
+        document.getElementById('draftsList').innerHTML = "<p>Error loading drafts</p>";
       }
     }
 
     async function conductExam(draftId) {
-      if (!confirm("Conduct this exam now?")) return;
+      if (!confirm("Conduct this exam? It will be available to students immediately.")) return;
       try {
         const res = await fetch(`${API_URL}/conduct/${draftId}`, { method: 'POST' });
         const data = await res.json();
@@ -333,6 +344,7 @@
       }
     }
 
+    // Start with Students section
     showSection('students');
   </script>
 </body>
