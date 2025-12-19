@@ -32,10 +32,10 @@
         <thead>
           <tr>
             <th>Student Name</th>
-            <th>Roll Number / Mobile</th>
+            <th>Roll Number</th>
+            <th>Mobile</th>
             <th>Exam Title</th>
-            <th>Total Marks</th>
-            <th>Correct Answers</th>
+            <th>Marks (Correct/Total)</th>
             <th>Submitted At</th>
           </tr>
         </thead>
@@ -51,7 +51,7 @@
 
     async function loadResults() {
       try {
-        const res = await fetch(`${API_URL}/results`); // Adjust endpoint if needed (e.g., /exam-results or /submissions)
+        const res = await fetch(`${API_URL}/results`);
         if (!res.ok) {
           throw new Error("Failed to load results");
         }
@@ -72,10 +72,10 @@
         tbody.innerHTML = results.map(r => `
           <tr>
             <td>${r.studentName}</td>
+            <td>${r.studentRoll || 'N/A'}</td>
             <td>${r.studentMobile}</td>
             <td>${r.examTitle}</td>
-            <td>${r.score} / ${r.total}</td>
-            <td>${r.correct}</td>
+            <td>${r.correct} / ${r.total}</td>
             <td>${new Date(r.submittedAt).toLocaleString()}</td>
           </tr>
         `).join('');
