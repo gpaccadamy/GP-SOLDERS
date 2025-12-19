@@ -6,101 +6,159 @@
   <title>Exam Results</title>
   <link rel="icon" href="data:,">
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); color: #333; margin: 0; padding: 0; }
-    header { background: rgba(0,0,0,0.8); color: white; padding: 15px 20px; display: flex; align-items: center; position: fixed; width: 100%; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    header h1 { flex-grow: 1; text-align: center; margin: 0; }
-    .main { margin-top: 80px; padding: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
-    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-    .result-summary { text-align: center; margin-bottom: 20px; }
-    .result-summary h2 { margin: 10px 0; }
-    .score { font-size: 28px; font-weight: bold; color: #4CAF50; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; }
-    th { background: #2196F3; color: white; }
-    .pass { color: green; font-weight: bold; }
-    .fail { color: red; font-weight: bold; }
-    .action-btn { padding: 14px; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; width: 100%; margin: 10px 0; color: white; }
-    .retry-btn { background: #FF9800; }
-    .home-btn { background: #4CAF50; }
+    body { 
+      font-family: 'Segoe UI', Arial, sans-serif; 
+      background: linear-gradient(135deg, #667eea, #764ba2); 
+      margin: 0; 
+      padding: 0; 
+      color: #333; 
+      min-height: 100vh; 
+    }
+    header { 
+      background: rgba(0,0,0,0.8); 
+      color: white; 
+      padding: 20px; 
+      text-align: center; 
+      position: fixed; 
+      top: 0; 
+      width: 100%; 
+      z-index: 1000; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+    }
+    header h1 { font-size: 28px; margin: 0; }
+    .main { 
+      margin-top: 100px; 
+      padding: 20px; 
+      max-width: 1000px; 
+      margin-left: auto; 
+      margin-right: auto; 
+    }
+    .card { 
+      background: white; 
+      border-radius: 16px; 
+      padding: 30px; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+    }
+    .back-btn { 
+      background: #9E9E9E; 
+      color: white; 
+      padding: 14px; 
+      border: none; 
+      border-radius: 12px; 
+      cursor: pointer; 
+      font-size: 16px; 
+      margin-bottom: 20px; 
+      display: block; 
+      width: 100%; 
+      max-width: 200px; 
+    }
+    .back-btn:hover { background: #757575; }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: 20px; 
+      font-size: 16px; 
+    }
+    th, td { 
+      padding: 14px; 
+      text-align: left; 
+      border-bottom: 1px solid #ddd; 
+    }
+    th { 
+      background: #f8f9fa; 
+      font-weight: bold; 
+    }
+    tr:hover { background: #f1f1f1; }
+    .no-results { 
+      text-align: center; 
+      color: #666; 
+      font-size: 18px; 
+      margin-top: 40px; 
+    }
+    .total-students { 
+      font-size: 18px; 
+      margin-bottom: 20px; 
+      color: #333; 
+    }
   </style>
 </head>
 <body>
-  <header><h1>Exam Results</h1></header>
+  <header>
+    <h1>Exam Results</h1>
+  </header>
   <div class="main">
-    <div class="card result-summary">
-      <h2>Student: <span id="studentName">John Doe</span></h2>
-      <h3>Exam: <span id="examTitle">Monthly Test - Dec</span></h3>
-      <p class="score">Score: <span id="score">18</span> / <span id="total">20</span></p>
-      <p>Status: <span id="status" class="pass">PASS</span></p>
-    </div>
-
     <div class="card">
-      <h2>Answer Review</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Q.No</th>
-            <th>Your Answer</th>
-            <th>Correct Answer</th>
-            <th>Result</th>
-          </tr>
-        </thead>
-        <tbody id="answersTable">
-          <!-- Rows will be populated dynamically -->
-        </tbody>
-      </table>
-    </div>
-
-    <div class="card">
-      <button class="action-btn retry-btn" onclick="retryExam()">Retry Exam</button>
-      <button class="action-btn home-btn" onclick="goHome()">Back to Dashboard</button>
+      <button class="back-btn" onclick="window.location.href='admin.html'">← Back to Admin Panel</button>
+      <h2 id="examTitle">Loading Results...</h2>
+      <p class="total-students" id="totalStudents">Total Students: 0</p>
+      <div id="resultsTable">
+        <p class="no-results">Loading results...</p>
+      </div>
     </div>
   </div>
 
   <script>
-    // Example data (replace with API response)
-    const studentResult = {
-      name: "John Doe",
-      examTitle: "Monthly Test - Dec",
-      score: 18,
-      total: 20,
-      answers: [
-        { qNo: 1, yourAnswer: "A", correctAnswer: "A" },
-        { qNo: 2, yourAnswer: "C", correctAnswer: "B" },
-        { qNo: 3, yourAnswer: "D", correctAnswer: "D" },
-        { qNo: 4, yourAnswer: "B", correctAnswer: "B" }
-      ]
-    };
+    const API_URL = "https://academy-backend-e02j.onrender.com";
 
-    // Populate result summary
-    document.getElementById("studentName").textContent = studentResult.name;
-    document.getElementById("examTitle").textContent = studentResult.examTitle;
-    document.getElementById("score").textContent = studentResult.score;
-    document.getElementById("total").textContent = studentResult.total;
-    document.getElementById("status").textContent = studentResult.score >= studentResult.total/2 ? "PASS" : "FAIL";
-    document.getElementById("status").className = studentResult.score >= studentResult.total/2 ? "pass" : "fail";
+    // Get examId from URL query param (e.g., results.html?examId=12345)
+    const urlParams = new URLSearchParams(window.location.search);
+    const examId = urlParams.get('examId');
+    const examTitle = urlParams.get('title') || 'Exam Results';
 
-    // Populate answers table
-    const table = document.getElementById("answersTable");
-    studentResult.answers.forEach(ans => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${ans.qNo}</td>
-        <td>${ans.yourAnswer}</td>
-        <td>${ans.correctAnswer}</td>
-        <td>${ans.yourAnswer === ans.correctAnswer ? '<span class="pass">✔</span>' : '<span class="fail">✘</span>'}</td>
-      `;
-      table.appendChild(row);
-    });
-
-    function retryExam() {
-      alert("Redirecting to exam retry...");
-      // Implement navigation to exam page
+    if (!examId) {
+      document.getElementById('examTitle').textContent = 'Error: No Exam Selected';
+      document.getElementById('resultsTable').innerHTML = '<p class="no-results">Please go back and select an exam.</p>';
+    } else {
+      document.getElementById('examTitle').textContent = decodeURIComponent(examTitle);
+      loadResults(examId);
     }
 
-    function goHome() {
-      alert("Redirecting to dashboard...");
-      // Implement navigation to dashboard
+    async function loadResults(examId) {
+      try {
+        const res = await fetch(`${API_URL}/exam/${examId}/results`);
+        const results = await res.json();
+
+        const tableDiv = document.getElementById('resultsTable');
+        const totalEl = document.getElementById('totalStudents');
+
+        if (results.length === 0) {
+          tableDiv.innerHTML = '<p class="no-results">No students have attempted this exam yet.</p>';
+          totalEl.textContent = 'Total Students: 0';
+        } else {
+          const sorted = results.sort((a, b) => b.score - a.score);
+          totalEl.textContent = `Total Students: ${sorted.length}`;
+
+          tableDiv.innerHTML = `
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Name</th>
+                  <th>Mobile</th>
+                  <th>Marks</th>
+                  <th>Correct</th>
+                  <th>Wrong</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${sorted.map((r, index) => `
+                  <tr>
+                    <td>${index + 1}</td>
+                    <td>${r.studentName || 'Anonymous'}</td>
+                    <td>${r.studentMobile}</td>
+                    <td><strong>${r.score} / ${r.total}</strong></td>
+                    <td>${r.correct}</td>
+                    <td>${r.wrong}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+        }
+      } catch (err) {
+        document.getElementById('resultsTable').innerHTML = '<p class="no-results">Error loading results. Please try again later.</p>';
+        console.error(err);
+      }
     }
   </script>
 </body>
