@@ -21,10 +21,11 @@
     .option { display: flex; align-items: center; font-size: 18px; padding: 12px; background: white; border-radius: 10px; border: 2px solid #ddd; cursor: pointer; transition: 0.3s; }
     .option:hover { border-color: #667eea; }
     .option input { margin-right: 15px; transform: scale(1.3); }
-    .submit-btn { background: #4CAF50; color: white; padding: 16px; font-size: 18px; border: none; border-radius: 12px; cursor: pointer; width: 100%; margin-top: 30px; }
-    .submit-btn:hover { background: #45a049; }
+    .submit-btn, .login-btn { background: #4CAF50; color: white; padding: 16px; font-size: 18px; border: none; border-radius: 12px; cursor: pointer; width: 100%; margin-top: 30px; }
+    .submit-btn:hover, .login-btn:hover { background: #45a049; }
     .hidden { display: none; }
     .timer { font-size: 20px; text-align: center; color: #d32f2f; font-weight: bold; margin-bottom: 20px; }
+    input[type="text"], input[type="password"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
   </style>
 </head>
 <body>
@@ -32,12 +33,24 @@
     <h1>Student Exam Portal</h1>
   </header>
   <div class="main">
-    <div id="examList" class="card">
+    <!-- Login Section -->
+    <div id="loginSection" class="card">
+      <h2 style="text-align:center;">Student Login</h2>
+      <input type="text" id="mobile" placeholder="Enter your Mobile Number" required>
+      <input type="password" id="password" placeholder="Enter your Password" required>
+      <button class="login-btn" onclick="login()">Login</button>
+      <p id="loginError" style="color:red; text-align:center; display:none;"></p>
+    </div>
+
+    <!-- Available Exams List (Hidden until login) -->
+    <div id="examList" class="card hidden">
       <h2 style="text-align:center; color:#333;">Available Exams</h2>
       <div id="examsContainer" class="exam-list">
         <p style="text-align:center;">Loading exams...</p>
       </div>
     </div>
+
+    <!-- Exam Taking Section (Hidden initially) -->
     <div id="examTaking" class="card hidden">
       <h2 id="examTitleDisplay" style="text-align:center;"></h2>
       <div class="timer" id="timer">Time Remaining: --</div>
@@ -47,10 +60,49 @@
       </form>
     </div>
   </div>
+
   <script>
     const API_URL = "https://academy-backend-e02j.onrender.com";
     let currentExam = null;
     let studentAnswers = [];
+    let loggedInStudent = null; // Will store student data after login
+
+    // Login function
+    async function login() {
+      const mobile = document.getElementById('mobile').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const errorEl = document.getElementById('loginError');
+
+      if (!mobile || !password) {
+        errorEl.textContent = "Please enter mobile and password.";
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/student-login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mobile, password })
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Login failed");
+        }
+
+        const student = await res.json();
+        loggedInStudent = student;
+        errorEl.style.display = 'none';
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('examList').classList.remove('hidden');
+        loadAvailableExams();
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.style.display = 'block';
+      }
+    }
+
     async function loadAvailableExams() {
       try {
         const res = await fetch(`${API_URL}/active-exams`);
@@ -72,6 +124,7 @@
         document.getElementById('examsContainer').innerHTML = "<p>Error loading exams. Try again later.</p>";
       }
     }
+
     async function startExam(examId) {
       try {
         const res = await fetch(`${API_URL}/exam/${examId}`);
@@ -106,14 +159,16 @@
             </div>
           </div>
         `).join('');
-        startTimer(60 * 30);
+        startTimer(60 * 30); // 30 minutes
       } catch (err) {
-        alert("Error loading exam");
+        alert("Error loading exam: " + err.message);
       }
     }
+
     function saveAnswer(questionIndex, answer) {
       studentAnswers[questionIndex] = answer;
     }
+
     function startTimer(minutes) {
       let seconds = minutes * 60;
       const timerEl = document.getElementById('timer');
@@ -129,35 +184,41 @@
         }
       }, 1000);
     }
+
     document.getElementById('examForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (studentAnswers.some(a => a === null)) {
         if (!confirm("You haven't answered all questions. Submit anyway?")) return;
       }
-      const studentMobile = prompt("Enter your Mobile Number (as registered):");
-      if (!studentMobile) return;
-      const studentName = prompt("Enter your Name (optional):") || "Anonymous";
       try {
         const res = await fetch(`${API_URL}/submit-exam`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             examId: currentExam._id,
-            studentMobile,
-            studentName,
+            studentMobile: loggedInStudent.mobile,
+            studentName: loggedInStudent.name,
             answers: studentAnswers
           })
         });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Submission failed");
+        }
+
         const result = await res.json();
-        alert(result.message || "Exam submitted successfully! Your results will be available soon.");
+        alert(result.message || "Exam submitted successfully!");
         document.getElementById('examTaking').classList.add('hidden');
         document.getElementById('examList').classList.remove('hidden');
         loadAvailableExams();
       } catch (err) {
-        alert("Error submitting exam");
+        alert("Error submitting exam: " + err.message);
       }
     });
-    loadAvailableExams();
+
+    // Load login first
+    document.getElementById('loginSection').classList.remove('hidden');
   </script>
 </body>
 </html>
