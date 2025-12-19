@@ -49,7 +49,7 @@
         <h3>Add New Student</h3>
         <input type="text" id="sName" placeholder="Student Name *">
         <input type="text" id="sRoll" placeholder="Roll Number (optional)">
-        <input type="tel" id="sMobile" placeholder="Mobile Number * (10 digits)">
+        <input type="tel" id="sMobile" placeholder="Mobile Number *">
         <input type="password" id="sPass" placeholder="Password *">
         <button class="action-btn" onclick="addStudent()">Add Student</button>
       </div>
@@ -161,7 +161,7 @@
             </tr>`;
         });
       } catch (err) {
-        alert("Cannot load students – check backend");
+        alert("Cannot load students");
       }
     }
 
@@ -172,7 +172,7 @@
       const password = document.getElementById('sPass').value;
 
       if (!name || !mobile || !password) {
-        alert("Name, mobile, and password are required (* fields)");
+        alert("Name, mobile, and password are required");
         return;
       }
 
@@ -199,7 +199,7 @@
           alert("Error: " + (data.error || "Failed to add student"));
         }
       } catch (err) {
-        alert("Network error – check backend");
+        alert("Network error");
       }
     }
 
