@@ -24,7 +24,7 @@ const upload = multer({ storage });
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
-  console.error("❌ MONGO_URI not set in environment variables");
+  console.error("❌ MONGO_URI not set");
   process.exit(1);
 }
 
@@ -35,7 +35,7 @@ mongoose.connect(MONGO_URI)
 // Models
 const Student = mongoose.model('Student', new mongoose.Schema({
   name: { type: String, required: true },
-  roll: { type: String, unique: false }, // Removed unique to fix null duplicate error
+  roll: { type: String }, // No unique constraint
   mobile: { type: String, required: true, unique: true },
   password: { type: String, required: true }
 }));
@@ -95,13 +95,11 @@ app.post('/students', async (req, res) => {
       return res.status(400).json({ error: "Name, mobile, and password are required" });
     }
 
-    // Only check duplicate mobile
     const existing = await Student.findOne({ mobile });
     if (existing) {
       return res.status(400).json({ error: "Mobile number already registered" });
     }
 
-    // Allow duplicate or null roll
     const student = new Student({ name, roll, mobile, password });
     await student.save();
     res.json({ message: "Student added successfully" });
@@ -199,5 +197,4 @@ app.use('/uploads', express.static('uploads'));
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🌐 Live at: https://academy-backend-e02j.onrender.com`);
 });
