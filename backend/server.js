@@ -7,18 +7,13 @@ const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
-
-// Middleware
 app.use(cors());
 app.use(express.json());
 
 // Uploads folder
 const uploadDir = './uploads';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
-// Multer for image upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
   filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/ /g, '_'))
@@ -29,21 +24,18 @@ const upload = multer({ storage });
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
-  console.error("❌ MONGO_URI not set in environment variables");
+  console.error("❌ MONGO_URI not set");
   process.exit(1);
 }
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
-  .catch(err => {
-    console.error("❌ MongoDB connection failed:", err);
-    process.exit(1);
-  });
+  .catch(err => console.error("❌ MongoDB connection failed:", err));
 
 // Models
 const Student = mongoose.model('Student', new mongoose.Schema({
   name: { type: String, required: true },
-  roll: { type: String }, // Optional, no unique
+  roll: { type: String }, // Optional
   mobile: { type: String, required: true, unique: true },
   password: { type: String, required: true }
 }));
@@ -82,14 +74,7 @@ const Exam = mongoose.model('Exam', new mongoose.Schema({
 }));
 
 // Routes
-app.get('/students', async (req, res) => {
-  try {
-    const students = await Student.find();
-    res.json(students);
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
-  }
-});
+app.get('/students', async (req, res) => res.json(await Student.find()));
 
 app.post('/students', async (req, res) => {
   try {
