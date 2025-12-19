@@ -1,10 +1,9 @@
-// server.js - Fully Updated Backend Code with /results Endpoint
+// server.js - Fully Updated Backend Code (bcrypt removed as requested)
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 const app = express();
@@ -34,7 +33,7 @@ const StudentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   roll: { type: String },
   mobile: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
+  password: { type: String, required: true } // Plain text (as original)
 });
 const Student = mongoose.model('Student', StudentSchema);
 
@@ -72,7 +71,7 @@ const Exam = mongoose.model('Exam', new mongoose.Schema({
 const Result = mongoose.model('Result', new mongoose.Schema({
   studentMobile: String,
   studentName: String,
-  studentRoll: String,
+  studentRoll: String, // Added for roll number
   examId: { type: mongoose.Schema.Types.ObjectId, ref: 'Exam' },
   examTitle: String,
   score: Number,
@@ -84,15 +83,14 @@ const Result = mongoose.model('Result', new mongoose.Schema({
 }));
 
 // ROUTES
-// Student Login (with bcrypt)
+// Student Login (plain text comparison)
 app.post('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
     if (!mobile || !password) return res.status(400).json({ error: "Mobile and password required" });
     const student = await Student.findOne({ mobile });
     if (!student) return res.status(404).json({ error: "Student not found" });
-    const isMatch = await bcrypt.compare(password, student.password);
-    if (!isMatch) return res.status(401).json({ error: "Invalid password" });
+    if (student.password !== password) return res.status(401).json({ error: "Invalid password" });
     res.json({ name: student.name, mobile: student.mobile });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
@@ -114,8 +112,7 @@ app.post('/students', async (req, res) => {
     if (!name || !mobile || !password) return res.status(400).json({ error: "Name, mobile, password required" });
     const existing = await Student.findOne({ mobile });
     if (existing) return res.status(409).json({ error: "Mobile already registered" });
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const student = new Student({ name, roll, mobile, password: hashedPassword });
+    const student = new Student({ name, roll, mobile, password }); // Plain text
     await student.save();
     res.json({ message: "Student added" });
   } catch (err) {
@@ -130,7 +127,7 @@ app.delete('/students/:id', async (req, res) => {
   res.json({ message: "Student deleted" });
 });
 
-// Videos, Drafts, Conduct Exam (unchanged from your original)
+// Videos (unchanged)
 app.get('/videos', async (req, res) => res.json(await Video.find()));
 app.post('/videos', async (req, res) => {
   const { subject, classNum, youtubeUrl, title } = req.body;
@@ -224,7 +221,7 @@ app.get('/exam/:id/results', async (req, res) => {
   res.json(await Result.find({ examId: req.params.id }));
 });
 
-// NEW: All Results Endpoint (this fixes the 404!)
+// All Results Endpoint (fixes the 404!)
 app.get('/results', async (req, res) => {
   try {
     const results = await Result.find().sort({ submittedAt: -1 });
