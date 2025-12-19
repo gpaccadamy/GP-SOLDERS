@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const bcrypt = require('bcrypt'); // NEW: For secure password hashing
 require('dotenv').config();
 
 const app = express();
@@ -33,7 +34,7 @@ const StudentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   roll: { type: String },
   mobile: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
+  password: { type: String, required: true } // Will be hashed
 });
 const Student = mongoose.model('Student', StudentSchema);
 
@@ -71,10 +72,11 @@ const Exam = mongoose.model('Exam', new mongoose.Schema({
   conductedAt: { type: Date, default: Date.now }
 }));
 
-// Exam Result
+// Exam Result (UPDATED: added studentRoll)
 const Result = mongoose.model('Result', new mongoose.Schema({
   studentMobile: String,
   studentName: String,
+  studentRoll: String, // NEW: Roll number
   examId: { type: mongoose.Schema.Types.ObjectId, ref: 'Exam' },
   examTitle: String,
   score: Number,
@@ -86,7 +88,7 @@ const Result = mongoose.model('Result', new mongoose.Schema({
 }));
 
 // === ROUTES ===
-// Student Login (NEW)
+// Student Login (UPDATED: bcrypt comparison)
 app.post('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
@@ -97,11 +99,10 @@ app.post('/student-login', async (req, res) => {
     if (!student) {
       return res.status(404).json({ error: "Student not found" });
     }
-    // Plain text comparison (upgrade to bcrypt later)
-    if (student.password !== password) {
+    const isMatch = await bcrypt.compare(password, student.password);
+    if (!isMatch) {
       return res.status(401).json({ error: "Invalid password" });
     }
-    // Return minimal data
     res.json({ name: student.name, mobile: student.mobile });
   } catch (err) {
     console.error('Login error:', err);
@@ -109,7 +110,7 @@ app.post('/student-login', async (req, res) => {
   }
 });
 
-// Students (Admin CRUD)
+// Students (Admin CRUD) - POST now hashes password
 app.get('/students', async (req, res) => {
   try {
     const students = await Student.find();
@@ -133,12 +134,13 @@ app.post('/students', async (req, res) => {
     if (existing) {
       return res.status(409).json({ error: "Mobile number already registered" });
     }
-    const student = new Student({ name, roll, mobile, password });
+    const hashedPassword = await bcrypt.hash(password, 10); // Hash with salt rounds 10
+    const student = new Student({ name, roll, mobile, password: hashedPassword });
     await student.save();
     res.json({ message: "Student added successfully" });
   } catch (err) {
     console.error('Student add error:', err);
-    if (err.code === 11000) { // Duplicate key error
+    if (err.code === 11000) {
       return res.status(409).json({ error: "Mobile number already registered" });
     }
     res.status(500).json({ error: "Server error" });
@@ -281,6 +283,7 @@ app.post('/submit-exam', async (req, res) => {
     await new Result({
       studentMobile: student.mobile,
       studentName: studentName || student.name,
+      studentRoll: student.roll || '', // NEW: Save roll number
       examId,
       examTitle: exam.title,
       score: correctCount,
@@ -306,6 +309,17 @@ app.get('/exam/:id/results', async (req, res) => {
   }
 });
 
+// NEW: Global results endpoint for all exams
+app.get('/results', async (req, res) => {
+  try {
+    const results = await Result.find().sort({ submittedAt: -1 }); // Latest first
+    res.json(results);
+  } catch (err) {
+    console.error('Fetch all results error:', err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 // Old upload route (can be removed)
 app.post('/upload', (req, res) => {
   res.status(410).json({ message: "Local upload disabled. Use Cloudinary." });
@@ -314,5 +328,5 @@ app.post('/upload', (req, res) => {
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`Student Exam URL: https://academy-backend-e02j.onrender.com/exams.html`); // Update if needed
+  console.log(`Student Exam URL: https://academy-backend-e02j.onrender.com/exams.html`);
 });
