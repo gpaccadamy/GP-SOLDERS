@@ -3,356 +3,158 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - Academy</title>
+  <title>Admin Dashboard - Academy</title>
   <link rel="icon" href="data:,">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; overflow-x: hidden; }
-    header { background: rgba(0,0,0,0.8); color: white; padding: 15px 20px; display: flex; align-items: center; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    header h1 { font-size: 22px; flex-grow: 1; text-align: center; margin-left: -50px; }
-    .hamburger { font-size: 28px; cursor: pointer; padding: 5px 10px; }
-    .sidenav { height: 100%; width: 0; position: fixed; z-index: 1001; top: 0; left: 0; background: rgba(0,0,0,0.95); overflow-x: hidden; transition: 0.5s ease-in-out; padding-top: 80px; }
-    .sidenav a { padding: 18px 30px; text-decoration: none; font-size: 20px; color: #fff; display: block; border-bottom: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
-    .sidenav a:hover { background: rgba(255,255,255,0.1); padding-left: 40px; }
-    .closebtn { position: absolute; top: 15px; right: 25px; font-size: 36px; cursor: pointer; color: white; }
-    .main { margin-top: 70px; padding: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
-    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: 0.3s; }
-    .card:hover { transform: translateY(-5px); }
-    .card h3 { color: #333; margin-bottom: 20px; font-size: 22px; border-bottom: 3px solid #667eea; padding-bottom: 10px; }
-    input, select { width: 100%; padding: 14px; margin: 12px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; background: #f8f9fa; }
-    .action-btn { background: linear-gradient(to right, #667eea, #764ba2); color: white; padding: 16px; width: 100%; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; margin: 15px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s; }
-    .action-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { padding: 14px; text-align: left; border-bottom: 1px solid #eee; }
-    th { background: #f0f0f5; font-weight: 600; }
-    img { max-width: 100%; border-radius: 12px; margin: 15px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    @media (max-width: 768px) { header h1 { font-size: 20px; margin-left: -40px; } .card { padding: 20px; } .sidenav a { font-size: 18px; } }
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    header {
+      background: rgba(0,0,0,0.8);
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    header h1 {
+      font-size: 28px;
+      letter-spacing: 1px;
+    }
+    .container {
+      margin-top: 120px;
+      text-align: center;
+      max-width: 800px;
+      width: 100%;
+    }
+    h2 {
+      font-size: 32px;
+      margin-bottom: 50px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    .nav-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      align-items: center;
+    }
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(15px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 24px;
+      padding: 30px 50px;
+      width: 90%;
+      max-width: 550px;
+      text-decoration: none;
+      color: white;
+      font-size: 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 25px;
+      transition: all 0.4s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .nav-btn:hover {
+      transform: translateY(-12px) scale(1.05);
+      background: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+    .icon-wrapper {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #ff6b6b, #f06595);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      transition: transform 0.3s;
+    }
+    .nav-btn:hover .icon-wrapper {
+      transform: scale(1.15) rotate(5deg);
+    }
+    svg {
+      width: 50px;
+      height: 50px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    }
+    footer {
+      margin-top: 100px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    @media (max-width: 768px) {
+      header h1 { font-size: 24px; }
+      h2 { font-size: 26px; }
+      .nav-btn { font-size: 20px; padding: 25px 40px; gap: 20px; }
+      .icon-wrapper { width: 70px; height: 70px; }
+      svg { width: 40px; height: 40px; }
+    }
   </style>
 </head>
 <body>
   <header>
-    <div class="hamburger" onclick="openNav()">☰</div>
-    <h1>Admin Panel</h1>
+    <h1>Academy Admin Dashboard</h1>
   </header>
 
-  <div id="mySidenav" class="sidenav">
-    <span class="closebtn" onclick="closeNav()">×</span>
-    <a href="#" onclick="showSection('students'); closeNav()">👥 Students</a>
-    <a href="#" onclick="showSection('videos'); closeNav()">📺 Video Lessons</a>
-    <a href="#" onclick="showSection('createExam'); closeNav()">📝 Create Exam</a>
-    <a href="#" onclick="showSection('drafts'); closeNav()">📄 Drafts & Conduct</a>
-  </div>
-
-  <div class="main">
-    <div id="students" class="section">
-      <div class="card">
-        <h3>Add New Student</h3>
-        <input type="text" id="sName" placeholder="Student Name *">
-        <input type="text" id="sRoll" placeholder="Roll Number (optional)">
-        <input type="tel" id="sMobile" placeholder="Mobile Number *">
-        <input type="password" id="sPass" placeholder="Password *">
-        <button class="action-btn" onclick="addStudent()">Add Student</button>
-      </div>
-      <div class="card">
-        <h3>Students List</h3>
-        <table>
-          <thead><tr><th>Name</th><th>Roll</th><th>Mobile</th><th>Action</th></tr></thead>
-          <tbody id="studentsList"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="videos" class="section" style="display:none;">
-      <div class="card">
-        <h3>Add Video Lesson</h3>
-        <select id="vSubject">
-          <option value="">Select Subject</option>
-          <option value="english">English</option>
-          <option value="kannada">Kannada</option>
-          <option value="gk">GK</option>
-          <option value="maths">Maths</option>
-        </select>
-        <select id="vClass">
-          <option value="">Select Class</option>
-          <option value="1">Class 1</option>
-          <option value="2">Class 2</option>
-          <option value="3">Class 3</option>
-          <option value="4">Class 4</option>
-          <option value="5">Class 5</option>
-          <option value="6">Class 6</option>
-        </select>
-        <input type="text" id="vUrl" placeholder="Full YouTube Link">
-        <input type="text" id="vTitle" placeholder="Title (optional)">
-        <button class="action-btn" onclick="saveVideo()">Save / Update</button>
-      </div>
-      <div class="card">
-        <h3>Current Videos</h3>
-        <table>
-          <thead><tr><th>Subject</th><th>Class</th><th>Title</th></tr></thead>
-          <tbody id="videosList"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="createExam" class="section" style="display:none;">
-      <div class="card">
-        <h3>Create Question Paper</h3>
-        <input type="text" id="examTitle" placeholder="Exam Title">
-        <select id="examSubject">
-          <option value="">Subject</option>
-          <option value="english">English</option>
-          <option value="kannada">Kannada</option>
-          <option value="gk">GK</option>
-          <option value="maths">Maths</option>
-        </select>
-        <select id="examClass">
-          <option value="">Class</option>
-          <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option>
-        </select>
-        <div id="questionsList"></div>
-        <button class="action-btn" style="background:#4CAF50;" onclick="addQuestionForm()">+ Add Question</button>
-        <button class="action-btn" style="background:#FF9800;" onclick="saveDraft()">Save Draft</button>
-      </div>
-    </div>
-
-    <div id="drafts" class="section" style="display:none;">
-      <div class="card">
-        <h3>Saved Drafts</h3>
-        <div id="draftsList">Loading...</div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const API_URL = "https://academy-backend-e02j.onrender.com";
-
-    let currentQuestions = [];
-
-    function openNav() {
-      document.getElementById("mySidenav").style.width = "280px";
-    }
-
-    function closeNav() {
-      document.getElementById("mySidenav").style.width = "0";
-    }
-
-    function showSection(id) {
-      document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-      document.getElementById(id).style.display = 'block';
-      if (id === 'students') loadStudents();
-      if (id === 'videos') loadVideos();
-      if (id === 'drafts') loadDrafts();
-    }
-
-    // === STUDENTS FUNCTIONS ===
-    async function loadStudents() {
-      try {
-        const res = await fetch(`${API_URL}/students`);
-        const data = await res.json();
-        const tb = document.getElementById('studentsList');
-        tb.innerHTML = '';
-        data.forEach(s => {
-          const rollDisplay = s.roll || '(No roll)';
-          tb.innerHTML += `
-            <tr>
-              <td>${s.name}</td>
-              <td>${rollDisplay}</td>
-              <td>${s.mobile}</td>
-              <td><button style="background:#d32f2f;color:white;padding:8px;border:none;border-radius:4px;cursor:pointer;" onclick="deleteStudent('${s._id}')">Delete</button></td>
-            </tr>`;
-        });
-      } catch (err) {
-        alert("Cannot load students – check backend");
-      }
-    }
-
-    async function addStudent() {
-      const name = document.getElementById('sName').value.trim();
-      const roll = document.getElementById('sRoll').value.trim() || null;
-      const mobile = document.getElementById('sMobile').value.trim();
-      const password = document.getElementById('sPass').value;
-
-      if (!name || !mobile || !password) {
-        alert("Name, mobile, and password are required");
-        return;
-      }
-
-      try {
-        const body = { name, mobile, password };
-        if (roll) body.roll = roll;
-
-        const res = await fetch(`${API_URL}/students`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          alert("Student added successfully!");
-          document.getElementById('sName').value = '';
-          document.getElementById('sRoll').value = '';
-          document.getElementById('sMobile').value = '';
-          document.getElementById('sPass').value = '';
-          loadStudents();
-        } else {
-          alert("Error: " + (data.error || "Failed to add student"));
-        }
-      } catch (err) {
-        alert("Network error");
-      }
-    }
-
-    async function deleteStudent(id) {
-      if (!confirm("Delete this student?")) return;
-      try {
-        await fetch(`${API_URL}/students/${id}`, { method: 'DELETE' });
-        loadStudents();
-      } catch (err) {
-        alert("Error deleting");
-      }
-    }
-
-    // === VIDEOS FUNCTIONS ===
-    async function loadVideos() {
-      try {
-        const res = await fetch(`${API_URL}/videos`);
-        const data = await res.json();
-        const tb = document.getElementById('videosList');
-        tb.innerHTML = '';
-        data.forEach(v => tb.innerHTML += `<tr><td>${v.subject}</td><td>${v.class}</td><td>${v.title || 'No title'}</td></tr>`);
-      } catch (err) {
-        alert("Cannot load videos");
-      }
-    }
-
-    async function saveVideo() {
-      const subject = document.getElementById('vSubject').value;
-      const classNum = document.getElementById('vClass').value;
-      const youtubeUrl = document.getElementById('vUrl').value.trim();
-      const title = document.getElementById('vTitle').value.trim();
-      if (!subject || !classNum || !youtubeUrl) return alert("Fill subject, class and URL");
-      try {
-        const res = await fetch(`${API_URL}/videos`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subject, classNum, youtubeUrl, title })
-        });
-        const data = await res.json();
-        alert(data.message || data.error);
-        loadVideos();
-      } catch (err) {
-        alert("Error saving video");
-      }
-    }
-
-    // === EXAM FUNCTIONS ===
-    function addQuestionForm() {
-      const idx = currentQuestions.length;
-      const container = document.getElementById('questionsList');
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.style.marginTop = '20px';
-      div.innerHTML = `
-        <h4>Question ${idx + 1}</h4>
-        <label>Question Photo</label>
-        <input type="file" accept="image/*" onchange="uploadImage(event, 'question', ${idx})">
-        <img id="qImg${idx}" style="display:none;max-width:100%;">
-        <label>Options Photo</label>
-        <input type="file" accept="image/*" onchange="uploadImage(event, 'options', ${idx})">
-        <img id="oImg${idx}" style="display:none;max-width:100%;">
-        <label>Correct Answer</label>
-        <div style="display:flex; gap:10px;">
-          <button type="button" onclick="setCorrect(${idx}, 'a')" class="action-btn" style="flex:1;">A</button>
-          <button type="button" onclick="setCorrect(${idx}, 'b')" class="action-btn" style="flex:1;">B</button>
-          <button type="button" onclick="setCorrect(${idx}, 'c')" class="action-btn" style="flex:1;">C</button>
-          <button type="button" onclick="setCorrect(${idx}, 'd')" class="action-btn" style="flex:1;">D</button>
+  <div class="container">
+    <h2>Welcome, Admin!</h2>
+    <div class="nav-buttons">
+      <!-- Add Students -->
+      <a href="addstudents.html" class="nav-btn">
+        <div class="icon-wrapper" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+          <svg viewBox="0 0 24 24" fill="white">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            <circle cx="18" cy="6" r="2" fill="#fff"/>
+            <path d="M18 10v4m-2-2h4" stroke="#fff" stroke-width="2" fill="none"/>
+          </svg>
         </div>
-        <p>Correct: <b id="correct${idx}">Not selected</b></p>
-        <button type="button" style="background:#d32f2f;color:white;" onclick="this.parentElement.remove(); currentQuestions.splice(${idx},1)">Remove</button>
-      `;
-      container.appendChild(div);
-      currentQuestions.push({ questionImage: "", optionsImage: "", correctAnswer: "" });
-    }
+        Add Students
+      </a>
 
-    async function uploadImage(event, type, idx) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const fd = new FormData();
-      fd.append(type === 'question' ? 'questionImage' : 'optionsImage', file);
-      const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: fd });
-      const data = await res.json();
-      const key = type === 'question' ? 'questionImage' : 'optionsImage';
-      currentQuestions[idx][key] = data[key];
-      const img = document.getElementById(type === 'question' ? `qImg${idx}` : `oImg${idx}`);
-      img.src = `${API_URL}/uploads/${data[key]}`;
-      img.style.display = 'block';
-    }
+      <!-- Upload Classes -->
+      <a href="uploadvideo.html" class="nav-btn">
+        <div class="icon-wrapper" style="background: linear-gradient(135deg, #fa709a, #fee140);">
+          <svg viewBox="0 0 24 24" fill="white">
+            <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
+            <polygon points="10,12 14,16 18,12 18,18 6,18 6,12" fill="#fff"/>
+            <rect x="10" y="8" width="4" height="3" fill="#fff"/>
+          </svg>
+        </div>
+        Upload Classes
+      </a>
 
-    function setCorrect(idx, ans) {
-      currentQuestions[idx].correctAnswer = ans;
-      document.getElementById(`correct${idx}`).textContent = ans.toUpperCase();
-    }
+      <!-- Take Test / Create Exam -->
+      <a href="makeexam.html" class="nav-btn">
+        <div class="icon-wrapper" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+          <svg viewBox="0 0 24 24" fill="white">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+            <circle cx="12" cy="6" r="4" fill="none" stroke="#fff" stroke-width="2"/>
+            <path d="M12 14c-3.33 0-6 1.34-6 3v1h12v-1c0-1.66-2.67-3-6-3z" fill="#fff"/>
+          </svg>
+        </div>
+        Take Test / Create Exam
+      </a>
+    </div>
+  </div>
 
-    async function saveDraft() {
-      const title = document.getElementById('examTitle').value.trim();
-      const subject = document.getElementById('examSubject').value;
-      const classNum = document.getElementById('examClass').value;
-      if (!title || !subject || !classNum || currentQuestions.length === 0) return alert("Fill all and add questions");
-      if (currentQuestions.some(q => !q.questionImage || !q.optionsImage || !q.correctAnswer)) return alert("Complete all questions");
-      try {
-        const res = await fetch(`${API_URL}/drafts`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, subject, classNum, questions: currentQuestions })
-        });
-        const data = await res.json();
-        alert(data.message);
-        currentQuestions = [];
-        document.getElementById('questionsList').innerHTML = '';
-        loadDrafts();
-      } catch (err) {
-        alert("Error saving draft");
-      }
-    }
-
-    async function loadDrafts() {
-      try {
-        const res = await fetch(`${API_URL}/drafts`);
-        const drafts = await res.json();
-        const container = document.getElementById('draftsList');
-        container.innerHTML = drafts.length === 0 ? "<p>No drafts</p>" : "";
-        drafts.forEach(d => {
-          const div = document.createElement('div');
-          div.className = 'card';
-          div.style.marginBottom = '15px';
-          div.innerHTML = `
-            <h4>${d.title} (${d.subject} - Class ${d.class}) - ${d.totalQuestions} questions</h4>
-            <button class="action-btn" style="background:#FF9800;" onclick="alert('Continue editing coming soon')">Continue</button>
-            <button class="action-btn" style="background:#d32f2f;" onclick="conductExam('${d._id}')">Conduct Exam</button>
-          `;
-          container.appendChild(div);
-        });
-      } catch (err) {
-        container.innerHTML = "<p>Error loading drafts</p>";
-      }
-    }
-
-    async function conductExam(draftId) {
-      if (!confirm("Conduct this exam now?")) return;
-      try {
-        const res = await fetch(`${API_URL}/conduct/${draftId}`, { method: 'POST' });
-        const data = await res.json();
-        alert(data.message || data.error);
-        loadDrafts();
-      } catch (err) {
-        alert("Error conducting exam");
-      }
-    }
-
-    // Start
-    showSection('students');
-  </script>
+  <footer>
+    &copy; 2025 Academy Management System
+  </footer>
 </body>
 </html>
