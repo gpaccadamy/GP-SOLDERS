@@ -31,17 +31,13 @@
   <header>
     <h1>Student Exam Portal</h1>
   </header>
-
   <div class="main">
-    <!-- Available Exams List -->
     <div id="examList" class="card">
       <h2 style="text-align:center; color:#333;">Available Exams</h2>
       <div id="examsContainer" class="exam-list">
         <p style="text-align:center;">Loading exams...</p>
       </div>
     </div>
-
-    <!-- Exam Taking Section (Hidden initially) -->
     <div id="examTaking" class="card hidden">
       <h2 id="examTitleDisplay" style="text-align:center;"></h2>
       <div class="timer" id="timer">Time Remaining: --</div>
@@ -51,24 +47,19 @@
       </form>
     </div>
   </div>
-
   <script>
     const API_URL = "https://academy-backend-e02j.onrender.com";
     let currentExam = null;
     let studentAnswers = [];
-
-    // Load available exams
     async function loadAvailableExams() {
       try {
-        const res = await fetch(`${API_URL}/active-exams`); // You need this endpoint
+        const res = await fetch(`${API_URL}/active-exams`);
         const exams = await res.json();
-
         const container = document.getElementById('examsContainer');
         if (exams.length === 0) {
           container.innerHTML = "<p>No active exams right now. Please check later.</p>";
           return;
         }
-
         container.innerHTML = exams.map(exam => `
           <div class="exam-card" onclick="startExam('${exam._id}')">
             <h3>${exam.title}</h3>
@@ -81,20 +72,15 @@
         document.getElementById('examsContainer').innerHTML = "<p>Error loading exams. Try again later.</p>";
       }
     }
-
-    // Start selected exam
     async function startExam(examId) {
       try {
         const res = await fetch(`${API_URL}/exam/${examId}`);
         const exam = await res.json();
         currentExam = exam;
         studentAnswers = new Array(exam.questions.length).fill(null);
-
         document.getElementById('examList').classList.add('hidden');
         document.getElementById('examTaking').classList.remove('hidden');
         document.getElementById('examTitleDisplay').textContent = exam.title;
-
-        // Render questions
         const qContainer = document.getElementById('questionsContainer');
         qContainer.innerHTML = exam.questions.map((q, i) => `
           <div class="question">
@@ -120,18 +106,14 @@
             </div>
           </div>
         `).join('');
-
-        // Simple timer (optional - you can improve later)
-        startTimer(60 * 30); // 30 minutes default
+        startTimer(60 * 30);
       } catch (err) {
         alert("Error loading exam");
       }
     }
-
     function saveAnswer(questionIndex, answer) {
       studentAnswers[questionIndex] = answer;
     }
-
     function startTimer(minutes) {
       let seconds = minutes * 60;
       const timerEl = document.getElementById('timer');
@@ -140,7 +122,6 @@
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         timerEl.textContent = `Time Remaining: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
-
         if (seconds <= 0) {
           clearInterval(interval);
           alert("Time's up!");
@@ -148,33 +129,27 @@
         }
       }, 1000);
     }
-
-    // Submit exam
     document.getElementById('examForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (studentAnswers.some(a => a === null)) {
         if (!confirm("You haven't answered all questions. Submit anyway?")) return;
       }
-
+      const studentMobile = prompt("Enter your Mobile Number (as registered):");
+      if (!studentMobile) return;
+      const studentName = prompt("Enter your Name (optional):") || "Anonymous";
       try {
-        // You need student ID or mobile for identification
-        const studentMobile = prompt("Enter your Mobile Number (as registered):");
-        if (!studentMobile) return;
-
         const res = await fetch(`${API_URL}/submit-exam`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             examId: currentExam._id,
             studentMobile,
+            studentName,
             answers: studentAnswers
           })
         });
-
         const result = await res.json();
-        alert(result.message || `Exam submitted! Score: ${result.score}/${currentExam.questions.length}`);
-        
-        // Reset to exam list
+        alert(result.message || "Exam submitted successfully! Your results will be available soon.");
         document.getElementById('examTaking').classList.add('hidden');
         document.getElementById('examList').classList.remove('hidden');
         loadAvailableExams();
@@ -182,8 +157,6 @@
         alert("Error submitting exam");
       }
     });
-
-    // Load exams on start
     loadAvailableExams();
   </script>
 </body>
