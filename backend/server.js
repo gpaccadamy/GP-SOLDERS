@@ -9,10 +9,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Optional: Keep local uploads folder if you still want it (not needed anymore)
+// Optional: Keep local uploads folder if needed for old images
 const uploadDir = './uploads';
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-app.use('/uploads', express.static('uploads')); // Keep if you have old images
+app.use('/uploads', express.static('uploads'));
 
 // MongoDB Connection
 const MONGO_URI = process.env.MONGO_URI;
@@ -20,14 +20,12 @@ if (!MONGO_URI) {
   console.error("❌ MONGO_URI not set");
   process.exit(1);
 }
-
 mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch(err => console.error("❌ MongoDB connection failed:", err));
 
 // === MODELS ===
-
-// Student (mobile no longer unique)
+// Student
 const Student = mongoose.model('Student', new mongoose.Schema({
   name: { type: String, required: true },
   roll: { type: String },
@@ -43,20 +41,20 @@ const Video = mongoose.model('Video', new mongoose.Schema({
   title: String
 }));
 
-// Draft Exam - Now uses single Cloudinary imageUrl
+// Draft Exam
 const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   title: String,
   subject: String,
   classNum: Number,
   totalQuestions: { type: Number, default: 0 },
   questions: [{
-    imageUrl: { type: String, required: true },      // Cloudinary URL
-    correctAnswer: { type: String, required: true }  // "a", "b", "c", "d"
+    imageUrl: { type: String, required: true }, // Cloudinary URL
+    correctAnswer: { type: String, required: true } // "a", "b", "c", "d"
   }],
   createdAt: { type: Date, default: Date.now }
 }));
 
-// Conducted Exam (Active for students)
+// Conducted Exam
 const Exam = mongoose.model('Exam', new mongoose.Schema({
   title: String,
   subject: String,
@@ -69,7 +67,7 @@ const Exam = mongoose.model('Exam', new mongoose.Schema({
   conductedAt: { type: Date, default: Date.now }
 }));
 
-// Optional: Store student results
+// Exam Result
 const Result = mongoose.model('Result', new mongoose.Schema({
   studentMobile: String,
   studentName: String,
@@ -77,12 +75,13 @@ const Result = mongoose.model('Result', new mongoose.Schema({
   examTitle: String,
   score: Number,
   total: Number,
+  correct: Number,
+  wrong: Number,
   answers: [String], // student's answers
   submittedAt: { type: Date, default: Date.now }
 }));
 
 // === ROUTES ===
-
 // Students
 app.get('/students', async (req, res) => {
   try {
@@ -100,11 +99,9 @@ app.post('/students', async (req, res) => {
     mobile = mobile?.trim();
     roll = roll?.trim() || null;
     password = password?.trim();
-
     if (!name || !mobile || !password) {
       return res.status(400).json({ error: "Name, mobile, and password are required" });
     }
-
     const student = new Student({ name, roll, mobile, password });
     await student.save();
     res.json({ message: "Student added successfully" });
@@ -131,7 +128,6 @@ app.post('/videos', async (req, res) => {
     const { subject, classNum, youtubeUrl, title } = req.body;
     const match = youtubeUrl.match(/(?:v=|\/embed\/|youtu\.be\/|watch\?v=)([^#\&\?]{11})/);
     if (!match) return res.status(400).json({ error: "Invalid YouTube URL" });
-
     const videoId = match[1];
     const existing = await Video.findOne({ subject, class: classNum });
     if (existing) {
@@ -147,7 +143,7 @@ app.post('/videos', async (req, res) => {
   }
 });
 
-// Drafts (Admin)
+// Drafts
 app.get('/drafts', async (req, res) => {
   try {
     const drafts = await DraftExam.find().sort({ createdAt: -1 });
@@ -160,11 +156,9 @@ app.get('/drafts', async (req, res) => {
 app.post('/drafts', async (req, res) => {
   try {
     const { title, subject, classNum, questions } = req.body;
-
     if (!questions || questions.length === 0) {
       return res.status(400).json({ error: "At least one question required" });
     }
-
     let draft = await DraftExam.findOne({ title });
     if (draft) {
       draft.subject = subject;
@@ -187,10 +181,8 @@ app.post('/conduct/:draftId', async (req, res) => {
   try {
     const draft = await DraftExam.findById(req.params.draftId);
     if (!draft) return res.status(404).json({ error: "Draft not found" });
-
     const existing = await Exam.findOne({ title: draft.title });
     if (existing) return res.status(400).json({ error: "Exam already conducted" });
-
     const exam = new Exam({
       title: draft.title,
       subject: draft.subject,
@@ -199,7 +191,6 @@ app.post('/conduct/:draftId', async (req, res) => {
       questions: draft.questions
     });
     await exam.save();
-
     await DraftExam.findByIdAndDelete(req.params.draftId);
     res.json({ message: "Exam conducted successfully!" });
   } catch (err) {
@@ -208,7 +199,6 @@ app.post('/conduct/:draftId', async (req, res) => {
 });
 
 // === STUDENT EXAM ROUTES ===
-
 // Get all active (conducted) exams
 app.get('/active-exams', async (req, res) => {
   try {
@@ -233,48 +223,54 @@ app.get('/exam/:id', async (req, res) => {
 // Submit exam answers
 app.post('/submit-exam', async (req, res) => {
   try {
-    const { examId, studentMobile, answers } = req.body;
-
+    const { examId, studentMobile, studentName, answers } = req.body;
     if (!examId || !studentMobile || !Array.isArray(answers)) {
       return res.status(400).json({ error: "Invalid data" });
     }
-
     const exam = await Exam.findById(examId);
     if (!exam) return res.status(404).json({ error: "Exam not found" });
-
     const student = await Student.findOne({ mobile: studentMobile });
     if (!student) return res.status(404).json({ error: "Student not registered" });
 
-    let score = 0;
+    let correctCount = 0;
     exam.questions.forEach((q, i) => {
       if (q.correctAnswer.toLowerCase() === answers[i]?.toLowerCase()) {
-        score++;
+        correctCount++;
       }
     });
+    const wrongCount = exam.totalQuestions - correctCount;
 
     // Save result
     await new Result({
       studentMobile: student.mobile,
-      studentName: student.name,
+      studentName: studentName || student.name,
       examId,
       examTitle: exam.title,
-      score,
+      score: correctCount,
       total: exam.totalQuestions,
+      correct: correctCount,
+      wrong: wrongCount,
       answers
     }).save();
 
-    res.json({
-      message: "Exam submitted successfully!",
-      score,
-      total: exam.totalQuestions
-    });
+    res.json({ message: "Exam submitted successfully!" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-// Optional: Keep old local upload route (safe to remove later)
+// New: Get results for a specific exam (for results.html)
+app.get('/exam/:id/results', async (req, res) => {
+  try {
+    const results = await Result.find({ examId: req.params.id });
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Optional: Keep old local upload route (can be removed)
 app.post('/upload', (req, res) => {
   res.status(410).json({ message: "Local upload disabled. Use Cloudinary direct upload." });
 });
