@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Optional: Keep local uploads folder if needed for old images
+// Optional: Local uploads (safe to keep for old images)
 const uploadDir = './uploads';
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 app.use('/uploads', express.static('uploads'));
@@ -22,16 +22,20 @@ if (!MONGO_URI) {
 }
 mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
-  .catch(err => console.error("❌ MongoDB connection failed:", err));
+  .catch(err => {
+    console.error("❌ MongoDB connection failed:", err);
+    process.exit(1);
+  });
 
 // === MODELS ===
-// Student
-const Student = mongoose.model('Student', new mongoose.Schema({
+// Student (added unique index on mobile)
+const StudentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   roll: { type: String },
-  mobile: { type: String, required: true },
+  mobile: { type: String, required: true, unique: true },
   password: { type: String, required: true }
-}));
+});
+const Student = mongoose.model('Student', StudentSchema);
 
 // Video Lesson
 const Video = mongoose.model('Video', new mongoose.Schema({
@@ -77,12 +81,35 @@ const Result = mongoose.model('Result', new mongoose.Schema({
   total: Number,
   correct: Number,
   wrong: Number,
-  answers: [String], // student's answers
+  answers: [String],
   submittedAt: { type: Date, default: Date.now }
 }));
 
 // === ROUTES ===
-// Students
+// Student Login (NEW)
+app.post('/student-login', async (req, res) => {
+  try {
+    const { mobile, password } = req.body;
+    if (!mobile || !password) {
+      return res.status(400).json({ error: "Mobile and password required" });
+    }
+    const student = await Student.findOne({ mobile });
+    if (!student) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+    // Plain text comparison (upgrade to bcrypt later)
+    if (student.password !== password) {
+      return res.status(401).json({ error: "Invalid password" });
+    }
+    // Return minimal data
+    res.json({ name: student.name, mobile: student.mobile });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Students (Admin CRUD)
 app.get('/students', async (req, res) => {
   try {
     const students = await Student.find();
@@ -102,26 +129,40 @@ app.post('/students', async (req, res) => {
     if (!name || !mobile || !password) {
       return res.status(400).json({ error: "Name, mobile, and password are required" });
     }
+    const existing = await Student.findOne({ mobile });
+    if (existing) {
+      return res.status(409).json({ error: "Mobile number already registered" });
+    }
     const student = new Student({ name, roll, mobile, password });
     await student.save();
     res.json({ message: "Student added successfully" });
   } catch (err) {
-    console.error(err);
+    console.error('Student add error:', err);
+    if (err.code === 11000) { // Duplicate key error
+      return res.status(409).json({ error: "Mobile number already registered" });
+    }
     res.status(500).json({ error: "Server error" });
   }
 });
 
 app.delete('/students/:id', async (req, res) => {
   try {
-    await Student.findByIdAndDelete(req.params.id);
+    const student = await Student.findByIdAndDelete(req.params.id);
+    if (!student) return res.status(404).json({ error: "Student not found" });
     res.json({ message: "Student deleted" });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
 });
 
-// Videos
-app.get('/videos', async (req, res) => res.json(await Video.find()));
+// Videos (unchanged)
+app.get('/videos', async (req, res) => {
+  try {
+    res.json(await Video.find());
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 app.post('/videos', async (req, res) => {
   try {
@@ -143,7 +184,7 @@ app.post('/videos', async (req, res) => {
   }
 });
 
-// Drafts
+// Drafts (unchanged)
 app.get('/drafts', async (req, res) => {
   try {
     const drafts = await DraftExam.find().sort({ createdAt: -1 });
@@ -176,7 +217,7 @@ app.post('/drafts', async (req, res) => {
   }
 });
 
-// Conduct Exam
+// Conduct Exam (unchanged)
 app.post('/conduct/:draftId', async (req, res) => {
   try {
     const draft = await DraftExam.findById(req.params.draftId);
@@ -199,7 +240,6 @@ app.post('/conduct/:draftId', async (req, res) => {
 });
 
 // === STUDENT EXAM ROUTES ===
-// Get all active (conducted) exams
 app.get('/active-exams', async (req, res) => {
   try {
     const exams = await Exam.find().sort({ conductedAt: -1 });
@@ -209,7 +249,6 @@ app.get('/active-exams', async (req, res) => {
   }
 });
 
-// Get single exam by ID
 app.get('/exam/:id', async (req, res) => {
   try {
     const exam = await Exam.findById(req.params.id);
@@ -220,7 +259,6 @@ app.get('/exam/:id', async (req, res) => {
   }
 });
 
-// Submit exam answers
 app.post('/submit-exam', async (req, res) => {
   try {
     const { examId, studentMobile, studentName, answers } = req.body;
@@ -240,7 +278,6 @@ app.post('/submit-exam', async (req, res) => {
     });
     const wrongCount = exam.totalQuestions - correctCount;
 
-    // Save result
     await new Result({
       studentMobile: student.mobile,
       studentName: studentName || student.name,
@@ -255,12 +292,11 @@ app.post('/submit-exam', async (req, res) => {
 
     res.json({ message: "Exam submitted successfully!" });
   } catch (err) {
-    console.error(err);
+    console.error('Submit exam error:', err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-// New: Get results for a specific exam (for results.html)
 app.get('/exam/:id/results', async (req, res) => {
   try {
     const results = await Result.find({ examId: req.params.id });
@@ -270,13 +306,13 @@ app.get('/exam/:id/results', async (req, res) => {
   }
 });
 
-// Optional: Keep old local upload route (can be removed)
+// Old upload route (can be removed)
 app.post('/upload', (req, res) => {
-  res.status(410).json({ message: "Local upload disabled. Use Cloudinary direct upload." });
+  res.status(410).json({ message: "Local upload disabled. Use Cloudinary." });
 });
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`Student Exam URL: https://academy-backend-e02j.onrender.com/studentexam.html`);
+  console.log(`Student Exam URL: https://academy-backend-e02j.onrender.com/exams.html`); // Update if needed
 });
