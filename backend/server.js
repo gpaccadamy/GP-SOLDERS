@@ -7,120 +7,261 @@ const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Uploads folder
+// Create uploads folder if not exists
 const uploadDir = './uploads';
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
 
+// Multer configuration for image upload
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/ /g, '_'))
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname.replace(/ /g, '_'));
+  }
 });
 const upload = multer({ storage });
 
-// MongoDB Connection (from Render env)
+// MongoDB Connection - Use environment variable on Render
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
-  console.error("❌ MONGO_URI not set");
+  console.error("❌ Error: MONGO_URI is not set in environment variables");
   process.exit(1);
 }
 
 mongoose.connect(MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => console.error("❌ MongoDB Error:", err));
+  .then(() => console.log("✅ Connected to MongoDB successfully"))
+  .catch(err => {
+    console.error("❌ MongoDB connection failed:", err);
+    process.exit(1);
+  });
 
-// Models
+// ==================== MODELS ====================
 const Student = mongoose.model('Student', new mongoose.Schema({
-  name: String, roll: String, mobile: String, password: String
+  name: String,
+  roll: String,
+  mobile: String,
+  password: String
 }));
 
 const Video = mongoose.model('Video', new mongoose.Schema({
-  subject: String, class: Number, videoId: String, title: String
+  subject: String,
+  class: Number,
+  videoId: String,
+  title: String
 }));
 
 const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
-  title: String, subject: String, class: Number, totalQuestions: Number,
-  questions: [{ questionImage: String, optionsImage: String, correctAnswer: String }],
+  title: String,
+  subject: String,
+  class: Number,
+  totalQuestions: { type: Number, default: 0 },
+  questions: [{
+    questionImage: String,
+    optionsImage: String,
+    correctAnswer: String  // "a", "b", "c", "d"
+  }],
   createdAt: { type: Date, default: Date.now }
 }));
 
 const Exam = mongoose.model('Exam', new mongoose.Schema({
-  title: String, subject: String, class: Number, totalQuestions: Number,
-  questions: [{ questionImage: String, optionsImage: String, correctAnswer: String }],
+  title: String,
+  subject: String,
+  class: Number,
+  totalQuestions: Number,
+  questions: [{
+    questionImage: String,
+    optionsImage: String,
+    correctAnswer: String
+  }],
   conductedAt: { type: Date, default: Date.now }
 }));
 
-// Routes
-app.get('/students', async (req, res) => res.json(await Student.find()));
+// ==================== ROUTES ====================
+
+// Students
+app.get('/students', async (req, res) => {
+  try {
+    const students = await Student.find();
+    res.json(students);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/students', async (req, res) => {
-  const { name, roll, mobile, password } = req.body;
-  if (await Student.findOne({ $or: [{ roll }, { mobile }] })) return res.status(400).json({ error: "Exists" });
-  await new Student({ name, roll, mobile, password }).save();
-  res.json({ message: "Added" });
+  try {
+    const { name, roll, mobile, password } = req.body;
+    const existing = await Student.findOne({ $or: [{ roll }, { mobile }] });
+    if (existing) return res.status(400).json({ error: "Roll number or mobile already exists" });
+
+    const student = new Student({ name, roll, mobile, password });
+    await student.save();
+    res.json({ message: "Student added successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
+
 app.delete('/students/:id', async (req, res) => {
-  await Student.findByIdAndDelete(req.params.id);
-  res.json({ message: "Deleted" });
+  try {
+    await Student.findByIdAndDelete(req.params.id);
+    res.json({ message: "Student deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.get('/videos', async (req, res) => res.json(await Video.find()));
+// Videos
+app.get('/videos', async (req, res) => {
+  try {
+    const videos = await Video.find();
+    res.json(videos);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/videos', async (req, res) => {
-  const { subject, classNum, youtubeUrl, title } = req.body;
-  const match = youtubeUrl.match(/(?:v=|\/embed\/|youtu\.be\/|watch\?v=)([^#\&\?]{11})/);
-  if (!match) return res.status(400).json({ error: "Invalid URL" });
-  const videoId = match[1];
-  const existing = await Video.findOne({ subject, class: classNum });
-  if (existing) {
-    existing.videoId = videoId;
-    existing.title = title || "Lesson";
-    await existing.save();
-    return res.json({ message: "Updated" });
+  try {
+    const { subject, classNum, youtubeUrl, title } = req.body;
+
+    // Extract YouTube video ID
+    const match = youtubeUrl.match(/(?:v=|\/embed\/|youtu\.be\/|watch\?v=)([^#\&\?]{11})/);
+    if (!match) return res.status(400).json({ error: "Invalid YouTube URL" });
+    const videoId = match[1];
+
+    const existing = await Video.findOne({ subject, class: classNum });
+    if (existing) {
+      existing.videoId = videoId;
+      existing.title = title || "Lesson Video";
+      await existing.save();
+      return res.json({ message: "Video updated successfully" });
+    }
+
+    const video = new Video({ subject, class: classNum, videoId, title: title || "Lesson Video" });
+    await video.save();
+    res.json({ message: "Video saved successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  await new Video({ subject, class: classNum, videoId, title: title || "Lesson" }).save();
-  res.json({ message: "Saved" });
 });
 
-app.get('/drafts', async (req, res) => res.json(await DraftExam.find().sort({ createdAt: -1 })));
+// Draft Exams
+app.get('/drafts', async (req, res) => {
+  try {
+    const drafts = await DraftExam.find().sort({ createdAt: -1 });
+    res.json(drafts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/drafts', async (req, res) => {
-  const { title, subject, classNum, questions } = req.body;
-  let draft = await DraftExam.findOne({ title });
-  if (draft) {
-    draft.subject = subject;
-    draft.class = classNum;
-    draft.questions = questions;
-    draft.totalQuestions = questions.length;
-  } else {
-    draft = new DraftExam({ title, subject, class: classNum, questions, totalQuestions: questions.length });
+  try {
+    const { title, subject, classNum, questions } = req.body;
+    if (!title || !questions || questions.length === 0) {
+      return res.status(400).json({ error: "Title and questions are required" });
+    }
+
+    let draft = await DraftExam.findOne({ title });
+    if (draft) {
+      draft.subject = subject;
+      draft.class = classNum;
+      draft.questions = questions;
+      draft.totalQuestions = questions.length;
+    } else {
+      draft = new DraftExam({
+        title,
+        subject,
+        class: classNum,
+        questions,
+        totalQuestions: questions.length
+      });
+    }
+    await draft.save();
+    res.json({ message: "Draft saved successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  await draft.save();
-  res.json({ message: "Draft saved" });
 });
 
+// Conduct Exam (move draft to final exams)
 app.post('/conduct/:draftId', async (req, res) => {
-  const draft = await DraftExam.findById(req.params.draftId);
-  if (!draft) return res.status(404).json({ error: "Not found" });
-  if (await Exam.findOne({ title: draft.title })) return res.status(400).json({ error: "Already conducted" });
-  await new Exam(draft.toObject()).save();
-  await DraftExam.findByIdAndDelete(req.params.draftId);
-  res.json({ message: "Exam conducted!" });
+  try {
+    const draft = await DraftExam.findById(req.params.draftId);
+    if (!draft) return res.status(404).json({ error: "Draft not found" });
+
+    // Prevent duplicate conducted exam
+    const alreadyConducted = await Exam.findOne({ title: draft.title });
+    if (alreadyConducted) return res.status(400).json({ error: "This exam has already been conducted" });
+
+    const exam = new Exam({
+      title: draft.title,
+      subject: draft.subject,
+      class: draft.class,
+      totalQuestions: draft.totalQuestions,
+      questions: draft.questions
+    });
+    await exam.save();
+
+    // Optional: delete draft after conducting
+    await DraftExam.findByIdAndDelete(req.params.draftId);
+
+    res.json({ message: "Exam conducted and published to students!" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.get('/exams', async (req, res) => res.json(await Exam.find().sort({ conductedAt: -1 })));
-
-app.post('/upload', upload.fields([{ name: 'questionImage' }, { name: 'optionsImage' }]), (req, res) => {
-  const files = req.files;
-  res.json({
-    questionImage: files.questionImage ? files.questionImage[0].filename : null,
-    optionsImage: files.optionsImage ? files.optionsImage[0].filename : null
-  });
+// Final Exams (for students)
+app.get('/exams', async (req, res) => {
+  try {
+    const exams = await Exam.find().sort({ conductedAt: -1 });
+    res.json(exams);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
+// Image Upload
+app.post('/upload', upload.fields([
+  { name: 'questionImage', maxCount: 1 },
+  { name: 'optionsImage', maxCount: 1 }
+]), (req, res) => {
+  try {
+    const files = req.files;
+    if (!files.questionImage && !files.optionsImage) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+    res.json({
+      questionImage: files.questionImage ? files.questionImage[0].filename : null,
+      optionsImage: files.optionsImage ? files.optionsImage[0].filename : null
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Serve uploaded images
 app.use('/uploads', express.static('uploads'));
 
+// Health check route (useful for Render)
+app.get('/', (req, res) => {
+  res.send("Academy Backend is running! 🚀");
+});
+
+// Start server on Render's port
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Backend live at https://academy-backend-e02j.onrender.com`);
+  console.log(`🚀 Backend server running on port ${PORT}`);
+  console.log(`🌐 Live at: https://academy-backend-e02j.onrender.com`);
 });
