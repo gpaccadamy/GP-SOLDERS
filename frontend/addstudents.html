@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Students</title>
+  <link rel="icon" href="data:,">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); color: #333; margin: 0; padding: 0; }
+    header { background: rgba(0,0,0,0.8); color: white; padding: 15px 20px; display: flex; align-items: center; position: fixed; width: 100%; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    header h1 { flex-grow: 1; text-align: center; margin: 0; }
+    .main { margin-top: 80px; padding: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
+    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .action-btn { background: linear-gradient(to right, #667eea, #764ba2); color: white; padding: 14px; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; width: 100%; margin: 10px 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 14px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f0f0f5; }
+    input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <header><h1>Admin Panel - Students</h1></header>
+  <div class="main">
+    <div class="card">
+      <h2>Add New Student</h2>
+      <input type="text" id="sName" placeholder="Student Name *">
+      <input type="text" id="sRoll" placeholder="Roll Number (optional)">
+      <input type="tel" id="sMobile" placeholder="Mobile Number *">
+      <input type="password" id="sPass" placeholder="Password *">
+      <button class="action-btn" onclick="addStudent()">Add Student</button>
+    </div>
+
+    <div class="card">
+      <h2>Students List</h2>
+      <table>
+        <thead><tr><th>Name</th><th>Roll</th><th>Mobile</th><th>Action</th></tr></thead>
+        <tbody id="studentsList"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://academy-backend-e02j.onrender.com";
+
+    async function loadStudents() {
+      const res = await fetch(`${API_URL}/students`);
+      const data = await res.json();
+      document.getElementById('studentsList').innerHTML = data.map(s => `
+        <tr>
+          <td>${s.name}</td>
+          <td>${s.roll || '(No roll)'}</td>
+          <td>${s.mobile}</td>
+          <td><button style="background:#d32f2f;color:white;padding:8px;border:none;border-radius:4px;cursor:pointer;" onclick="deleteStudent('${s._id}')">Delete</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function addStudent() {
+      const name = document.getElementById('sName').value.trim();
+      const roll = document.getElementById('sRoll').value.trim() || null;
+      const mobile = document.getElementById('sMobile').value.trim();
+      const password = document.getElementById('sPass').value;
+      if (!name || !mobile || !password) return alert("Name, mobile, and password are required");
+      const body = { name, mobile, password };
+      if (roll) body.roll = roll;
+      const res = await fetch(`${API_URL}/students`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Student added!");
+        document.getElementById('sName').value = '';
+        document.getElementById('sRoll').value = '';
+        document.getElementById('sMobile').value = '';
+        document.getElementById('sPass').value = '';
+        loadStudents();
+      } else {
+        alert(data.error || "Failed to add student");
+      }
+    }
+
+    async function deleteStudent(id) {
+      if (!confirm("Delete this student?")) return;
+      await fetch(`${API_URL}/students/${id}`, { method: 'DELETE' });
+      loadStudents();
+    }
+
+    loadStudents();
+  </script>
+</body>
+</html>
