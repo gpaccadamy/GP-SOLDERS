@@ -32,11 +32,11 @@ mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch(err => console.error("❌ MongoDB connection failed:", err));
 
-// Models
+// Models - MOBILE NO LONGER UNIQUE
 const Student = mongoose.model('Student', new mongoose.Schema({
   name: { type: String, required: true },
   roll: { type: String }, // Optional
-  mobile: { type: String, required: true, unique: true },
+  mobile: { type: String, required: true }, // Removed unique: true → duplicates allowed
   password: { type: String, required: true }
 }));
 
@@ -74,7 +74,14 @@ const Exam = mongoose.model('Exam', new mongoose.Schema({
 }));
 
 // Routes
-app.get('/students', async (req, res) => res.json(await Student.find()));
+app.get('/students', async (req, res) => {
+  try {
+    const students = await Student.find();
+    res.json(students);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 app.post('/students', async (req, res) => {
   try {
@@ -88,18 +95,12 @@ app.post('/students', async (req, res) => {
       return res.status(400).json({ error: "Name, mobile, and password are required" });
     }
 
-    const existing = await Student.findOne({ mobile });
-    if (existing) {
-      return res.status(400).json({ error: "Mobile number already registered" });
-    }
-
+    // NO DUPLICATE CHECK — ALLOW SAME MOBILE NUMBER
     const student = new Student({ name, roll, mobile, password });
     await student.save();
     res.json({ message: "Student added successfully" });
   } catch (err) {
-    if (err.code === 11000) {
-      return res.status(400).json({ error: "Mobile number already exists" });
-    }
+    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 });
