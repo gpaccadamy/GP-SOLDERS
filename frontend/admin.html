@@ -47,10 +47,10 @@
     <div id="students" class="section">
       <div class="card">
         <h3>Add New Student</h3>
-        <input type="text" id="sName" placeholder="Student Name">
+        <input type="text" id="sName" placeholder="Student Name *">
         <input type="text" id="sRoll" placeholder="Roll Number (optional)">
-        <input type="tel" id="sMobile" placeholder="Mobile Number">
-        <input type="password" id="sPass" placeholder="Password">
+        <input type="tel" id="sMobile" placeholder="Mobile Number *">
+        <input type="password" id="sPass" placeholder="Password *">
         <button class="action-btn" onclick="addStudent()">Add Student</button>
       </div>
       <div class="card">
@@ -172,7 +172,7 @@
       const password = document.getElementById('sPass').value;
 
       if (!name || !mobile || !password) {
-        alert("Name, mobile, and password are required");
+        alert("Name, mobile, and password are required (* fields)");
         return;
       }
 
@@ -199,7 +199,7 @@
           alert("Error: " + (data.error || "Failed to add student"));
         }
       } catch (err) {
-        alert("Network error");
+        alert("Network error – check backend");
       }
     }
 
@@ -325,8 +325,7 @@
           div.className = 'card';
           div.style.marginBottom = '15px';
           div.innerHTML = `
-            <h4>${d.title} (${d.subject} - Class ${d.class})</h4>
-            <p>${d.totalQuestions} questions</p>
+            <h4>${d.title} (${d.subject} - Class ${d.class}) - ${d.totalQuestions} questions</h4>
             <button class="action-btn" style="background:#FF9800;" onclick="alert('Continue editing coming soon')">Continue</button>
             <button class="action-btn" style="background:#d32f2f;" onclick="conductExam('${d._id}')">Conduct Exam</button>
           `;
