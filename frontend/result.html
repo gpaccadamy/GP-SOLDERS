@@ -69,9 +69,9 @@
       font-weight: bold; 
     }
     tr:hover { background: #f1f1f1; }
-    .no-results { 
+    .no-results, .error { 
       text-align: center; 
-      color: #666; 
+      color: #d32f2f; 
       font-size: 18px; 
       margin-top: 40px; 
     }
@@ -93,7 +93,7 @@
       <h2 id="examTitle">Loading Results...</h2>
       <p class="total-students" id="totalStudents">Total Students: 0</p>
       <div id="resultsTable">
-        <p class="no-results">Loading results...</p>
+        <p>Loading results...</p>
       </div>
     </div>
   </div>
@@ -101,14 +101,14 @@
   <script>
     const API_URL = "https://academy-backend-e02j.onrender.com";
 
-    // Get examId and title from URL query params
+    // Get examId and title from URL (e.g., results.html?examId=6944e4f838ffe03db044bad2&title=Rje)
     const urlParams = new URLSearchParams(window.location.search);
     const examId = urlParams.get('examId');
     const title = urlParams.get('title') || 'Exam Results';
 
     if (!examId) {
       document.getElementById('examTitle').textContent = 'Error: No Exam Selected';
-      document.getElementById('resultsTable').innerHTML = '<p class="no-results">Please select an exam from the admin panel.</p>';
+      document.getElementById('resultsTable').innerHTML = '<p class="error">Please go back and select an exam.</p>';
     } else {
       document.getElementById('examTitle').textContent = decodeURIComponent(title);
       loadResults(examId);
@@ -117,17 +117,19 @@
     async function loadResults(examId) {
       try {
         const res = await fetch(`${API_URL}/exam/${examId}/results`);
-        if (!res.ok) throw new Error('Failed to load results');
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || `Failed to load (Status: ${res.status})`);
+        }
         const results = await res.json();
 
         const tableDiv = document.getElementById('resultsTable');
         const totalEl = document.getElementById('totalStudents');
 
         if (results.length === 0) {
-          tableDiv.innerHTML = '<p class="no-results">No students have attempted this exam yet.</p>';
+          tableDiv.innerHTML = '<p class="no-results">No results yet for this exam.</p>';
           totalEl.textContent = 'Total Students: 0';
         } else {
-          // Sort by score descending
           const sorted = results.sort((a, b) => b.score - a.score);
           totalEl.textContent = `Total Students: ${sorted.length}`;
 
@@ -147,12 +149,12 @@
           `;
           sorted.forEach((r, index) => {
             const rank = index + 1;
-            const isTop = rank <= 3 ? 'highlight' : ''; // Optional: Highlight top 3
+            const isTop = rank <= 3 ? 'highlight' : '';
             tableHTML += `
               <tr class="${isTop}">
                 <td>${rank}</td>
                 <td>${r.studentName || 'Anonymous'}</td>
-                <td>${r.rollNumber || '-'}</td> <!-- Added roll number -->
+                <td>${r.rollNumber || '-'}</td> <!-- Shows '-' if roll not saved -->
                 <td><strong>${r.score} / ${r.total}</strong></td>
                 <td>${r.correct}</td>
                 <td>${r.wrong}</td>
@@ -163,8 +165,8 @@
           tableDiv.innerHTML = tableHTML;
         }
       } catch (err) {
-        document.getElementById('resultsTable').innerHTML = `<p class="no-results">Error loading results: ${err.message}</p>`;
-        console.error(err);
+        document.getElementById('resultsTable').innerHTML = `<p class="error">Error: ${err.message}. Check if the exam ID is correct or backend is running.</p>`;
+        console.error('Results load error:', err);
       }
     }
   </script>
