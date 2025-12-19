@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Exams</title>
+  <link rel="icon" href="data:,">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); color: #333; margin: 0; padding: 0; }
+    header { background: rgba(0,0,0,0.8); color: white; padding: 15px 20px; display: flex; align-items: center; position: fixed; width: 100%; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    header h1 { flex-grow: 1; text-align: center; margin: 0; }
+    .main { margin-top: 80px; padding: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
+    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .action-btn { padding: 14px; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; width: 100%; margin: 10px 0; color: white; }
+    .add-q-btn { background: #4CAF50; }
+    .save-btn { background: #FF9800; }
+    .conduct-btn { background: #d32f2f; }
+    input[type="file"] { margin: 10px 0; }
+    img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <header><h1>Admin Panel - Exams</h1></header>
+  <div class="main">
+    <div class="card">
+      <h2>Create New Exam</h2>
+      <input type="text" id="examTitle" placeholder="Exam Title">
+      <select id="examSubject">
+        <option value="">Select Subject</option>
+        <option value="english">English</option>
+        <option value="kannada">Kannada</option>
+        <option value="gk">GK</option>
+        <option value="maths">Maths</option>
+      </select>
+      <select id="examClass">
+        <option value="">Select Class</option>
+        <option value="1">Class 1</option>
+        <option value="2">Class 2</option>
+        <option value="3">Class 3</option>
+        <option value="4">Class 4</option>
+        <option value="5">Class 5</option>
+        <option value="6">Class 6</option>
+      </select>
+      <div id="questionsList"></div>
+      <button class="action-btn add-q-btn" onclick="addQuestionForm()">+ Add Question</button>
+      <button class="action-btn save-btn" onclick="saveDraft()">Save Draft</button>
+    </div>
+
+    <div class="card">
+      <h2>Saved Drafts</h2>
+      <div id="draftsList">Loading...</div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://academy-backend-e02j.onrender.com";
+    let currentQuestions = [];
+
+    function addQuestionForm() {
+      const idx = currentQuestions.length;
+      const container = document.getElementById('questionsList');
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.innerHTML = `
+        <h4>Question ${idx + 1}</h4>
+        <label>Question Photo</label>
+        <input type="file" accept="image/*" onchange="uploadImage(event, 'question', ${idx})">
+        <img id="qImg${idx}" style="display:none;">
+        <label>Options Photo</label>
+        <input type="file" accept="image/*" onchange="uploadImage(event, 'options', ${idx})">
+        <img id="oImg${idx}" style="display:none;">
+        <label>Correct Answer</label>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button type="button" onclick="setCorrect(${idx}, 'a')" class="action-btn" style="background:#2196F3;">A</button>
+          <button type="button" onclick="setCorrect(${idx}, 'b')" class="action-btn" style="background:#2196F3;">B</button>
+          <button type="button" onclick="setCorrect(${idx}, 'c')" class="action-btn" style="background:#2196F3;">C</button>
+          <button type="button" onclick="setCorrect(${idx}, 'd')" class="action-btn" style="background:#2196F3;">D</button>
+        </div>
+        <p>Correct: <b id="correct${idx}">Not selected</b></p>
+        <button type="button" style="background:#d32f2f;color:white;" onclick="this.parentElement.remove(); currentQuestions.splice(${idx},1)">Remove</button>
+      `;
+      container.appendChild(div);
+      currentQuestions.push({ questionImage: "", optionsImage: "", correctAnswer: "" });
+    }
+
+    async function uploadImage(event, type, idx) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const fd = new FormData();
+      fd.append(type === 'question' ? 'questionImage' : 'optionsImage', file);
+      const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: fd });
+      const data = await res.json();
+      const key = type === 'question' ? 'questionImage' : 'optionsImage';
+      currentQuestions[idx][key] = data[key];
+      const img = document.getElementById(type === 'question' ? `qImg${idx}` : `oImg${idx}`);
+      img.src = `${API_URL}/uploads/${data[key]}`;
+      img.style.display = 'block';
+    }
+
+    function setCorrect(idx, ans) {
+      currentQuestions[idx].correctAnswer = ans;
+      document.getElementById(`correct${idx}`).textContent = ans.toUpperCase();
+    }
+
+    async function saveDraft() {
+      const title = document.getElementById('examTitle').value.trim();
+      const subject = document.getElementById('examSubject').value;
+      const classNum = document.getElementById('examClass').value;
+      if (!title || !subject || !classNum || currentQuestions.length === 0) {
+        return alert("Fill all fields and add questions");
+      }
+      if (currentQuestions.some(q => !q.questionImage || !q.optionsImage || !q.correctAnswer)) {
+        return alert("Complete all questions");
+      }
+      const res = await fetch(`${API_URL}/drafts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, subject, classNum, questions: currentQuestions })
+      });
+      const data = await res.json();
+      alert(data.message);
+      currentQuestions = [];
+      document.getElementById('questionsList').innerHTML = '';
+      loadDrafts();
+    }
+
+    async function loadDrafts() {
+      const res = await fetch(`${API_URL}/drafts`);
+      const drafts = await res.json();
+      const container = document.getElementById('draftsList');
+      container.innerHTML = drafts.length === 0 ? "<p>No drafts yet</p>" : "";
+      drafts.forEach(d => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+          <h4>${d.title} (${d.subject} - Class ${d.class}) - ${d.totalQuestions} questions</h4>
+          <button class="action-btn conduct-btn" onclick="conductExam('${d._id}')">Conduct Exam</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function conductExam(draftId) {
+      if (!confirm("Conduct this exam now?")) return;
+      const res = await fetch(`${API_URL}/conduct/${draftId}`, { method: 'POST' });
+      const data = await res.json();
+      alert(data.message || data.error);
+      loadDrafts();
+    }
+
+    loadDrafts();
+  </script>
+</body>
+</html>
