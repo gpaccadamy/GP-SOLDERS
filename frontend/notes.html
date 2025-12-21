@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write Notes - GP Soldiers Academy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --accent: #10b981;
+            --light-bg: #f0f9ff;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--light-bg);
+            color: var(--text);
+            padding-bottom: 80px;
+        }
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.08);
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: white;
+            padding: 18px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            position: relative;
+        }
+        .back-btn {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .note-form {
+            padding: 20px;
+        }
+        #noteTitle {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.2rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+        #noteContent {
+            width: 100%;
+            height: 320px;
+            padding: 16px;
+            font-size: 1.1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            resize: none;
+            box-sizing: border-box;
+            line-height: 1.6;
+        }
+        .save-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 1.2rem;
+            border-radius: 12px;
+            width: 100%;
+            margin-top: 20px;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
+        }
+        .save-btn:hover { background: #059669; }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 0;
+            max-width: 480px;
+            margin: 0 auto;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+        }
+        .nav-item {
+            text-align: center;
+            color: var(--primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .nav-item i { font-size: 1.8rem; display: block; margin-bottom: 4px; }
+        .nav-item.active { color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <i class="fas fa-arrow-left back-btn" onclick="window.location.href='index.html'"></i>
+            Write Notes
+        </div>
+
+        <div class="note-form">
+            <input type="text" id="noteTitle" placeholder="Enter note title (e.g. GK Shortcuts, Physics Formulas)" />
+
+            <textarea id="noteContent" placeholder="Type your notes here...&#10;&#10;Tips:&#10;• Use bullet points&#10;• Write important formulas&#10;• Add quick revision points"></textarea>
+
+            <button class="save-btn" id="saveBtn">
+                <i class="fas fa-save"></i> Save Note
+            </button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="window.location.href='index.html'">
+            <i class="fas fa-home"></i><span>Home</span>
+        </div>
+        <div class="nav-item active">
+            <i class="fas fa-pen"></i><span>Write Notes</span>
+        </div>
+        <div class="nav-item">
+            <i class="fas fa-user"></i><span>Profile</span>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('saveBtn').addEventListener('click', async () => {
+            const title = document.getElementById('noteTitle').value.trim();
+            const content = document.getElementById('noteContent').value.trim();
+
+            if (!title || !content) {
+                alert('Please fill both title and notes!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/save-note', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, content })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Note saved successfully! 🎉');
+                    document.getElementById('noteTitle').value = '';
+                    document.getElementById('noteContent').value = '';
+                } else {
+                    alert('Failed: ' + result.message);
+                }
+            } catch (err) {
+                alert('Error: Check your internet connection');
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>
