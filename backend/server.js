@@ -1,4 +1,4 @@
-// server.js - Fully Updated Backend Code (bcrypt removed as requested)
+// server.js - Fully Updated with Notes Feature (All Original Code Preserved)
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -21,6 +21,7 @@ if (!MONGO_URI) {
   console.error("❌ MONGO_URI not set");
   process.exit(1);
 }
+
 mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch(err => {
@@ -82,7 +83,16 @@ const Result = mongoose.model('Result', new mongoose.Schema({
   submittedAt: { type: Date, default: Date.now }
 }));
 
+// === NEW: Note Model ===
+const NoteSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  content: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+const Note = mongoose.model('Note', NoteSchema);
+
 // ROUTES
+
 // Student Login (plain text comparison)
 app.post('/student-login', async (req, res) => {
   try {
@@ -129,6 +139,7 @@ app.delete('/students/:id', async (req, res) => {
 
 // Videos (unchanged)
 app.get('/videos', async (req, res) => res.json(await Video.find()));
+
 app.post('/videos', async (req, res) => {
   const { subject, classNum, youtubeUrl, title } = req.body;
   const match = youtubeUrl.match(/(?:v=|\/embed\/|youtu\.be\/|watch\?v=)([^#\&\?]{11})/);
@@ -146,6 +157,7 @@ app.post('/videos', async (req, res) => {
 });
 
 app.get('/drafts', async (req, res) => res.json(await DraftExam.find().sort({ createdAt: -1 })));
+
 app.post('/drafts', async (req, res) => {
   const { title, subject, classNum, questions } = req.body;
   if (!questions || questions.length === 0) return res.status(400).json({ error: "At least one question required" });
@@ -181,6 +193,7 @@ app.post('/conduct/:draftId', async (req, res) => {
 
 // Student Exam Routes
 app.get('/active-exams', async (req, res) => res.json(await Exam.find().sort({ conductedAt: -1 })));
+
 app.get('/exam/:id', async (req, res) => {
   const exam = await Exam.findById(req.params.id);
   if (!exam) return res.status(404).json({ error: "Exam not found" });
@@ -194,13 +207,11 @@ app.post('/submit-exam', async (req, res) => {
   if (!exam) return res.status(404).json({ error: "Exam not found" });
   const student = await Student.findOne({ mobile: studentMobile });
   if (!student) return res.status(404).json({ error: "Student not registered" });
-
   let correctCount = 0;
   exam.questions.forEach((q, i) => {
     if (q.correctAnswer.toLowerCase() === answers[i]?.toLowerCase()) correctCount++;
   });
   const wrongCount = exam.totalQuestions - correctCount;
-
   await new Result({
     studentMobile: student.mobile,
     studentName: studentName || student.name,
@@ -213,7 +224,6 @@ app.post('/submit-exam', async (req, res) => {
     wrong: wrongCount,
     answers
   }).save();
-
   res.json({ message: "Exam submitted successfully!" });
 });
 
@@ -228,6 +238,49 @@ app.get('/results', async (req, res) => {
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: "Server error" });
+  }
+});
+
+// === NEW: Save Note Route ===
+app.post('/api/save-note', async (req, res) => {
+  try {
+    const { title, content } = req.body;
+
+    if (!title || !content) {
+      return res.status(400).json({
+        success: false,
+        message: 'Title and content are required'
+      });
+    }
+
+    const newNote = new Note({
+      title: title.trim(),
+      content: content.trim()
+    });
+
+    await newNote.save();
+
+    res.json({
+      success: true,
+      message: 'Note saved successfully!'
+    });
+
+  } catch (error) {
+    console.error('Error saving note:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to save note'
+    });
+  }
+});
+
+// Optional: Get all notes (useful for future My Notes page)
+app.get('/api/notes', async (req, res) => {
+  try {
+    const notes = await Note.find().sort({ createdAt: -1 });
+    res.json(notes);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
