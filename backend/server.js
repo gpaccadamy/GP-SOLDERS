@@ -1,4 +1,4 @@
-// server.js - Complete with Notes Feature (All Original Code + New Additions)
+// server.js - Full Complete Code with Static Frontend Serving + Notes Feature
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -7,10 +7,18 @@ const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Local uploads folder (optional)
+// === SERVE STATIC FRONTEND FILES ===
+// Adjust the path based on your folder structure:
+// - If server.js is in root and frontend is sibling → './frontend'
+// - If server.js is in backend/ folder and frontend is sibling → '../frontend'
+app.use(express.static(path.join(__dirname, '../frontend')));  // Change '../frontend' if needed
+
+// Local uploads folder
 const uploadDir = './uploads';
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 app.use('/uploads', express.static('uploads'));
@@ -34,7 +42,7 @@ const StudentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   roll: { type: String },
   mobile: { type: String, required: true, unique: true },
-  password: { type: String, required: true } // Plain text (as original)
+  password: { type: String, required: true } // Plain text
 });
 const Student = mongoose.model('Student', StudentSchema);
 
@@ -83,7 +91,7 @@ const Result = mongoose.model('Result', new mongoose.Schema({
   submittedAt: { type: Date, default: Date.now }
 }));
 
-// NEW: Note Model
+// Note Model (New Feature)
 const NoteSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
@@ -91,7 +99,7 @@ const NoteSchema = new mongoose.Schema({
 });
 const Note = mongoose.model('Note', NoteSchema);
 
-// ROUTES (All Original Routes Preserved)
+// ROUTES
 
 // Student Login
 app.post('/student-login', async (req, res) => {
@@ -237,7 +245,7 @@ app.get('/results', async (req, res) => {
   }
 });
 
-// NEW: Notes Routes
+// === Notes Routes ===
 app.post('/api/save-note', async (req, res) => {
   try {
     const { title, content } = req.body;
@@ -260,6 +268,11 @@ app.get('/api/notes', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
+});
+
+// === Catch-all route for SPA (must be at the very end) ===
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));  // Adjust path if needed
 });
 
 // Start Server
