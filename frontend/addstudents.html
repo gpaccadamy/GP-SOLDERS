@@ -1,93 +1,291 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - Students</title>
-  <link rel="icon" href="data:,">
-  <style>
-    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); color: #333; margin: 0; padding: 0; }
-    header { background: rgba(0,0,0,0.8); color: white; padding: 15px 20px; display: flex; align-items: center; position: fixed; width: 100%; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    header h1 { flex-grow: 1; text-align: center; margin: 0; }
-    .main { margin-top: 80px; padding: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
-    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-    .action-btn { background: linear-gradient(to right, #667eea, #764ba2); color: white; padding: 14px; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; width: 100%; margin: 10px 0; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { padding: 14px; text-align: left; border-bottom: 1px solid #eee; }
-    th { background: #f0f0f5; }
-    input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin - Students</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:,">
+    <style>
+        :root {
+            --primary: #2563eb;     /* Vibrant blue */
+            --accent: #10b981;      /* Green */
+            --light-bg: #f0f9ff;    /* Very light sky blue */
+            --card-bg: #ffffff;     /* White cards */
+            --gradient-start: #e0f2fe;
+            --gradient-end: #fefce8;
+            --text: #1e293b;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--light-bg);
+            color: var(--text);
+            padding-bottom: 80px;
+        }
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.08);
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: white;
+            padding: 18px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px 15px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        }
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        input[type="text"],
+        input[type="tel"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px;
+            margin: 12px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: #f8fafc;
+            box-sizing: border-box;
+        }
+        .action-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin: 12px 0;
+            color: white;
+            background: var(--accent);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th {
+            background: var(--gradient-start);
+            padding: 14px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text);
+        }
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .delete-btn {
+            background: var(--danger);
+            color: white;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 0;
+            max-width: 480px;
+            margin: 0 auto;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        .nav-item {
+            text-align: center;
+            color: var(--primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .nav-item i {
+            font-size: 1.8rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .nav-item.active {
+            color: var(--accent);
+        }
+        /* Student Portal View */
+        .portal-view {
+            display: none;
+            padding: 20px 0;
+        }
+        .portal-view.active {
+            display: block;
+        }
+        .portal-iframe {
+            width: 100%;
+            height: calc(100vh - 140px);
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        }
+        @media (max-width: 480px) {
+            .app-container { box-shadow: none; }
+        }
+    </style>
 </head>
 <body>
-  <header><h1>Admin Panel - Students</h1></header>
-  <div class="main">
-    <div class="card">
-      <h2>Add New Student</h2>
-      <input type="text" id="sName" placeholder="Student Name *">
-      <input type="text" id="sRoll" placeholder="Roll Number (optional)">
-      <input type="tel" id="sMobile" placeholder="Mobile Number *">
-      <input type="password" id="sPass" placeholder="Password *">
-      <button class="action-btn" onclick="addStudent()">Add Student</button>
+    <div class="app-container">
+        <!-- Admin Students View -->
+        <div id="adminView">
+            <div class="header">Admin Panel - Students</div>
+
+            <div class="card">
+                <h2>Add New Student</h2>
+                <input type="text" id="sName" placeholder="Student Name *">
+                <input type="text" id="sRoll" placeholder="Roll Number (optional)">
+                <input type="tel" id="sMobile" placeholder="Mobile Number *">
+                <input type="password" id="sPass" placeholder="Password *">
+                <button class="action-btn" onclick="addStudent()">Add Student</button>
+            </div>
+
+            <div class="card">
+                <h2>Students List</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Roll</th>
+                            <th>Mobile</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Student Portal View -->
+        <div id="studentPortalView" class="portal-view">
+            <div class="header">Student Portal</div>
+            <iframe src="https://academy-student-portal.onrender.com" class="portal-iframe" title="Student Portal"></iframe>
+        </div>
     </div>
 
-    <div class="card">
-      <h2>Students List</h2>
-      <table>
-        <thead><tr><th>Name</th><th>Roll</th><th>Mobile</th><th>Action</th></tr></thead>
-        <tbody id="studentsList"></tbody>
-      </table>
+    <div class="bottom-nav">
+        <div class="nav-item active" id="homeBtn" onclick="showView('admin')">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" id="portalBtn" onclick="showView('portal')">
+            <i class="fas fa-user-graduate"></i>
+            <span>Student Portal</span>
+        </div>
     </div>
-  </div>
 
-  <script>
-    const API_URL = "https://academy-backend-e02j.onrender.com";
+    <script>
+        const API_URL = "https://academy-backend-e02j.onrender.com";
 
-    async function loadStudents() {
-      const res = await fetch(`${API_URL}/students`);
-      const data = await res.json();
-      document.getElementById('studentsList').innerHTML = data.map(s => `
-        <tr>
-          <td>${s.name}</td>
-          <td>${s.roll || '(No roll)'}</td>
-          <td>${s.mobile}</td>
-          <td><button style="background:#d32f2f;color:white;padding:8px;border:none;border-radius:4px;cursor:pointer;" onclick="deleteStudent('${s._id}')">Delete</button></td>
-        </tr>
-      `).join('');
-    }
+        // View switching
+        function showView(view) {
+            if (view === 'admin') {
+                document.getElementById('adminView').style.display = 'block';
+                document.getElementById('studentPortalView').classList.remove('active');
+                document.getElementById('homeBtn').classList.add('active');
+                document.getElementById('portalBtn').classList.remove('active');
+            } else if (view === 'portal') {
+                document.getElementById('adminView').style.display = 'none';
+                document.getElementById('studentPortalView').classList.add('active');
+                document.getElementById('portalBtn').classList.add('active');
+                document.getElementById('homeBtn').classList.remove('active');
+            }
+        }
 
-    async function addStudent() {
-      const name = document.getElementById('sName').value.trim();
-      const roll = document.getElementById('sRoll').value.trim() || null;
-      const mobile = document.getElementById('sMobile').value.trim();
-      const password = document.getElementById('sPass').value;
-      if (!name || !mobile || !password) return alert("Name, mobile, and password are required");
-      const body = { name, mobile, password };
-      if (roll) body.roll = roll;
-      const res = await fetch(`${API_URL}/students`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      if (res.ok) {
-        alert("Student added!");
-        document.getElementById('sName').value = '';
-        document.getElementById('sRoll').value = '';
-        document.getElementById('sMobile').value = '';
-        document.getElementById('sPass').value = '';
+        async function loadStudents() {
+            try {
+                const res = await fetch(`${API_URL}/students`);
+                const data = await res.json();
+                document.getElementById('studentsList').innerHTML = data.map(s => `
+                    <tr>
+                        <td>${s.name}</td>
+                        <td>${s.roll || '(No roll)'}</td>
+                        <td>${s.mobile}</td>
+                        <td><button class="delete-btn" onclick="deleteStudent('${s._id}')">Delete</button></td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                document.getElementById('studentsList').innerHTML = `<tr><td colspan="4" style="text-align:center;color:red;">Error loading students</td></tr>`;
+            }
+        }
+
+        async function addStudent() {
+            const name = document.getElementById('sName').value.trim();
+            const roll = document.getElementById('sRoll').value.trim() || null;
+            const mobile = document.getElementById('sMobile').value.trim();
+            const password = document.getElementById('sPass').value;
+            if (!name || !mobile || !password) return alert("Name, mobile, and password are required");
+
+            const body = { name, mobile, password };
+            if (roll) body.roll = roll;
+
+            try {
+                const res = await fetch(`${API_URL}/students`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert("Student added!");
+                    document.getElementById('sName').value = '';
+                    document.getElementById('sRoll').value = '';
+                    document.getElementById('sMobile').value = '';
+                    document.getElementById('sPass').value = '';
+                    loadStudents();
+                } else {
+                    alert(data.error || "Failed to add student");
+                }
+            } catch (err) {
+                alert("Error adding student");
+            }
+        }
+
+        async function deleteStudent(id) {
+            if (!confirm("Delete this student?")) return;
+            try {
+                await fetch(`${API_URL}/students/${id}`, { method: 'DELETE' });
+                loadStudents();
+            } catch (err) {
+                alert("Error deleting student");
+            }
+        }
+
+        // Load students on page load
         loadStudents();
-      } else {
-        alert(data.error || "Failed to add student");
-      }
-    }
-
-    async function deleteStudent(id) {
-      if (!confirm("Delete this student?")) return;
-      await fetch(`${API_URL}/students/${id}`, { method: 'DELETE' });
-      loadStudents();
-    }
-
-    loadStudents();
-  </script>
+    </script>
 </body>
 </html>
