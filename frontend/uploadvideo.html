@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pre-Recorded Classes - GP Soldiers Academy</title>
+    <title>Admin Panel - Video Lessons | GP Soldiers Academy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -14,393 +14,268 @@
             --gradient-start: #e0f2fe;
             --gradient-end: #fefce8;
             --text: #1e293b;
-            --shadow: rgba(0,0,0,0.08);
+            --shadow: rgba(0,0,0,0.1);
         }
         body {
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
             background: var(--light-bg);
             color: var(--text);
-            padding-bottom: 70px;
-            overflow-x: hidden;
-        }
-        .app-container {
-            max-width: 480px;
-            margin: 0 auto;
-            background: var(--card-bg);
             min-height: 100vh;
-            box-shadow: 0 0 20px var(--shadow);
-            position: relative;
         }
-        .header {
+        header {
             background: linear-gradient(135deg, var(--primary), #3b82f6);
             color: white;
-            padding: 18px 60px;
-            text-align: center;
-            font-weight: bold;
-            position: relative;
-        }
-        .title {
-            margin: 0;
-            font-size: 1.3rem;
-            line-height: 1.2;
-        }
-        .menu-btn {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255,255,255,0.2);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 1.3rem;
-            transition: background 0.3s;
-        }
-        .menu-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
-        .back-btn {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255,255,255,0.2);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
-
-        /* Sliding Sidebar */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -300px;
-            width: 280px;
-            height: 100%;
-            background: var(--card-bg);
-            box-shadow: 8px 0 25px rgba(0,0,0,0.15);
-            transition: left 0.4s ease;
-            z-index: 1000;
-            padding-top: 80px;
-        }
-        .sidebar.active {
-            left: 0;
-        }
-        .sidebar-header {
-            text-align: center;
-            padding: 20px;
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: var(--primary);
-            border-bottom: 2px solid var(--gradient-start);
-        }
-        .subject-btn {
-            display: block;
-            width: 85%;
-            margin: 15px auto;
-            padding: 16px;
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-            color: var(--primary);
-            font-size: 1.1rem;
-            font-weight: 600;
-            text-align: center;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px var(--shadow);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .subject-btn:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
-        .subject-btn i {
-            margin-right: 10px;
-            font-size: 1.3rem;
-        }
-
-        /* Overlay */
-        .overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.4s;
-            z-index: 999;
-        }
-        .overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .page-title {
-            text-align: center;
-            font-size: 1.8rem;
-            margin: 30px 0 10px;
-            color: var(--primary);
-            font-weight: bold;
-        }
-        .subtitle {
-            text-align: center;
-            font-size: 1rem;
-            opacity: 0.8;
-            margin-bottom: 30px;
-        }
-        .video-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 25px;
-            padding: 0 20px 20px;
-        }
-        .video-card {
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 6px 15px var(--shadow);
-            transition: all 0.3s ease;
-        }
-        .video-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-        }
-        .video-header {
-            background: linear-gradient(135deg, var(--primary), #3b82f6);
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-        .video-body {
             padding: 20px;
             text-align: center;
-        }
-        .subject {
-            font-size: 1.4rem;
-            color: var(--primary);
-            margin: 10px 0;
-            font-weight: 600;
-        }
-        .class-tag {
-            display: inline-block;
-            background: var(--accent);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 30px;
+            font-size: 1.5rem;
             font-weight: bold;
-            margin: 10px 0;
-        }
-        .video-frame {
-            width: 100%;
-            height: 220px;
-            border: none;
-            border-radius: 12px;
             box-shadow: 0 4px 15px var(--shadow);
         }
-        .no-video {
-            text-align: center;
-            padding: 60px 20px;
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        .card {
+            background: var(--card-bg);
             border-radius: 16px;
-            margin: 40px 20px;
-            box-shadow: 0 6px 15px var(--shadow);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px var(--shadow);
         }
-        .no-video h2 {
-            font-size: 1.5rem;
+        h2 {
             color: var(--primary);
-            margin-bottom: 15px;
-        }
-        .jaihind {
-            font-size: 1.8rem;
-            color: var(--primary);
-            margin-top: 20px;
-            font-weight: bold;
-        }
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 12px 0;
-            max-width: 480px;
-            margin: 0 auto;
-            box-shadow: 0 -4px 15px var(--shadow);
-        }
-        .nav-item {
+            margin-bottom: 20px;
+            font-size: 1.6rem;
             text-align: center;
-            color: var(--primary);
-            font-size: 0.9rem;
-            cursor: pointer;
         }
-        .nav-item i {
-            font-size: 1.8rem;
+        label {
             display: block;
-            margin-bottom: 4px;
+            margin: 15px 0 8px;
+            font-weight: 600;
+            color: var(--text);
         }
-        @media (max-width: 480px) {
-            .app-container { box-shadow: none; }
-            .header { padding: 18px 55px; }
-            .title { font-size: 1.2rem; }
+        select, input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
+        }
+        .action-btn {
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(37,99,235,0.3);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+        th {
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: white;
+            padding: 16px;
+            text-align: left;
+        }
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover {
+            background: var(--gradient-start);
+        }
+        .status {
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.1rem;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .card { padding: 20px; }
+            header { font-size: 1.3rem; }
         }
     </style>
 </head>
 <body>
-    <!-- Sliding Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">Choose Subject</div>
-        <div class="subject-btn" onclick="loadVideos()">
-            <i class="fas fa-th-large"></i> All Videos
-        </div>
-        <div class="subject-btn" onclick="filterVideos('GK')">
-            <i class="fas fa-globe"></i> General Knowledge (GK)
-        </div>
-        <div class="subject-btn" onclick="filterVideos('English')">
-            <i class="fas fa-language"></i> English
-        </div>
-        <div class="subject-btn" onclick="filterVideos('Kannada')">
-            <i class="fas fa-book"></i> Kannada
-        </div>
-        <div class="subject-btn" onclick="filterVideos('Maths')">
-            <i class="fas fa-calculator"></i> Maths
-        </div>
-    </div>
-    <div class="overlay" id="overlay" onclick="closeMenu()"></div>
+    <header>
+        <i class="fas fa-shield-alt" style="margin-right: 10px;"></i>
+        Admin Panel - Video Lessons
+    </header>
 
-    <div class="app-container">
-        <div class="header">
-            <div class="menu-btn" onclick="toggleMenu()">
-                <i class="fas fa-bars"></i>
-            </div>
-            <div class="title">GP SOLDIERS ACADEMY</div>
-            <div class="back-btn" onclick="history.back()">
-                <i class="fas fa-arrow-left"></i>
-            </div>
+    <div class="container">
+        <div class="card">
+            <h2>Add New Video Lesson</h2>
+            <div id="status"></div>
+
+            <label for="vSubject">Subject</label>
+            <select id="vSubject">
+                <option value="">Select Subject</option>
+                <option value="GK">General Knowledge (GK)</option>
+                <option value="English">English</option>
+                <option value="Kannada">Kannada</option>
+                <option value="Maths">Maths</option>
+            </select>
+
+            <label for="vClass">Class Number</label>
+            <select id="vClass">
+                <option value="">Select Class</option>
+                <option value="1">Class 1</option>
+                <option value="2">Class 2</option>
+                <option value="3">Class 3</option>
+                <option value="4">Class 4</option>
+                <option value="5">Class 5</option>
+                <option value="6">Class 6</option>
+                <option value="7">Class 7</option>
+                <option value="8">Class 8</option>
+                <option value="9">Class 9</option>
+                <option value="10">Class 10</option>
+            </select>
+
+            <label for="vUrl">YouTube Video URL (Full Link)</label>
+            <input type="text" id="vUrl" placeholder="e.g., https://www.youtube.com/watch?v=abc123 or https://youtu.be/abc123">
+
+            <label for="vTitle">Video Title (Optional)</label>
+            <input type="text" id="vTitle" placeholder="e.g., Ratio and Proportion - Part 1">
+
+            <button class="action-btn" onclick="saveVideo()">
+                <i class="fas fa-upload" style="margin-right: 8px;"></i>
+                Upload Video
+            </button>
         </div>
 
-        <h1 class="page-title">PRE-RECORDED CLASSES</h1>
-        <p class="subtitle">Watch Anytime • कधीही पाहा • Anytime Study</p>
-
-        <div id="videoContainer" class="video-grid">
-            <!-- Videos will load here -->
-        </div>
-
-        <div style="text-align: center; padding: 40px 20px;">
-            <div class="jaihind">भारत माता की जय</div>
-            <div class="jaihind">JAI HIND</div>
-            <p style="margin-top:15px; opacity:0.8;">Train Hard • Fight Easy</p>
-        </div>
-    </div>
-
-    <div class="bottom-nav">
-        <div class="nav-item" onclick="window.location.href='index.html'">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-        </div>
-        <div class="nav-item" onclick="window.location.href='notes.html'">
-            <i class="fas fa-pen"></i>
-            <span>Write Notes</span>
-        </div>
-        <div class="nav-item">
-            <i class="fas fa-user"></i>
-            <span>Profile</span>
+        <div class="card">
+            <h2>Uploaded Videos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Class</th>
+                        <th>Title</th>
+                        <th>Video ID</th>
+                    </tr>
+                </thead>
+                <tbody id="videosList">
+                    <!-- Videos loaded here -->
+                </tbody>
+            </table>
         </div>
     </div>
 
     <script>
-        // Menu Toggle
-        function toggleMenu() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('overlay').classList.toggle('active');
-        }
-        function closeMenu() {
-            document.getElementById('sidebar').classList.remove('active');
-            document.getElementById('overlay').classList.remove('active');
+        const API_URL = "https://academy-backend-e02j.onrender.com/api";
+
+        // Convert YouTube URL to embed URL
+        function getEmbedUrl(youtubeUrl) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = youtubeUrl.match(regExp);
+            if (match && match[2].length === 11) {
+                return `https://www.youtube.com/embed/${match[2]}`;
+            }
+            return null;
         }
 
-        // Backend API
-        const API = 'https://academy-backend-e02j.onrender.com/api';
-        let allVideos = [];
-
-        async function loadVideos(subject = null) {
+        async function loadVideos() {
             try {
-                const res = await fetch(`${API}/videos`);
+                const res = await fetch(`${API_URL}/videos`);
                 const { videos } = await res.json();
-                allVideos = videos;
 
-                renderVideos(subject);
+                const tbody = document.getElementById('videosList');
+                if (videos.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:40px; color:#666;">No videos uploaded yet.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = videos.map(v => `
+                    <tr>
+                        <td><strong>${v.subject}</strong></td>
+                        <td>Class ${v.classNum}</td>
+                        <td>${v.title || '<em>No title</em>'}</td>
+                        <td><code>${v.embedUrl.split('/').pop()}</code></td>
+                    </tr>
+                `).join('');
             } catch (err) {
-                document.getElementById('videoContainer').innerHTML = `
-                    <div class="no-video">
-                        <h2>Connection Failed</h2>
-                        <p>Please check internet and try again.</p>
-                    </div>`;
+                document.getElementById('videosList').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Failed to load videos. Check connection.</td></tr>`;
             }
         }
 
-        function renderVideos(subject = null) {
-            const container = document.getElementById('videoContainer');
-            let displayVideos = subject ? allVideos.filter(v => v.subject === subject) : allVideos;
+        async function saveVideo() {
+            const subject = document.getElementById('vSubject').value;
+            const classNum = document.getElementById('vClass').value;
+            const youtubeUrl = document.getElementById('vUrl').value.trim();
+            const title = document.getElementById('vTitle').value.trim();
 
-            if (displayVideos.length === 0) {
-                container.innerHTML = `
-                    <div class="no-video">
-                        <h2>No Videos in ${getFullSubjectName(subject) || 'This Category'} Yet</h2>
-                        <p>Admin will upload classes soon.<br>Stay ready, Soldier!</p>
-                        <div class="jaihind">भारत माता की जय</div>
-                    </div>`;
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = '';
+
+            if (!subject || !classNum || !youtubeUrl) {
+                statusDiv.innerHTML = '<div class="status error">Please fill Subject, Class, and YouTube URL.</div>';
                 return;
             }
 
-            container.innerHTML = displayVideos.map(video => `
-                <div class="video-card">
-                    <div class="video-header">
-                        PRE-RECORDED TRAINING
-                    </div>
-                    <div class="video-body">
-                        <div class="subject">${getFullSubjectName(video.subject)}</div>
-                        <div class="class-tag">CLASS ${video.classNum}</div>
-                        <iframe class="video-frame"
-                            src="${video.embedUrl}"
-                            title="${getFullSubjectName(video.subject)} Class ${video.classNum}"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen>
-                        </iframe>
-                    </div>
-                </div>
-            `).join('');
+            const embedUrl = getEmbedUrl(youtubeUrl);
+            if (!embedUrl) {
+                statusDiv.innerHTML = '<div class="status error">Invalid YouTube URL. Please check and try again.</div>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/videos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subject, classNum, embedUrl, title })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    statusDiv.innerHTML = `<div class="status success">${data.message || 'Video uploaded successfully!'}</div>`;
+                    // Clear form
+                    document.getElementById('vSubject').value = '';
+                    document.getElementById('vClass').value = '';
+                    document.getElementById('vUrl').value = '';
+                    document.getElementById('vTitle').value = '';
+                    loadVideos();
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">${data.error || 'Upload failed.'}</div>`;
+                }
+            } catch (err) {
+                statusDiv.innerHTML = '<div class="status error">Network error. Please try again.</div>';
+            }
         }
 
-        function getFullSubjectName(short) {
-            const names = {
-                'GK': 'General Knowledge (GK)',
-                'English': 'English',
-                'Kannada': 'Kannada',
-                'Maths': 'Maths'
-            };
-            return names[short] || short;
-        }
-
-        function filterVideos(subject) {
-            closeMenu();
-            renderVideos(subject);
-        }
-
-        // Load all videos when page opens
+        // Load videos on page load
         loadVideos();
     </script>
 </body>
