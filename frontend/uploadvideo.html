@@ -3,279 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Video Lessons | GP Soldiers Academy</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Admin - Upload Videos</title>
     <style>
-        :root {
-            --primary: #2563eb;
-            --accent: #10b981;
-            --light-bg: #f0f9ff;
-            --card-bg: #ffffff;
-            --gradient-start: #e0f2fe;
-            --gradient-end: #fefce8;
-            --text: #1e293b;
-            --shadow: rgba(0,0,0,0.1);
-        }
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: var(--light-bg);
-            color: var(--text);
-            min-height: 100vh;
-        }
-        header {
-            background: linear-gradient(135deg, var(--primary), #3b82f6);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            box-shadow: 0 4px 15px var(--shadow);
-        }
-        .container {
-            max-width: 900px;
-            margin: 30px auto;
-            padding: 20px;
-        }
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px var(--shadow);
-        }
-        h2 {
-            color: var(--primary);
-            margin-bottom: 20px;
-            font-size: 1.6rem;
-            text-align: center;
-        }
-        label {
-            display: block;
-            margin: 15px 0 8px;
-            font-weight: 600;
-            color: var(--text);
-        }
-        select, input[type="text"] {
-            width: 100%;
-            padding: 14px;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            font-size: 16px;
-            background: white;
-        }
-        select:focus, input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
-        }
-        .action-btn {
-            background: linear-gradient(135deg, var(--primary), #3b82f6);
-            color: white;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
-            transition: all 0.3s;
-        }
-        .action-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(37,99,235,0.3);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 6px 20px var(--shadow);
-        }
-        th {
-            background: linear-gradient(135deg, var(--primary), #3b82f6);
-            color: white;
-            padding: 16px;
-            text-align: left;
-        }
-        td {
-            padding: 14px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        tr:last-child td {
-            border-bottom: none;
-        }
-        tr:hover {
-            background: var(--gradient-start);
-        }
-        .status {
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-weight: bold;
-            text-align: center;
-            margin: 20px 0;
-            font-size: 1.1rem;
-        }
+        body { font-family: Arial, sans-serif; background: #f0f9ff; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2563eb; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
+        button { background: #2563eb; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #1d4ed8; }
+        .status { padding: 15px; margin: 20px 0; border-radius: 8px; text-align: center; font-weight: bold; }
         .success { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
-        @media (max-width: 600px) {
-            .container { padding: 15px; }
-            .card { padding: 20px; }
-            header { font-size: 1.3rem; }
-        }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background: #2563eb; color: white; }
     </style>
 </head>
 <body>
-    <header>
-        <i class="fas fa-shield-alt" style="margin-right: 10px;"></i>
-        Admin Panel - Video Lessons
-    </header>
-
     <div class="container">
-        <div class="card">
-            <h2>Add New Video Lesson</h2>
-            <div id="status"></div>
+        <h2>Upload Pre-Recorded Video</h2>
+        <div id="status"></div>
 
-            <label for="vSubject">Subject</label>
-            <select id="vSubject">
-                <option value="">Select Subject</option>
-                <option value="GK">General Knowledge (GK)</option>
-                <option value="English">English</option>
-                <option value="Kannada">Kannada</option>
-                <option value="Maths">Maths</option>
-            </select>
+        <label>Subject</label>
+        <select id="subject">
+            <option value="">Select Subject</option>
+            <option value="gk">General Knowledge (GK)</option>
+            <option value="english">English</option>
+            <option value="kannada">Kannada</option>
+            <option value="maths">Maths</option>
+        </select>
 
-            <label for="vClass">Class Number</label>
-            <select id="vClass">
-                <option value="">Select Class</option>
-                <option value="1">Class 1</option>
-                <option value="2">Class 2</option>
-                <option value="3">Class 3</option>
-                <option value="4">Class 4</option>
-                <option value="5">Class 5</option>
-                <option value="6">Class 6</option>
-                <option value="7">Class 7</option>
-                <option value="8">Class 8</option>
-                <option value="9">Class 9</option>
-                <option value="10">Class 10</option>
-            </select>
+        <label>Class</label>
+        <select id="classNum">
+            <option value="">Select Class</option>
+            <option value="1">Class 1</option>
+            <option value="2">Class 2</option>
+            <option value="3">Class 3</option>
+            <option value="4">Class 4</option>
+            <option value="5">Class 5</option>
+            <option value="6">Class 6</option>
+        </select>
 
-            <label for="vUrl">YouTube Video URL (Full Link)</label>
-            <input type="text" id="vUrl" placeholder="e.g., https://www.youtube.com/watch?v=abc123 or https://youtu.be/abc123">
+        <label>YouTube URL</label>
+        <input type="text" id="youtubeUrl" placeholder="e.g. https://youtu.be/abc123">
 
-            <label for="vTitle">Video Title (Optional)</label>
-            <input type="text" id="vTitle" placeholder="e.g., Ratio and Proportion - Part 1">
+        <label>Title (Optional)</label>
+        <input type="text" id="title" placeholder="e.g. Introduction to Algebra">
 
-            <button class="action-btn" onclick="saveVideo()">
-                <i class="fas fa-upload" style="margin-right: 8px;"></i>
-                Upload Video
-            </button>
-        </div>
+        <button onclick="uploadVideo()">Upload Video</button>
 
-        <div class="card">
-            <h2>Uploaded Videos</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Subject</th>
-                        <th>Class</th>
-                        <th>Title</th>
-                        <th>Video ID</th>
-                    </tr>
-                </thead>
-                <tbody id="videosList">
-                    <!-- Videos loaded here -->
-                </tbody>
-            </table>
-        </div>
+        <h2 style="margin-top:40px;">Uploaded Videos</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Class</th>
+                    <th>Title</th>
+                    <th>Video</th>
+                </tr>
+            </thead>
+            <tbody id="videoList"></tbody>
+        </table>
     </div>
 
     <script>
-        const API_URL = "https://academy-backend-e02j.onrender.com/api";
+        const API = 'https://academy-backend-e02j.onrender.com';
 
-        // Convert YouTube URL to embed URL
-        function getEmbedUrl(youtubeUrl) {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-            const match = youtubeUrl.match(regExp);
-            if (match && match[2].length === 11) {
-                return `https://www.youtube.com/embed/${match[2]}`;
-            }
-            return null;
-        }
+        async function uploadVideo() {
+            const subject = document.getElementById('subject').value;
+            const classNum = document.getElementById('classNum').value;
+            const youtubeUrl = document.getElementById('youtubeUrl').value.trim();
+            const title = document.getElementById('title').value.trim();
 
-        async function loadVideos() {
-            try {
-                const res = await fetch(`${API_URL}/videos`);
-                const { videos } = await res.json();
-
-                const tbody = document.getElementById('videosList');
-                if (videos.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:40px; color:#666;">No videos uploaded yet.</td></tr>`;
-                    return;
-                }
-
-                tbody.innerHTML = videos.map(v => `
-                    <tr>
-                        <td><strong>${v.subject}</strong></td>
-                        <td>Class ${v.classNum}</td>
-                        <td>${v.title || '<em>No title</em>'}</td>
-                        <td><code>${v.embedUrl.split('/').pop()}</code></td>
-                    </tr>
-                `).join('');
-            } catch (err) {
-                document.getElementById('videosList').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Failed to load videos. Check connection.</td></tr>`;
-            }
-        }
-
-        async function saveVideo() {
-            const subject = document.getElementById('vSubject').value;
-            const classNum = document.getElementById('vClass').value;
-            const youtubeUrl = document.getElementById('vUrl').value.trim();
-            const title = document.getElementById('vTitle').value.trim();
-
-            const statusDiv = document.getElementById('status');
-            statusDiv.innerHTML = '';
+            const status = document.getElementById('status');
+            status.innerHTML = '';
 
             if (!subject || !classNum || !youtubeUrl) {
-                statusDiv.innerHTML = '<div class="status error">Please fill Subject, Class, and YouTube URL.</div>';
-                return;
-            }
-
-            const embedUrl = getEmbedUrl(youtubeUrl);
-            if (!embedUrl) {
-                statusDiv.innerHTML = '<div class="status error">Invalid YouTube URL. Please check and try again.</div>';
+                status.innerHTML = '<div class="status error">Please fill all required fields</div>';
                 return;
             }
 
             try {
-                const res = await fetch(`${API_URL}/videos`, {
+                const res = await fetch(`${API}/videos`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ subject, classNum, embedUrl, title })
+                    body: JSON.stringify({ subject, classNum, youtubeUrl, title })
                 });
 
                 const data = await res.json();
 
                 if (res.ok) {
-                    statusDiv.innerHTML = `<div class="status success">${data.message || 'Video uploaded successfully!'}</div>`;
-                    // Clear form
-                    document.getElementById('vSubject').value = '';
-                    document.getElementById('vClass').value = '';
-                    document.getElementById('vUrl').value = '';
-                    document.getElementById('vTitle').value = '';
+                    status.innerHTML = `<div class="status success">${data.message}</div>`;
+                    document.getElementById('youtubeUrl').value = '';
+                    document.getElementById('title').value = '';
                     loadVideos();
                 } else {
-                    statusDiv.innerHTML = `<div class="status error">${data.error || 'Upload failed.'}</div>`;
+                    status.innerHTML = `<div class="status error">${data.error || 'Upload failed'}</div>`;
                 }
             } catch (err) {
-                statusDiv.innerHTML = '<div class="status error">Network error. Please try again.</div>';
+                status.innerHTML = '<div class="status error">Network error. Check connection or backend.</div>';
             }
         }
 
-        // Load videos on page load
+        async function loadVideos() {
+            try {
+                const res = await fetch(`${API}/videos`);
+                const videos = await res.json();
+
+                const tbody = document.getElementById('videoList');
+                tbody.innerHTML = videos.map(v => `
+                    <tr>
+                        <td>${v.subject.toUpperCase()}</td>
+                        <td>${v.class}</td>
+                        <td>${v.title || 'No title'}</td>
+                        <td><a href="https://youtube.com/watch?v=${v.videoId}" target="_blank">Watch</a></td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                document.getElementById('videoList').innerHTML = '<tr><td colspan="4">Failed to load videos</td></tr>';
+            }
+        }
+
         loadVideos();
     </script>
 </body>
