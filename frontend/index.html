@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GP Soldiers Academy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #2563eb;     /* Vibrant blue */
-            --accent: #10b981;      /* Green */
-            --light-bg: #f0f9ff;    /* Very light sky blue */
-            --card-bg: #ffffff;     /* White cards */
+            --primary: #2563eb; /* Vibrant blue */
+            --accent: #10b981; /* Green */
+            --light-bg: #f0f9ff; /* Very light sky blue */
+            --card-bg: #ffffff; /* White cards */
             --gradient-start: #e0f2fe;
             --gradient-end: #fefce8;
             --text: #1e293b;
@@ -126,6 +126,7 @@
             text-align: center;
             color: var(--primary);
             font-size: 0.9rem;
+            cursor: pointer;
         }
         .nav-item i {
             font-size: 1.8rem;
@@ -154,30 +155,43 @@
         </div>
 
         <div class="features-grid">
-            <div class="feature-item" onclick="window.location.href='my-courses.html'">
-                <i class="fas fa-book-open"></i>
-                <span>My Courses</span>
+            <!-- 1st: New Button -->
+            <div class="feature-item" onclick="window.location.href='army-video.html'">
+                <i class="fas fa-dumbbell"></i>
+                <span>You Training Videos</span>
             </div>
-            <div class="feature-item" onclick="window.location.href='army-exam-notes.html'">
-                <i class="fas fa-sticky-note"></i>
-                <span>Army Exam Notes</span>
-            </div>
+
+            <!-- 2nd: Army Exam Test -->
             <div class="feature-item" onclick="window.location.href='army-exam-test.html'">
                 <i class="fas fa-clipboard-check"></i>
                 <span>Army Exam Test</span>
             </div>
+
+            <!-- 3rd -->
+            <div class="feature-item" onclick="window.location.href='my-courses.html'">
+                <i class="fas fa-book-open"></i>
+                <span>My Courses</span>
+            </div>
+
+            <!-- 4th -->
+            <div class="feature-item" onclick="window.location.href='army-exam-notes.html'">
+                <i class="fas fa-sticky-note"></i>
+                <span>Army Exam Notes</span>
+            </div>
+
+            <!-- 5th -->
             <div class="feature-item" onclick="window.location.href='results.html'">
                 <i class="fas fa-trophy"></i>
                 <span>Results</span>
             </div>
+
+            <!-- 6th: Army Video (second-last) -->
             <div class="feature-item" onclick="window.location.href='army-video.html'">
                 <i class="fas fa-play-circle"></i>
                 <span>Army Video</span>
             </div>
-            <div class="feature-item" onclick="window.location.href='buy-books.html'">
-                <i class="fas fa-book"></i>
-                <span>Buy Books</span>
-            </div>
+
+            <!-- 7th: Previous Years (last) -->
             <div class="feature-item" onclick="window.location.href='previous-years.html'">
                 <i class="fas fa-history"></i>
                 <span>Previous Years</span>
@@ -186,7 +200,7 @@
     </div>
 
     <div class="bottom-nav">
-        <div class="nav-item">
+        <div class="nav-item" onclick="window.location.href='index.html'">
             <i class="fas fa-home"></i>
             <span>Home</span>
         </div>
