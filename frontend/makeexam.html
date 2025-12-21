@@ -8,10 +8,10 @@
     <link rel="icon" href="data:,">
     <style>
         :root {
-            --primary: #2563eb;     /* Vibrant blue */
-            --accent: #10b981;      /* Green */
-            --light-bg: #f0f9ff;    /* Very light sky blue */
-            --card-bg: #ffffff;     /* White cards */
+            --primary: #2563eb;
+            --accent: #10b981;
+            --light-bg: #f0f9ff;
+            --card-bg: #ffffff;
             --gradient-start: #e0f2fe;
             --gradient-end: #fefce8;
             --text: #1e293b;
@@ -42,7 +42,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 10px rgba(0,0,0,01);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Fixed typo here */
         }
         .card {
             background: var(--card-bg);
@@ -79,20 +79,18 @@
             color: white;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        .add-q-btn {
-            background: var(--accent);
-        }
-        .save-btn {
-            background: var(--warning);
-        }
-        .conduct-btn {
-            background: var(--danger);
-        }
+        .add-q-btn { background: var(--accent); }
+        .save-btn { background: var(--warning); }
+        .conduct-btn { background: var(--danger); }
         .remove-btn {
             background: var(--danger);
             padding: 10px 16px;
             font-size: 0.95rem;
             margin-top: 15px;
+            border: none;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
         }
         input[type="file"] {
             margin: 15px 0;
@@ -167,11 +165,8 @@
         .nav-item.active {
             color: var(--accent);
         }
-        /* Student Portal View */
         .portal-view {
             display: none;
-            padding: 20px;
-            text-align: center;
         }
         .portal-view.active {
             display: block;
@@ -190,7 +185,6 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Admin View -->
         <div id="adminView">
             <div class="header">Admin Panel - Create Exam</div>
 
@@ -206,7 +200,6 @@
                 </select>
                 <select id="examTestNumber">
                     <option value="">Select Test Number</option>
-                    <!-- Dynamically populated by JS -->
                 </select>
                 <div id="questionsList" style="margin-top: 20px;"></div>
                 <button class="action-btn add-q-btn" onclick="addQuestionForm()">+ Add Question</button>
@@ -219,7 +212,6 @@
             </div>
         </div>
 
-        <!-- Student Portal View -->
         <div id="studentPortalView" class="portal-view">
             <div class="header">Student Portal</div>
             <iframe src="https://academy-student-portal.onrender.com" class="portal-iframe" title="Student Portal"></iframe>
@@ -238,13 +230,11 @@
     </div>
 
     <script>
-        // === CLOUDINARY DIRECT UPLOAD CONFIG ===
         const CLOUD_NAME = "djlkwjeb2";
         const UPLOAD_PRESET = "academy_exam_preset";
         const API_URL = "https://academy-backend-e02j.onrender.com";
         let currentQuestions = [];
 
-        // View switching
         function showView(view) {
             if (view === 'admin') {
                 document.getElementById('adminView').style.display = 'block';
@@ -259,7 +249,6 @@
             }
         }
 
-        // Populate Test Number dropdown (1 to 50)
         function populateTestNumbers() {
             const select = document.getElementById('examTestNumber');
             select.innerHTML = '<option value="">Select Test Number</option>';
@@ -309,9 +298,10 @@
             const fileInput = document.getElementById(`fileInput${idx}`);
             const file = fileInput.files[0];
             if (!file) return;
+
             const status = document.getElementById(`status${idx}`);
             const img = document.getElementById(`qImg${idx}`);
-            status.textContent = "Uploading to Cloudinary...";
+            status.textContent = "Uploading...";
             status.style.color = "#f59e0b";
             img.style.display = "none";
 
@@ -336,7 +326,7 @@
                     status.style.color = "red";
                 }
             } catch (err) {
-                status.textContent = "Upload error. Check internet or preset.";
+                status.textContent = "Upload error. Check internet.";
                 status.style.color = "red";
                 console.error(err);
             }
@@ -351,12 +341,14 @@
             const title = document.getElementById('examTitle').value.trim();
             const subject = document.getElementById('examSubject').value;
             const testNumber = document.getElementById('examTestNumber').value;
+
             if (!title || !subject || !testNumber || currentQuestions.length === 0) {
-                return alert("Please fill Exam Title, Subject, Test Number and add at least one question.");
+                return alert("Please fill all fields and add at least one question.");
             }
             if (currentQuestions.some(q => !q.imageUrl || !q.correctAnswer)) {
-                return alert("Every question must have an uploaded photo and correct answer selected.");
+                return alert("Every question must have an image and correct answer.");
             }
+
             try {
                 const res = await fetch(`${API_URL}/drafts`, {
                     method: "POST",
@@ -370,6 +362,7 @@
                 });
                 const data = await res.json();
                 alert(data.message || "Draft saved successfully!");
+                // Reset form
                 currentQuestions = [];
                 document.getElementById('questionsList').innerHTML = '';
                 document.getElementById('examTitle').value = '';
@@ -378,7 +371,7 @@
                 populateTestNumbers();
                 loadDrafts();
             } catch (err) {
-                alert("Error saving draft to database.");
+                alert("Failed to save draft. Check connection.");
             }
         }
 
@@ -387,14 +380,18 @@
                 const res = await fetch(`${API_URL}/drafts`);
                 const drafts = await res.json();
                 const container = document.getElementById('draftsList');
-                container.innerHTML = drafts.length === 0 ? "<p style='text-align:center; color:#64748b;'>No drafts yet</p>" : "";
+                if (drafts.length === 0) {
+                    container.innerHTML = "<p style='text-align:center; color:#64748b;'>No drafts yet</p>";
+                    return;
+                }
+                container.innerHTML = "";
                 drafts.forEach(d => {
                     const div = document.createElement('div');
                     div.className = 'card';
                     div.style.margin = '15px 0';
                     div.innerHTML = `
-                        <h4 style="color:var(--primary);">${d.title} (${d.subject.toUpperCase()} - Test ${d.testNumber || 'N/A'})</h4>
-                        <p><strong>${d.questions ? d.questions.length : d.totalQuestions} Questions</strong></p>
+                        <h4 style="color:var(--primary); margin:0 0 10px 0;">${d.title} (${(d.subject || '').toUpperCase()} - Test ${d.testNumber || 'N/A'})</h4>
+                        <p style="margin:5px 0;"><strong>${d.questions?.length || 0} Questions</strong></p>
                         <button class="action-btn conduct-btn" onclick="conductExam('${d._id}')">Conduct Exam Now</button>
                     `;
                     container.appendChild(div);
@@ -405,17 +402,18 @@
         }
 
         async function conductExam(draftId) {
-            if (!confirm("Conduct this exam now? Students can start attempting it.")) return;
+            if (!confirm("Conduct this exam now? Students will be able to attempt it.")) return;
             try {
                 const res = await fetch(`${API_URL}/conduct/${draftId}`, { method: 'POST' });
                 const data = await res.json();
-                alert(data.message || data.error);
+                alert(data.message || data.error || "Action completed");
                 loadDrafts();
             } catch (err) {
                 alert("Error conducting exam");
             }
         }
 
+        // Initial load
         loadDrafts();
     </script>
 </body>
