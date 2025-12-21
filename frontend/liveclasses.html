@@ -79,8 +79,6 @@
             cursor: pointer;
             font-size: 1.2rem;
         }
-
-        /* Sliding Sidebar */
         .sidebar {
             position: fixed;
             top: 0;
@@ -127,8 +125,6 @@
             margin-right: 10px;
             font-size: 1.3rem;
         }
-
-        /* Overlay */
         .overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -142,7 +138,6 @@
             opacity: 1;
             visibility: visible;
         }
-
         .page-title {
             text-align: center;
             font-size: 1.8rem;
@@ -332,14 +327,15 @@
             document.getElementById('overlay').classList.remove('active');
         }
 
-        // Backend API
-        const API = 'https://academy-backend-e02j.onrender.com/api';
+        // Correct API URL (no /api) – This fixes the 404 error!
+        const API = 'https://academy-backend-e02j.onrender.com';
+
         let allVideos = [];
 
         async function loadVideos(subject = null) {
             try {
                 const res = await fetch(`${API}/videos`);
-                const { videos } = await res.json();
+                const videos = await res.json(); // Directly array from your server
                 allVideos = videos;
 
                 renderVideos(subject);
@@ -347,7 +343,7 @@
                 document.getElementById('videoContainer').innerHTML = `
                     <div class="no-video">
                         <h2>Connection Failed</h2>
-                        <p>Please check internet and try again.</p>
+                        <p>Please check internet or try later.</p>
                     </div>`;
             }
         }
@@ -373,10 +369,10 @@
                     </div>
                     <div class="video-body">
                         <div class="subject">${getFullSubjectName(video.subject)}</div>
-                        <div class="class-tag">CLASS ${video.classNum}</div>
+                        <div class="class-tag">CLASS ${video.class}</div>
                         <iframe class="video-frame"
-                            src="${video.embedUrl}"
-                            title="${getFullSubjectName(video.subject)} Class ${video.classNum}"
+                            src="https://www.youtube.com/embed/${video.videoId}"
+                            title="${getFullSubjectName(video.subject)} - ${video.title || 'Lesson'}"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowfullscreen>
                         </iframe>
@@ -400,7 +396,7 @@
             renderVideos(subject);
         }
 
-        // Load all videos when page opens
+        // Load all videos on page open
         loadVideos();
     </script>
 </body>
