@@ -3,25 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Army Study Academy</title>
+    <title>GP Soldiers Academy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #1e3a8a;    /* Dark blue */
-            --accent: #10b981;     /* Green accent */
+            --primary: #1e3a8a; /* Dark blue */
+            --accent: #10b981; /* Green accent */
             --bg: #f3f4f6;
             --card-bg: #ffffff;
             --text: #111827;
         }
-
         body {
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
             background: var(--bg);
             color: var(--text);
-            padding-bottom: 60px; /* Space for bottom nav */
+            padding-bottom: 60px;
         }
-
         .promo-header {
             background: linear-gradient(135deg, var(--primary), #2563eb);
             color: white;
@@ -30,7 +28,6 @@
             font-size: 1.5rem;
             font-weight: bold;
         }
-
         .app-container {
             max-width: 480px;
             margin: 0 auto;
@@ -38,7 +35,6 @@
             min-height: 100vh;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
-
         .header {
             background: var(--primary);
             color: white;
@@ -46,11 +42,9 @@
             text-align: center;
             font-size: 1.2rem;
             font-weight: bold;
-            position: relative;
         }
-
         .banner {
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://via.placeholder.com/480x250/1e3a8a/ffffff?text=Army+Bharti+Live+Class+Maths+by+Biju+Sir') no-repeat center/cover;
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://via.placeholder.com/480x250/1e3a8a/ffffff?text=Army+Bharti+Live+Class') no-repeat center/cover;
             height: 250px;
             display: flex;
             flex-direction: column;
@@ -61,24 +55,20 @@
             margin: 15px;
             border-radius: 12px;
         }
-
         .banner h2 {
             margin: 0 10px 10px;
             font-size: 1.4rem;
         }
-
         .banner p {
             margin: 0;
             font-size: 1.1rem;
         }
-
         .features-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 15px;
             padding: 20px;
         }
-
         .feature-item {
             background: var(--card-bg);
             border-radius: 12px;
@@ -86,25 +76,22 @@
             text-align: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             transition: transform 0.2s;
+            cursor: pointer;
         }
-
         .feature-item:hover {
             transform: translateY(-5px);
         }
-
         .feature-item i {
             font-size: 2.5rem;
             color: var(--accent);
             margin-bottom: 10px;
         }
-
         .feature-item span {
             display: block;
             font-size: 0.9rem;
             margin-top: 8px;
             color: var(--text);
         }
-
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -119,12 +106,10 @@
             margin: 0 auto;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
         }
-
         .bottom-nav i {
             font-size: 1.5rem;
             color: var(--primary);
         }
-
         @media (max-width: 480px) {
             .app-container {
                 box-shadow: none;
@@ -133,66 +118,49 @@
     </style>
 </head>
 <body>
-    <div class="promo-header">Get All Learning Features</div>
-
+ 
     <div class="app-container">
-        <div class="header">BIJU SIR ACADEMY</div>
-
+        <div class="header">GP SOLDIERS ACADEMY</div>
         <div class="banner">
-            <h2>Army Bharti Live Class</h2>
-            <p>Maths अध्याय प्रश्न बैंक</p>
-            <p>By Biju Sir</p>
+       
+            <p>By GP Soldiers</p>
         </div>
-
-        <div class="features-grid">
-            <div class="feature-item" onclick="alert('Buy Courses')">
-                <i class="fas fa-shopping-cart"></i>
-                <span>Buy Courses</span>
-            </div>
-            <div class="feature-item" onclick="alert('My Courses')">
+      
+            <div class="feature-item" onclick="window.location.href='my-courses.html'">
                 <i class="fas fa-book-open"></i>
                 <span>My Courses</span>
             </div>
-            <div class="feature-item" onclick="alert('Army Exam Notes')">
+            <div class="feature-item" onclick="window.location.href='army-exam-notes.html'">
                 <i class="fas fa-sticky-note"></i>
                 <span>Army Exam Notes</span>
             </div>
-            <div class="feature-item" onclick="alert('Army Exam Test')">
+            <div class="feature-item" onclick="window.location.href='army-exam-test.html'">
                 <i class="fas fa-clipboard-check"></i>
                 <span>Army Exam Test</span>
             </div>
-            <div class="feature-item" onclick="alert('Army Study Live')">
+            <div class="feature-item" onclick="window.location.href='results.html'">
                 <i class="fas fa-video"></i>
-                <span>Army Study Live</span>
+                <span>Results</span>
             </div>
-            <div class="feature-item" onclick="alert('Army Exam Video')">
+            <div class="feature-item" onclick="window.location.href='army-video.html'">
                 <i class="fas fa-play-circle"></i>
-                <span>Army Exam Video</span>
+                <span>Army Video</span>
             </div>
-            <div class="feature-item" onclick="alert('Buy Books')">
+            <div class="feature-item" onclick="window.location.href='buy-books.html'">
                 <i class="fas fa-book"></i>
                 <span>Buy Books</span>
             </div>
-            <div class="feature-item" onclick="alert('Special Live Class')">
-                <i class="fas fa-star"></i>
-                <span>Special Live Class</span>
-            </div>
-            <div class="feature-item" onclick="alert('Previous Years')">
+           
+            <div class="feature-item" onclick="window.location.href='previous-years.html'">
                 <i class="fas fa-history"></i>
                 <span>Previous Years</span>
             </div>
         </div>
     </div>
-
     <div class="bottom-nav">
         <i class="fas fa-home"></i>
         <i class="fas fa-search"></i>
         <i class="fas fa-user"></i>
     </div>
-
-    <script>
-        // Simple click handlers (you can expand this)
-        console.log("Army Study Web App Loaded");
-    </script>
 </body>
 </html>
