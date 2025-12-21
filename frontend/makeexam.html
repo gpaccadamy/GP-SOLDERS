@@ -1,222 +1,422 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - Create Exam</title>
-  <link rel="icon" href="data:,">
-  <style>
-    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); color: #333; margin: 0; padding: 0; }
-    header { background: rgba(0,0,0,0.8); color: white; padding: 15px 20px; display: flex; align-items: center; position: fixed; width: 100%; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    header h1 { flex-grow: 1; text-align: center; margin: 0; }
-    .main { margin-top: 80px; padding: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
-    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-    .action-btn { padding: 14px; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; width: 100%; margin: 10px 0; color: white; }
-    .add-q-btn { background: #4CAF50; }
-    .save-btn { background: #FF9800; }
-    .conduct-btn { background: #d32f2f; }
-    .remove-btn { background: #d32f2f; padding: 10px 14px; border: none; color: white; border-radius: 8px; cursor: pointer; margin-top: 15px; }
-    input[type="file"] { margin: 15px 0; padding: 12px; background: #f8f9fa; border: 2px dashed #aaa; border-radius: 10px; width: 100%; }
-    img { max-width: 100%; border-radius: 10px; margin: 15px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .option-btns { display: flex; gap: 10px; margin: 15px 0; }
-    .option-btns button { flex: 1; padding: 12px; background: #2196F3; border: none; color: white; border-radius: 8px; font-size: 16px; cursor: pointer; }
-    .status { font-style: italic; color: #666; margin: 10px 0; }
-    select, input[type="text"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin - Create Exam</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:,">
+    <style>
+        :root {
+            --primary: #2563eb;     /* Vibrant blue */
+            --accent: #10b981;      /* Green */
+            --light-bg: #f0f9ff;    /* Very light sky blue */
+            --card-bg: #ffffff;     /* White cards */
+            --gradient-start: #e0f2fe;
+            --gradient-end: #fefce8;
+            --text: #1e293b;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--light-bg);
+            color: var(--text);
+            padding-bottom: 80px;
+        }
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.08);
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: white;
+            padding: 18px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,01);
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px 15px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        }
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 14px;
+            margin: 12px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: #f8fafc;
+        }
+        .action-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin: 12px 0;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .add-q-btn {
+            background: var(--accent);
+        }
+        .save-btn {
+            background: var(--warning);
+        }
+        .conduct-btn {
+            background: var(--danger);
+        }
+        .remove-btn {
+            background: var(--danger);
+            padding: 10px 16px;
+            font-size: 0.95rem;
+            margin-top: 15px;
+        }
+        input[type="file"] {
+            margin: 15px 0;
+            padding: 16px;
+            background: #f8fafc;
+            border: 2px dashed #94a3b8;
+            border-radius: 12px;
+            width: 100%;
+            text-align: center;
+        }
+        img {
+            max-width: 100%;
+            border-radius: 12px;
+            margin: 15px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .option-btns {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .option-btns button {
+            padding: 14px;
+            background: var(--primary);
+            border: none;
+            color: white;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .status {
+            font-style: italic;
+            color: #64748b;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .question-card {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 0;
+            max-width: 480px;
+            margin: 0 auto;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        .nav-item {
+            text-align: center;
+            color: var(--primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .nav-item i {
+            font-size: 1.8rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .nav-item.active {
+            color: var(--accent);
+        }
+        /* Student Portal View */
+        .portal-view {
+            display: none;
+            padding: 20px;
+            text-align: center;
+        }
+        .portal-view.active {
+            display: block;
+        }
+        .portal-iframe {
+            width: 100%;
+            height: calc(100vh - 140px);
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        }
+        @media (max-width: 480px) {
+            .app-container { box-shadow: none; }
+        }
+    </style>
 </head>
 <body>
-  <header><h1>Admin Panel - Create Exam</h1></header>
-  <div class="main">
-    <div class="card">
-      <h2>Create New Exam</h2>
-      <input type="text" id="examTitle" placeholder="Exam Title (e.g. Monthly Test - Dec)">
-      <select id="examSubject">
-        <option value="">Select Subject</option>
-        <option value="english">English</option>
-        <option value="kannada">Kannada</option>
-        <option value="gk">GK</option>
-        <option value="maths">Maths</option>
-      </select>
-      <select id="examTestNumber">
-        <option value="">Select Test Number</option>
-        <!-- Dynamically populated by JS -->
-      </select>
-      <div id="questionsList" style="margin-top: 30px;"></div>
-      <button class="action-btn add-q-btn" onclick="addQuestionForm()">+ Add Question</button>
-      <button class="action-btn save-btn" onclick="saveDraft()">Save as Draft</button>
-    </div>
-    <div class="card">
-      <h2>Saved Drafts</h2>
-      <div id="draftsList">Loading...</div>
-    </div>
-  </div>
-  <script>
-    // === CLOUDINARY DIRECT UPLOAD CONFIG ===
-    const CLOUD_NAME = "djlkwjeb2";
-    const UPLOAD_PRESET = "academy_exam_preset"; // Make sure this is set in Cloudinary
-    const API_URL = "https://academy-backend-e02j.onrender.com";
-    let currentQuestions = []; // [{ imageUrl: "...", correctAnswer: "b" }]
+    <div class="app-container">
+        <!-- Admin View -->
+        <div id="adminView">
+            <div class="header">Admin Panel - Create Exam</div>
 
-    // Populate Test Number dropdown (1 to 50)
-    function populateTestNumbers() {
-      const select = document.getElementById('examTestNumber');
-      select.innerHTML = '<option value="">Select Test Number</option>'; // Clear and reset
-      for (let i = 1; i <= 50; i++) {
-        const option = document.createElement('option');
-        option.value = i;
-        option.textContent = `Test ${i}`;
-        select.appendChild(option);
-      }
-    }
-    populateTestNumbers(); // Run on load
+            <div class="card">
+                <h2>Create New Exam</h2>
+                <input type="text" id="examTitle" placeholder="Exam Title (e.g. Monthly Test - Dec)">
+                <select id="examSubject">
+                    <option value="">Select Subject</option>
+                    <option value="english">English</option>
+                    <option value="kannada">Kannada</option>
+                    <option value="gk">GK</option>
+                    <option value="maths">Maths</option>
+                </select>
+                <select id="examTestNumber">
+                    <option value="">Select Test Number</option>
+                    <!-- Dynamically populated by JS -->
+                </select>
+                <div id="questionsList" style="margin-top: 20px;"></div>
+                <button class="action-btn add-q-btn" onclick="addQuestionForm()">+ Add Question</button>
+                <button class="action-btn save-btn" onclick="saveDraft()">Save as Draft</button>
+            </div>
 
-    function addQuestionForm() {
-      const idx = currentQuestions.length;
-      const container = document.getElementById('questionsList');
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.style.marginTop = '20px';
-      div.style.padding = '25px';
-      div.innerHTML = `
-        <h4>Question ${idx + 1}</h4>
-        <p><strong>Upload one photo containing Question + 4 Options</strong></p>
-        <input type="file" accept="image/*" id="fileInput${idx}" onchange="uploadToCloudinary(${idx})">
-        <div class="status" id="status${idx}">Not uploaded yet</div>
-        <img id="qImg${idx}" style="display:none;">
-        <label style="margin-top:20px;display:block;"><strong>Select Correct Answer</strong></label>
-        <div class="option-btns">
-          <button type="button" onclick="setCorrect(${idx}, 'a')">A</button>
-          <button type="button" onclick="setCorrect(${idx}, 'b')">B</button>
-          <button type="button" onclick="setCorrect(${idx}, 'c')">C</button>
-          <button type="button" onclick="setCorrect(${idx}, 'd')">D</button>
+            <div class="card">
+                <h2>Saved Drafts</h2>
+                <div id="draftsList">Loading...</div>
+            </div>
         </div>
-        <p>Correct Answer: <b id="correct${idx}">Not selected</b></p>
-        <button class="remove-btn" onclick="removeQuestion(this, ${idx})">Remove Question</button>
-      `;
-      container.appendChild(div);
-      currentQuestions.push({ imageUrl: "", correctAnswer: "" });
-    }
 
-    function removeQuestion(button, idx) {
-      button.parentElement.remove();
-      currentQuestions.splice(idx, 1);
-      // Re-number questions
-      document.querySelectorAll('#questionsList .card').forEach((card, i) => {
-        card.querySelector('h4').textContent = `Question ${i + 1}`;
-      });
-    }
+        <!-- Student Portal View -->
+        <div id="studentPortalView" class="portal-view">
+            <div class="header">Student Portal</div>
+            <iframe src="https://academy-student-portal.onrender.com" class="portal-iframe" title="Student Portal"></iframe>
+        </div>
+    </div>
 
-    async function uploadToCloudinary(idx) {
-      const fileInput = document.getElementById(`fileInput${idx}`);
-      const file = fileInput.files[0];
-      if (!file) return;
-      const status = document.getElementById(`status${idx}`);
-      const img = document.getElementById(`qImg${idx}`);
-      status.textContent = "Uploading to Cloudinary...";
-      status.style.color = "#FF9800";
-      img.style.display = "none";
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", UPLOAD_PRESET);
-      try {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-          method: "POST",
-          body: formData
-        });
-        const data = await res.json();
-        if (data.secure_url) {
-          currentQuestions[idx].imageUrl = data.secure_url;
-          img.src = data.secure_url;
-          img.style.display = "block";
-          status.textContent = "Uploaded successfully!";
-          status.style.color = "green";
-        } else {
-          status.textContent = "Upload failed: " + (data.error?.message || "Unknown error");
-          status.style.color = "red";
+    <div class="bottom-nav">
+        <div class="nav-item active" id="homeBtn" onclick="showView('admin')">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" id="portalBtn" onclick="showView('portal')">
+            <i class="fas fa-user-graduate"></i>
+            <span>Student Portal</span>
+        </div>
+    </div>
+
+    <script>
+        // === CLOUDINARY DIRECT UPLOAD CONFIG ===
+        const CLOUD_NAME = "djlkwjeb2";
+        const UPLOAD_PRESET = "academy_exam_preset";
+        const API_URL = "https://academy-backend-e02j.onrender.com";
+        let currentQuestions = [];
+
+        // View switching
+        function showView(view) {
+            if (view === 'admin') {
+                document.getElementById('adminView').style.display = 'block';
+                document.getElementById('studentPortalView').classList.remove('active');
+                document.getElementById('homeBtn').classList.add('active');
+                document.getElementById('portalBtn').classList.remove('active');
+            } else if (view === 'portal') {
+                document.getElementById('adminView').style.display = 'none';
+                document.getElementById('studentPortalView').classList.add('active');
+                document.getElementById('portalBtn').classList.add('active');
+                document.getElementById('homeBtn').classList.remove('active');
+            }
         }
-      } catch (err) {
-        status.textContent = "Upload error. Check internet or preset.";
-        status.style.color = "red";
-        console.error(err);
-      }
-    }
 
-    function setCorrect(idx, ans) {
-      currentQuestions[idx].correctAnswer = ans;
-      document.getElementById(`correct${idx}`).textContent = ans.toUpperCase();
-    }
+        // Populate Test Number dropdown (1 to 50)
+        function populateTestNumbers() {
+            const select = document.getElementById('examTestNumber');
+            select.innerHTML = '<option value="">Select Test Number</option>';
+            for (let i = 1; i <= 50; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Test ${i}`;
+                select.appendChild(option);
+            }
+        }
+        populateTestNumbers();
 
-    async function saveDraft() {
-      const title = document.getElementById('examTitle').value.trim();
-      const subject = document.getElementById('examSubject').value;
-      const testNumber = document.getElementById('examTestNumber').value;
-      if (!title || !subject || !testNumber || currentQuestions.length === 0) {
-        return alert("Please fill Exam Title, Subject, Test Number and add at least one question.");
-      }
-      if (currentQuestions.some(q => !q.imageUrl || !q.correctAnswer)) {
-        return alert("Every question must have an uploaded photo and correct answer selected.");
-      }
-      try {
-        const res = await fetch(`${API_URL}/drafts`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title,
-            subject,
-            testNumber: parseInt(testNumber), // Save as number
-            questions: currentQuestions
-          })
-        });
-        const data = await res.json();
-        alert(data.message || "Draft saved successfully!");
-        // Reset form
-        currentQuestions = [];
-        document.getElementById('questionsList').innerHTML = '';
-        document.getElementById('examTitle').value = '';
-        document.getElementById('examSubject').value = '';
-        document.getElementById('examTestNumber').value = '';
-        populateTestNumbers(); // Refresh dropdown if needed
+        function addQuestionForm() {
+            const idx = currentQuestions.length;
+            const container = document.getElementById('questionsList');
+            const div = document.createElement('div');
+            div.className = 'question-card';
+            div.innerHTML = `
+                <h4 style="margin-top:0; color:var(--primary);">Question ${idx + 1}</h4>
+                <p style="margin-bottom:10px;"><strong>Upload one photo containing Question + 4 Options</strong></p>
+                <input type="file" accept="image/*" id="fileInput${idx}" onchange="uploadToCloudinary(${idx})">
+                <div class="status" id="status${idx}">Not uploaded yet</div>
+                <img id="qImg${idx}" style="display:none;">
+                <label style="margin-top:20px;display:block; font-weight:600;"><strong>Select Correct Answer</strong></label>
+                <div class="option-btns">
+                    <button type="button" onclick="setCorrect(${idx}, 'a')">A</button>
+                    <button type="button" onclick="setCorrect(${idx}, 'b')">B</button>
+                    <button type="button" onclick="setCorrect(${idx}, 'c')">C</button>
+                    <button type="button" onclick="setCorrect(${idx}, 'd')">D</button>
+                </div>
+                <p>Correct Answer: <b id="correct${idx}">Not selected</b></p>
+                <button class="remove-btn" onclick="removeQuestion(this, ${idx})">Remove Question</button>
+            `;
+            container.appendChild(div);
+            currentQuestions.push({ imageUrl: "", correctAnswer: "" });
+        }
+
+        function removeQuestion(button, idx) {
+            button.parentElement.remove();
+            currentQuestions.splice(idx, 1);
+            document.querySelectorAll('#questionsList .question-card').forEach((card, i) => {
+                card.querySelector('h4').textContent = `Question ${i + 1}`;
+            });
+        }
+
+        async function uploadToCloudinary(idx) {
+            const fileInput = document.getElementById(`fileInput${idx}`);
+            const file = fileInput.files[0];
+            if (!file) return;
+            const status = document.getElementById(`status${idx}`);
+            const img = document.getElementById(`qImg${idx}`);
+            status.textContent = "Uploading to Cloudinary...";
+            status.style.color = "#f59e0b";
+            img.style.display = "none";
+
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", UPLOAD_PRESET);
+
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.secure_url) {
+                    currentQuestions[idx].imageUrl = data.secure_url;
+                    img.src = data.secure_url;
+                    img.style.display = "block";
+                    status.textContent = "Uploaded successfully!";
+                    status.style.color = "green";
+                } else {
+                    status.textContent = "Upload failed: " + (data.error?.message || "Unknown error");
+                    status.style.color = "red";
+                }
+            } catch (err) {
+                status.textContent = "Upload error. Check internet or preset.";
+                status.style.color = "red";
+                console.error(err);
+            }
+        }
+
+        function setCorrect(idx, ans) {
+            currentQuestions[idx].correctAnswer = ans;
+            document.getElementById(`correct${idx}`).textContent = ans.toUpperCase();
+        }
+
+        async function saveDraft() {
+            const title = document.getElementById('examTitle').value.trim();
+            const subject = document.getElementById('examSubject').value;
+            const testNumber = document.getElementById('examTestNumber').value;
+            if (!title || !subject || !testNumber || currentQuestions.length === 0) {
+                return alert("Please fill Exam Title, Subject, Test Number and add at least one question.");
+            }
+            if (currentQuestions.some(q => !q.imageUrl || !q.correctAnswer)) {
+                return alert("Every question must have an uploaded photo and correct answer selected.");
+            }
+            try {
+                const res = await fetch(`${API_URL}/drafts`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        title,
+                        subject,
+                        testNumber: parseInt(testNumber),
+                        questions: currentQuestions
+                    })
+                });
+                const data = await res.json();
+                alert(data.message || "Draft saved successfully!");
+                currentQuestions = [];
+                document.getElementById('questionsList').innerHTML = '';
+                document.getElementById('examTitle').value = '';
+                document.getElementById('examSubject').value = '';
+                document.getElementById('examTestNumber').value = '';
+                populateTestNumbers();
+                loadDrafts();
+            } catch (err) {
+                alert("Error saving draft to database.");
+            }
+        }
+
+        async function loadDrafts() {
+            try {
+                const res = await fetch(`${API_URL}/drafts`);
+                const drafts = await res.json();
+                const container = document.getElementById('draftsList');
+                container.innerHTML = drafts.length === 0 ? "<p style='text-align:center; color:#64748b;'>No drafts yet</p>" : "";
+                drafts.forEach(d => {
+                    const div = document.createElement('div');
+                    div.className = 'card';
+                    div.style.margin = '15px 0';
+                    div.innerHTML = `
+                        <h4 style="color:var(--primary);">${d.title} (${d.subject.toUpperCase()} - Test ${d.testNumber || 'N/A'})</h4>
+                        <p><strong>${d.questions ? d.questions.length : d.totalQuestions} Questions</strong></p>
+                        <button class="action-btn conduct-btn" onclick="conductExam('${d._id}')">Conduct Exam Now</button>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (err) {
+                document.getElementById('draftsList').innerHTML = "<p style='text-align:center; color:red;'>Error loading drafts</p>";
+            }
+        }
+
+        async function conductExam(draftId) {
+            if (!confirm("Conduct this exam now? Students can start attempting it.")) return;
+            try {
+                const res = await fetch(`${API_URL}/conduct/${draftId}`, { method: 'POST' });
+                const data = await res.json();
+                alert(data.message || data.error);
+                loadDrafts();
+            } catch (err) {
+                alert("Error conducting exam");
+            }
+        }
+
         loadDrafts();
-      } catch (err) {
-        alert("Error saving draft to database.");
-      }
-    }
-
-    async function loadDrafts() {
-      try {
-        const res = await fetch(`${API_URL}/drafts`);
-        const drafts = await res.json();
-        const container = document.getElementById('draftsList');
-        container.innerHTML = drafts.length === 0 ? "<p>No drafts yet</p>" : "";
-        drafts.forEach(d => {
-          const div = document.createElement('div');
-          div.className = 'card';
-          div.style.marginBottom = '15px';
-          div.innerHTML = `
-            <h4>${d.title} (${d.subject.toUpperCase()} - Test ${d.testNumber || 'N/A'})</h4>
-            <p><strong>${d.questions ? d.questions.length : d.totalQuestions} Questions</strong></p>
-            <button class="action-btn conduct-btn" onclick="conductExam('${d._id}')">Conduct Exam Now</button>
-          `;
-          container.appendChild(div);
-        });
-      } catch (err) {
-        document.getElementById('draftsList').innerHTML = "<p>Error loading drafts</p>";
-      }
-    }
-
-    async function conductExam(draftId) {
-      if (!confirm("Conduct this exam now? Students can start attempting it.")) return;
-      try {
-        const res = await fetch(`${API_URL}/conduct/${draftId}`, { method: 'POST' });
-        const data = await res.json();
-        alert(data.message || data.error);
-        loadDrafts();
-      } catch (err) {
-        alert("Error conducting exam");
-      }
-    }
-
-    loadDrafts();
-  </script>
+    </script>
 </body>
 </html>
