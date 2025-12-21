@@ -1,195 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<!-- THIS LINE MAKES IT 100% PHONE PERFECT -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GP Soldier Academy - Vijayapura</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family: 'Rajdhani', sans-serif;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    color: white;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Army Study Academy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e3a8a;    /* Dark blue */
+            --accent: #10b981;     /* Green accent */
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text: #111827;
+        }
 
-  .hero {
-    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1600880292203-5e4a7f0e8b61?ixlib=rb-4.0.3&auto=format&fit=crop&q=80');
-    background-size: cover;
-    background-position: center;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding-bottom: 60px; /* Space for bottom nav */
+        }
 
-  .flag-wave {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    opacity: 0.1;
-    background: repeating-linear-gradient(45deg, #FF9933 0, #FF9933 10px, #FFFFFF 10px, #FFFFFF 20px, #138808 20px, #138808 30px);
-    animation: wave 20s linear infinite;
-  }
-  @keyframes wave { 0% { background-position: 0 0; } 100% { background-position: 1000px 0; } }
+        .promo-header {
+            background: linear-gradient(135deg, var(--primary), #2563eb);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
 
-  .content {
-    text-align: center;
-    padding: 20px;
-    z-index: 10;
-  }
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
 
-  .emblem {
-    width: 130px;
-    height: 130px;
-    object-fit: contain;
-    filter: drop-shadow(0 0 20px #FF9933);
-    animation: pulse 3s infinite;
-  }
-  @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.08); } }
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            position: relative;
+        }
 
-  .title {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 42px;
-    font-weight: 900;
-    text-shadow: 0 0 20px #FF9933, 0 0 40px #138808;
-    margin: 15px 0;
-    line-height: 1.1;
-  }
+        .banner {
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://via.placeholder.com/480x250/1e3a8a/ffffff?text=Army+Bharti+Live+Class+Maths+by+Biju+Sir') no-repeat center/cover;
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            margin: 15px;
+            border-radius: 12px;
+        }
 
-  .subtitle {
-    font-size: 19px;
-    color: #FF9933;
-    text-shadow: 2px 2px 10px #000;
-    margin-bottom: 8px;
-  }
+        .banner h2 {
+            margin: 0 10px 10px;
+            font-size: 1.4rem;
+        }
 
-  .jaihind {
-    font-size: 24px;
-    margin: 15px 0;
-    opacity: 0.95;
-  }
+        .banner p {
+            margin: 0;
+            font-size: 1.1rem;
+        }
 
-  .tricolor {
-    display: flex;
-    justify-content: center;
-    gap: 0;
-    margin: 30px 0;
-  }
-  .tricolor div {
-    height: 10px;
-    width: 90px;
-  }
-  .saffron { background: #FF9933; }
-  .white { background: #FFFFFF; }
-  .green { background: #138808; }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            padding: 20px;
+        }
 
-  /* Buttons - One Below One (Mobile Style) */
-  .btn-army {
-    display: block;
-    width: 90%;
-    max-width: 380px;
-    margin: 25px auto;
-    padding: 28px 20px;
-    font-size: 24px;
-    font-weight: bold;
-    border-radius: 15px;
-    text-decoration: none;
-    color: white;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    transition: all 0.4s;
-  }
-  .btn-army:hover {
-    transform: translateY(-10px) scale(1.03);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.7);
-  }
+        .feature-item {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px 10px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
 
-  .btn-live { background: linear-gradient(to bottom right, #FF4500, #FF8C00); }
-  .btn-exam { background: linear-gradient(to bottom right, #006400, #138808); border: 4px solid #FFD700; }
-  .btn-profile { background: linear-gradient(to bottom right, #000080, #0000CD); }
+        .feature-item:hover {
+            transform: translateY(-5px);
+        }
 
-  .btn-liveclass {
-    background: linear-gradient(to right, #FF0000, #FF9933, #138808);
-    border: 8px solid white;
-    font-size: 34px;
-    padding: 40px 20px;
-    margin: 40px auto;
-    animation: glow 2s infinite;
-  }
-  @keyframes glow { 0%,100% { box-shadow: 0 0 20px #fff; } 50% { box-shadow: 0 0 50px #fff, 0 0 70px #FF9933; } }
+        .feature-item i {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
 
-  .btn-subtitle {
-    display: block;
-    font-size: 17px;
-    margin-top: 10px;
-    opacity: 0.9;
-  }
+        .feature-item span {
+            display: block;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            color: var(--text);
+        }
 
-  .footer {
-    margin-top: 50px;
-    padding: 30px 20px;
-    background: rgba(0,0,0,0.6);
-  }
-  .footer-text {
-    font-size: 32px;
-    font-weight: bold;
-    color: #FF9933;
-    text-shadow: 0 0 15px #000;
-  }
-</style>
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            max-width: 480px;
+            margin: 0 auto;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .bottom-nav i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        @media (max-width: 480px) {
+            .app-container {
+                box-shadow: none;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="promo-header">Get All Learning Features</div>
 
-<div class="hero relative">
-  <div class="flag-wave"></div>
+    <div class="app-container">
+        <div class="header">BIJU SIR ACADEMY</div>
 
-  <div class="content">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Indian_Army.svg/800px-Indian_Army.svg.png" alt="Indian Army" class="emblem">
+        <div class="banner">
+            <h2>Army Bharti Live Class</h2>
+            <p>Maths अध्याय प्रश्न बैंक</p>
+            <p>By Biju Sir</p>
+        </div>
 
-    <h1 class="title">GP SOLDIER ACADEMY</h1>
-    <p class="subtitle">विजयपुर • ಕರ್ನಾಟಕ • Vijayapura, Karnataka</p>
-    <p class="jaihind">"भारत माता की जय • Jai Hind"</p>
-
-    <div class="tricolor">
-      <div class="saffron"></div>
-      <div class="white"></div>
-      <div class="green"></div>
+        <div class="features-grid">
+            <div class="feature-item" onclick="alert('Buy Courses')">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Buy Courses</span>
+            </div>
+            <div class="feature-item" onclick="alert('My Courses')">
+                <i class="fas fa-book-open"></i>
+                <span>My Courses</span>
+            </div>
+            <div class="feature-item" onclick="alert('Army Exam Notes')">
+                <i class="fas fa-sticky-note"></i>
+                <span>Army Exam Notes</span>
+            </div>
+            <div class="feature-item" onclick="alert('Army Exam Test')">
+                <i class="fas fa-clipboard-check"></i>
+                <span>Army Exam Test</span>
+            </div>
+            <div class="feature-item" onclick="alert('Army Study Live')">
+                <i class="fas fa-video"></i>
+                <span>Army Study Live</span>
+            </div>
+            <div class="feature-item" onclick="alert('Army Exam Video')">
+                <i class="fas fa-play-circle"></i>
+                <span>Army Exam Video</span>
+            </div>
+            <div class="feature-item" onclick="alert('Buy Books')">
+                <i class="fas fa-book"></i>
+                <span>Buy Books</span>
+            </div>
+            <div class="feature-item" onclick="alert('Special Live Class')">
+                <i class="fas fa-star"></i>
+                <span>Special Live Class</span>
+            </div>
+            <div class="feature-item" onclick="alert('Previous Years')">
+                <i class="fas fa-history"></i>
+                <span>Previous Years</span>
+            </div>
+        </div>
     </div>
 
-    <!-- Buttons One Below One -->
-    <a href="liveclasses.html" class="btn-army btn-live">
-      LIVE & RECORDED CLASSES
-      <span class="btn-subtitle">Join Live Training Sessions</span>
-    </a>
-
-    <a href="exams.html" class="btn-army btn-exam">
-      TAKE EXAM
-      <span class="btn-subtitle">Test Your Preparation</span>
-    </a>
-
-    <a href="profile.html" class="btn-army btn-profile">
-      PROFILE & RESULTS
-      <span class="btn-subtitle">View Your Progress</span>
-    </a>
-
-    <!-- BIG LIVE CLASS BUTTON BELOW EXAM -->
-    <a href="liveclasses.html" class="btn-army btn-liveclass">
-      LIVE CLASS NOW
-      <div class="text-3xl mt-4 animate-pulse">JOIN IMMEDIATELY</div>
-    </a>
-
-    <div class="footer">
-      <p class="footer-text">भारत माता की जय</p>
-      <p class="footer-text">JAI HIND</p>
-      <p style="margin-top:15px; opacity:0.8; font-size:17px;">
-        Serving the Nation • Training Future Soldiers
-      </p>
+    <div class="bottom-nav">
+        <i class="fas fa-home"></i>
+        <i class="fas fa-search"></i>
+        <i class="fas fa-user"></i>
     </div>
-  </div>
-</div>
 
+    <script>
+        // Simple click handlers (you can expand this)
+        console.log("Army Study Web App Loaded");
+    </script>
 </body>
 </html>
-
