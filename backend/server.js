@@ -1,4 +1,4 @@
-// server.js - Fully Updated with Notes Feature (All Original Code Preserved)
+// server.js - Complete with Notes Feature (All Original Code + New Additions)
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -72,7 +72,7 @@ const Exam = mongoose.model('Exam', new mongoose.Schema({
 const Result = mongoose.model('Result', new mongoose.Schema({
   studentMobile: String,
   studentName: String,
-  studentRoll: String, // Added for roll number
+  studentRoll: String,
   examId: { type: mongoose.Schema.Types.ObjectId, ref: 'Exam' },
   examTitle: String,
   score: Number,
@@ -83,7 +83,7 @@ const Result = mongoose.model('Result', new mongoose.Schema({
   submittedAt: { type: Date, default: Date.now }
 }));
 
-// === NEW: Note Model ===
+// NEW: Note Model
 const NoteSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
@@ -91,9 +91,9 @@ const NoteSchema = new mongoose.Schema({
 });
 const Note = mongoose.model('Note', NoteSchema);
 
-// ROUTES
+// ROUTES (All Original Routes Preserved)
 
-// Student Login (plain text comparison)
+// Student Login
 app.post('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
@@ -108,9 +108,7 @@ app.post('/student-login', async (req, res) => {
 });
 
 // Students CRUD
-app.get('/students', async (req, res) => {
-  res.json(await Student.find());
-});
+app.get('/students', async (req, res) => res.json(await Student.find()));
 
 app.post('/students', async (req, res) => {
   try {
@@ -122,7 +120,7 @@ app.post('/students', async (req, res) => {
     if (!name || !mobile || !password) return res.status(400).json({ error: "Name, mobile, password required" });
     const existing = await Student.findOne({ mobile });
     if (existing) return res.status(409).json({ error: "Mobile already registered" });
-    const student = new Student({ name, roll, mobile, password }); // Plain text
+    const student = new Student({ name, roll, mobile, password });
     await student.save();
     res.json({ message: "Student added" });
   } catch (err) {
@@ -137,7 +135,7 @@ app.delete('/students/:id', async (req, res) => {
   res.json({ message: "Student deleted" });
 });
 
-// Videos (unchanged)
+// Videos
 app.get('/videos', async (req, res) => res.json(await Video.find()));
 
 app.post('/videos', async (req, res) => {
@@ -191,7 +189,6 @@ app.post('/conduct/:draftId', async (req, res) => {
   res.json({ message: "Exam conducted successfully!" });
 });
 
-// Student Exam Routes
 app.get('/active-exams', async (req, res) => res.json(await Exam.find().sort({ conductedAt: -1 })));
 
 app.get('/exam/:id', async (req, res) => {
@@ -231,7 +228,6 @@ app.get('/exam/:id/results', async (req, res) => {
   res.json(await Result.find({ examId: req.params.id }));
 });
 
-// All Results Endpoint (fixes the 404!)
 app.get('/results', async (req, res) => {
   try {
     const results = await Result.find().sort({ submittedAt: -1 });
@@ -241,40 +237,22 @@ app.get('/results', async (req, res) => {
   }
 });
 
-// === NEW: Save Note Route ===
+// NEW: Notes Routes
 app.post('/api/save-note', async (req, res) => {
   try {
     const { title, content } = req.body;
-
     if (!title || !content) {
-      return res.status(400).json({
-        success: false,
-        message: 'Title and content are required'
-      });
+      return res.status(400).json({ success: false, message: 'Title and content are required' });
     }
-
-    const newNote = new Note({
-      title: title.trim(),
-      content: content.trim()
-    });
-
+    const newNote = new Note({ title: title.trim(), content: content.trim() });
     await newNote.save();
-
-    res.json({
-      success: true,
-      message: 'Note saved successfully!'
-    });
-
+    res.json({ success: true, message: 'Note saved successfully!' });
   } catch (error) {
     console.error('Error saving note:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to save note'
-    });
+    res.status(500).json({ success: false, message: 'Failed to save note' });
   }
 });
 
-// Optional: Get all notes (useful for future My Notes page)
 app.get('/api/notes', async (req, res) => {
   try {
     const notes = await Note.find().sort({ createdAt: -1 });
