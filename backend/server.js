@@ -1,4 +1,4 @@
-// server.js - Full Complete Code with Static Frontend Serving + Notes Feature
+// server.js - FINAL WORKING VERSION (Catch-all at the very end)
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -12,13 +12,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// === SERVE STATIC FRONTEND FILES ===
-// Adjust the path based on your folder structure:
-// - If server.js is in root and frontend is sibling → './frontend'
-// - If server.js is in backend/ folder and frontend is sibling → '../frontend'
-app.use(express.static(path.join(__dirname, '../frontend')));  // Change '../frontend' if needed
+// Serve static frontend files (HTML, images, etc.)
+// Change '../frontend' to './frontend' if your folder structure is different
+app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Local uploads folder
+// Uploads folder for images (questions, etc.)
 const uploadDir = './uploads';
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 app.use('/uploads', express.static('uploads'));
@@ -91,7 +89,7 @@ const Result = mongoose.model('Result', new mongoose.Schema({
   submittedAt: { type: Date, default: Date.now }
 }));
 
-// Note Model (New Feature)
+// Note Model - For Write Notes feature
 const NoteSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
@@ -99,7 +97,7 @@ const NoteSchema = new mongoose.Schema({
 });
 const Note = mongoose.model('Note', NoteSchema);
 
-// ROUTES
+// ====================== ALL API ROUTES ======================
 
 // Student Login
 app.post('/student-login', async (req, res) => {
@@ -245,7 +243,7 @@ app.get('/results', async (req, res) => {
   }
 });
 
-// === Notes Routes ===
+// Notes Routes
 app.post('/api/save-note', async (req, res) => {
   try {
     const { title, content } = req.body;
@@ -270,9 +268,9 @@ app.get('/api/notes', async (req, res) => {
   }
 });
 
-// === Catch-all route for SPA (must be at the very end) ===
+// ====================== CATCH-ALL ROUTE (MUST BE LAST!) ======================
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));  // Adjust path if needed
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 // Start Server
