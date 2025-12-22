@@ -1,351 +1,425 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Exam Portal</title>
-    <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #f0f9ff;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-        .header {
-            background: linear-gradient(135deg, #2563eb, #3b82f6);
-            color: white;
-            padding: 18px;
-            text-align: center;
-            font-size: 1.3rem;
-            font-weight: bold;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        .back-btn {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-        .main {
-            margin-top: 80px;
-            padding: 20px;
-            max-width: 480px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        .timer-bar {
-            background: #e0f2fe;
-            padding: 12px;
-            border-radius: 12px;
-            text-align: center;
-            font-weight: bold;
-            color: #2563eb;
-            margin-bottom: 20px;
-        }
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-        }
-        .stat-item {
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #2563eb;
-        }
-        .stat-label {
-            font-size: 0.9rem;
-            color: #64748b;
-        }
-        .question-container {
-            background: #f8fafc;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .question-img {
-            max-width: 100%;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        .options {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .option {
-            display: flex;
-            align-items: center;
-            padding: 16px;
-            background: white;
-            border-radius: 12px;
-            border: 2px solid #e2e8f0;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .option:hover {
-            border-color: #2563eb;
-        }
-        .option input {
-            margin-right: 16px;
-            transform: scale(1.4);
-        }
-        .option span {
-            font-size: 1.1rem;
-        }
-        .submit-btn {
-            background: #10b981;
-            color: white;
-            padding: 16px;
-            font-size: 1.2rem;
-            border: none;
-            border-radius: 12px;
-            width: 100%;
-            cursor: pointer;
-            box-shadow: 0 6px 15px rgba(16,185,129,0.3);
-            margin-top: 20px;
-        }
-        .submit-btn:hover {
-            background: #059669;
-        }
-        .hidden { display: none; }
-        .error-msg {
-            color: red;
-            text-align: center;
-            padding: 10px;
-            background: #fee2e2;
-            border-radius: 8px;
-            margin: 10px 0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Exam Portal</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f9ff;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    .header {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: white;
+      padding: 18px;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .back-btn {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .main {
+      margin-top: 80px;
+      padding: 20px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .timer-bar {
+      background: #e0f2fe;
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: bold;
+      color: #2563eb;
+      margin-bottom: 20px;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #2563eb;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+    .question-container {
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .question-img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .option {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      background: white;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .option:hover {
+      border-color: #2563eb;
+    }
+    .option input {
+      margin-right: 16px;
+      transform: scale(1.4);
+    }
+    .option span {
+      font-size: 1.1rem;
+    }
+    .submit-btn {
+      background: #10b981;
+      color: white;
+      padding: 16px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 12px;
+      width: 100%;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(16,185,129,0.3);
+      margin-top: 20px;
+    }
+    .submit-btn:hover {
+      background: #059669;
+    }
+    .hidden { display: none; }
+
+    /* Login Styles */
+    input[type="tel"], input[type="password"] {
+      width: 100%;
+      padding: 14px;
+      margin: 12px 0;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      background: #f8fafc;
+      box-sizing: border-box;
+    }
+    .login-btn {
+      background: #2563eb;
+      color: white;
+      padding: 16px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 12px;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    .login-btn:hover {
+      background: #1d4ed8;
+    }
+    .error-msg {
+      color: #dc2626;
+      text-align: center;
+      padding: 12px;
+      background: #fee2e2;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-weight: 500;
+    }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <i class="fas fa-arrow-left back-btn" onclick="window.history.back()"></i>
-        Student Exam Portal
+  <div class="header">
+    <i class="fas fa-arrow-left back-btn" onclick="window.history.back()"></i>
+    Student Exam Portal
+  </div>
+
+  <div class="main">
+    <!-- Login Section -->
+    <div id="loginSection" class="card">
+      <h2 style="text-align:center; color:#2563eb; margin-bottom:20px;">Student Login</h2>
+      <input type="tel" id="mobile" placeholder="Mobile Number" maxlength="10">
+      <input type="password" id="password" placeholder="Password">
+      <button class="login-btn" onclick="login()">Login</button>
+      <div id="loginError" class="error-msg hidden"></div>
     </div>
 
-    <div class="main">
-        <!-- Exam List - Shown directly -->
-        <div id="examList" class="card">
-            <h2 style="text-align:center; color:#2563eb;">Available Exams</h2>
-            <div id="examsContainer">Loading exams...</div>
-        </div>
-
-        <!-- Exam Taking -->
-        <div id="examTaking" class="card hidden">
-            <h2 id="examTitleDisplay" style="text-align:center; color:#2563eb;"></h2>
-            <div class="timer-bar" id="timer">Time Remaining: --</div>
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-number" id="attempted">0</div>
-                    <div class="stat-label">Attempted</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="notAttempted">0</div>
-                    <div class="stat-label">Not Attempted</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="revision">0</div>
-                    <div class="stat-label">Revision</div>
-                </div>
-            </div>
-            <form id="examForm">
-                <div id="questionsContainer"></div>
-                <button type="submit" class="submit-btn">Submit Exam</button>
-            </form>
-        </div>
+    <!-- Exam List -->
+    <div id="examList" class="card hidden">
+      <h2 style="text-align:center; color:#2563eb;">Available Exams</h2>
+      <div id="examsContainer">Loading exams...</div>
     </div>
 
-    <script>
-        // CORRECT BACKEND URL - THIS WAS THE MAIN PROBLEM!
-        const API_URL = "https://academy-backend-e02j.onrender.com";
+    <!-- Exam Taking -->
+    <div id="examTaking" class="card hidden">
+      <h2 id="examTitleDisplay" style="text-align:center; color:#2563eb;"></h2>
+      <div class="timer-bar" id="timer">Time Remaining: --</div>
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-number" id="attempted">0</div>
+          <div class="stat-label">Attempted</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="notAttempted">0</div>
+          <div class="stat-label">Not Attempted</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="revision">0</div>
+          <div class="stat-label">Revision</div>
+        </div>
+      </div>
+      <form id="examForm">
+        <div id="questionsContainer"></div>
+        <button type="submit" class="submit-btn">Submit Exam</button>
+      </form>
+    </div>
+  </div>
 
-        let currentExam = null;
-        let studentAnswers = [];
-        let revisionMarked = new Set();
+  <script>
+    const API_URL = "https://academy-backend-e02j.onrender.com";
 
-        // Load exams when page opens
-        window.onload = loadAvailableExams;
+    let currentExam = null;
+    let studentAnswers = [];
+    let revisionMarked = new Set();
+    let loggedInStudent = null; // Stores { name, mobile }
 
-        async function loadAvailableExams() {
-            const container = document.getElementById('examsContainer');
-            container.innerHTML = "Loading exams...";
+    // Show login on load
+    window.onload = () => {
+      document.getElementById('loginSection').style.display = 'block';
+    };
 
-            try {
-                const res = await fetch(`${API_URL}/active-exams`);
-                
-                // Better error handling
-                if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(`Server error ${res.status}: ${text || 'No response'}`);
-                }
+    async function login() {
+      const mobile = document.getElementById('mobile').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const errorEl = document.getElementById('loginError');
 
-                const exams = await res.json();
+      if (!mobile || !password) {
+        errorEl.textContent = "Please enter mobile number and password";
+        errorEl.classList.remove('hidden');
+        return;
+      }
 
-                if (exams.length === 0) {
-                    container.innerHTML = "<p style='text-align:center; color:#64748b;'>No active exams right now.</p>";
-                    return;
-                }
-
-                container.innerHTML = exams.map(exam => `
-                    <div style="background:#f8fafc; padding:20px; border-radius:16px; text-align:center; margin-bottom:16px; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.05);" onclick="startExam('${exam._id}')">
-                        <h3 style="margin:0 0 10px 0; color:#2563eb;">${exam.title}</h3>
-                        <p style="margin:5px 0;"><strong>${(exam.subject || '').toUpperCase()} - Test ${exam.testNumber || 'N/A'}</strong></p>
-                        <p style="margin:5px 0;">${exam.totalQuestions} Questions</p>
-                        <p style="color:#10b981; font-weight:bold; margin-top:12px;">Tap to Start →</p>
-                    </div>
-                `).join('');
-
-            } catch (err) {
-                console.error(err);
-                container.innerHTML = `<div class="error-msg">Failed to load exams:<br>${err.message}<br><br>Check if backend is running at:<br>${API_URL}</div>`;
-            }
-        }
-
-        async function startExam(examId) {
-            try {
-                const res = await fetch(`${API_URL}/exam/${examId}`);
-                if (!res.ok) throw new Error(`Exam not found (${res.status})`);
-                currentExam = await res.json();
-
-                studentAnswers = new Array(currentExam.totalQuestions).fill(null);
-                revisionMarked = new Set();
-
-                document.getElementById('examList').classList.add('hidden');
-                document.getElementById('examTaking').classList.remove('hidden');
-                document.getElementById('examTitleDisplay').textContent = currentExam.title;
-
-                const qContainer = document.getElementById('questionsContainer');
-                qContainer.innerHTML = currentExam.questions.map((q, i) => `
-                    <div class="question-container">
-                        <img src="${q.imageUrl}" alt="Question ${i+1}" class="question-img" loading="lazy">
-                        <div class="options">
-                            <label class="option">
-                                <input type="radio" name="q${i}" value="a" onchange="saveAnswer(${i}, 'a')">
-                                <span>A</span>
-                            </label>
-                            <label class="option">
-                                <input type="radio" name="q${i}" value="b" onchange="saveAnswer(${i}, 'b')">
-                                <span>B</span>
-                            </label>
-                            <label class="option">
-                                <input type="radio" name="q${i}" value="c" onchange="saveAnswer(${i}, 'c')">
-                                <span>C</span>
-                            </label>
-                            <label class="option">
-                                <input type="radio" name="q${i}" value="d" onchange="saveAnswer(${i}, 'd')">
-                                <span>D</span>
-                            </label>
-                        </div>
-                        <div style="text-align:right; margin-top:10px;">
-                            <button type="button" onclick="markRevision(${i})" style="background:none; border:none; color:#f59e0b; font-size:1.2rem; cursor:pointer;">
-                                <i class="fas fa-flag"></i> Mark for Revision
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-
-                updateStats();
-                startTimer(30 * 60); // Change to your desired time (in seconds)
-
-            } catch (err) {
-                alert("Error loading exam: " + err.message);
-            }
-        }
-
-        function saveAnswer(index, ans) {
-            studentAnswers[index] = ans;
-            updateStats();
-        }
-
-        function markRevision(index) {
-            revisionMarked.has(index) ? revisionMarked.delete(index) : revisionMarked.add(index);
-            updateStats();
-        }
-
-        function updateStats() {
-            const attempted = studentAnswers.filter(a => a !== null).length;
-            const total = currentExam?.totalQuestions || 0;
-            document.getElementById('attempted').textContent = attempted;
-            document.getElementById('notAttempted').textContent = total - attempted;
-            document.getElementById('revision').textContent = revisionMarked.size;
-        }
-
-        function startTimer(secondsTotal) {
-            let seconds = secondsTotal;
-            const timerEl = document.getElementById('timer');
-            const interval = setInterval(() => {
-                seconds--;
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                timerEl.textContent = `Time Remaining: ${mins}:${secs < 10 ? '0' + secs : secs}`;
-
-                if (seconds <= 300) timerEl.style.color = "#ef4444"; // Red in last 5 mins
-
-                if (seconds <= 0) {
-                    clearInterval(interval);
-                    alert("Time's up! Auto-submitting...");
-                    document.getElementById('examForm').dispatchEvent(new Event('submit'));
-                }
-            }, 1000);
-        }
-
-        // Submit Exam
-        document.getElementById('examForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const unanswered = studentAnswers.filter(a => a === null).length;
-            if (unanswered > 0 && !confirm(`You have ${unanswered} unanswered questions. Submit anyway?`)) {
-                return;
-            }
-
-            try {
-                const res = await fetch(`${API_URL}/submit-exam`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        examId: currentExam._id,
-                        studentMobile: "guest",
-                        studentName: "Guest Student",
-                        answers: studentAnswers
-                    })
-                });
-
-                if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(text || "Submission failed");
-                }
-
-                alert("Exam submitted successfully! Thank you.");
-                document.getElementById('examTaking').classList.add('hidden');
-                document.getElementById('examList').classList.remove('hidden');
-                loadAvailableExams();
-
-            } catch (err) {
-                alert("Submission error: " + err.message);
-            }
+      try {
+        const res = await fetch(`${API_URL}/student-login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mobile, password })
         });
-    </script>
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Invalid mobile or password");
+        }
+
+        loggedInStudent = await res.json(); // { name, mobile }
+
+        errorEl.classList.add('hidden');
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('examList').classList.remove('hidden');
+
+        loadAvailableExams();
+
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    async function loadAvailableExams() {
+      const container = document.getElementById('examsContainer');
+      container.innerHTML = "Loading exams...";
+
+      try {
+        const res = await fetch(`${API_URL}/active-exams`);
+        if (!res.ok) throw new Error("Failed to load exams");
+
+        const exams = await res.json();
+
+        if (exams.length === 0) {
+          container.innerHTML = "<p style='text-align:center; color:#64748b;'>No active exams right now.</p>";
+          return;
+        }
+
+        container.innerHTML = exams.map(exam => `
+          <div style="background:#f8fafc; padding:20px; border-radius:16px; text-align:center; margin-bottom:16px; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.05);" onclick="startExam('${exam._id}')">
+            <h3 style="margin:0 0 10px 0; color:#2563eb;">${exam.title}</h3>
+            <p style="margin:5px 0;"><strong>${(exam.subject || '').toUpperCase()} - Test ${exam.testNumber || 'N/A'}</strong></p>
+            <p style="margin:5px 0;">${exam.totalQuestions} Questions</p>
+            <p style="color:#10b981; font-weight:bold; margin-top:12px;">Tap to Start →</p>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        container.innerHTML = `<div class="error-msg">Error: ${err.message}</div>`;
+      }
+    }
+
+    async function startExam(examId) {
+      try {
+        const res = await fetch(`${API_URL}/exam/${examId}`);
+        if (!res.ok) throw new Error("Exam not available");
+
+        currentExam = await res.json();
+        studentAnswers = new Array(currentExam.totalQuestions).fill(null);
+        revisionMarked = new Set();
+
+        document.getElementById('examList').classList.add('hidden');
+        document.getElementById('examTaking').classList.remove('hidden');
+        document.getElementById('examTitleDisplay').textContent = currentExam.title;
+
+        const qContainer = document.getElementById('questionsContainer');
+        qContainer.innerHTML = currentExam.questions.map((q, i) => `
+          <div class="question-container">
+            <img src="${q.imageUrl}" alt="Question ${i+1}" class="question-img" loading="lazy">
+            <div class="options">
+              <label class="option">
+                <input type="radio" name="q${i}" value="a" onchange="saveAnswer(${i}, 'a')">
+                <span>A</span>
+              </label>
+              <label class="option">
+                <input type="radio" name="q${i}" value="b" onchange="saveAnswer(${i}, 'b')">
+                <span>B</span>
+              </label>
+              <label class="option">
+                <input type="radio" name="q${i}" value="c" onchange="saveAnswer(${i}, 'c')">
+                <span>C</span>
+              </label>
+              <label class="option">
+                <input type="radio" name="q${i}" value="d" onchange="saveAnswer(${i}, 'd')">
+                <span>D</span>
+              </label>
+            </div>
+            <div style="text-align:right; margin-top:10px;">
+              <button type="button" onclick="markRevision(${i})" style="background:none; border:none; color:#f59e0b; font-size:1.2rem; cursor:pointer;">
+                <i class="fas fa-flag"></i> Mark for Revision
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        updateStats();
+        startTimer(30 * 60); // Change time as needed
+
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    }
+
+    function saveAnswer(index, ans) {
+      studentAnswers[index] = ans;
+      updateStats();
+    }
+
+    function markRevision(index) {
+      revisionMarked.has(index) ? revisionMarked.delete(index) : revisionMarked.add(index);
+      updateStats();
+    }
+
+    function updateStats() {
+      const attempted = studentAnswers.filter(a => a !== null).length;
+      const total = currentExam?.totalQuestions || 0;
+      document.getElementById('attempted').textContent = attempted;
+      document.getElementById('notAttempted').textContent = total - attempted;
+      document.getElementById('revision').textContent = revisionMarked.size;
+    }
+
+    function startTimer(secondsTotal) {
+      let seconds = secondsTotal;
+      const timerEl = document.getElementById('timer');
+      const interval = setInterval(() => {
+        seconds--;
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        timerEl.textContent = `Time Remaining: ${mins}:${secs < 10 ? '0' + secs : secs}`;
+
+        if (seconds <= 300) {
+          timerEl.style.color = "#ef4444";
+          timerEl.style.fontWeight = "bold";
+        }
+
+        if (seconds <= 0) {
+          clearInterval(interval);
+          alert("⏰ Time is over! Auto-submitting...");
+          document.getElementById('examForm').dispatchEvent(new Event('submit'));
+        }
+      }, 1000);
+    }
+
+    // Submit Exam
+    document.getElementById('examForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const unanswered = studentAnswers.filter(a => a === null).length;
+      if (unanswered > 0 && !confirm(`You have ${unanswered} unanswered questions.\nSubmit anyway?`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/submit-exam`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            examId: currentExam._id,
+            studentMobile: loggedInStudent.mobile,
+            studentName: loggedInStudent.name,
+            answers: studentAnswers
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || "Submission failed");
+        }
+
+        alert("🎉 Exam submitted successfully!\nThank you, " + loggedInStudent.name + "!");
+
+        document.getElementById('examTaking').classList.add('hidden');
+        document.getElementById('examList').classList.remove('hidden');
+        loadAvailableExams();
+
+      } catch (err) {
+        alert("❌ Submission failed: " + err.message);
+      }
+    });
+  </script>
 </body>
 </html>
