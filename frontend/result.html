@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Exam Results - GP Soldiers Academy</title>
+  <title>Exam Results - Select Test</title>
   <link rel="icon" href="data:,">
-  <!-- html2canvas for capturing table as image -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     body {
@@ -108,6 +107,7 @@
       background: #999;
       cursor: not-allowed;
     }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -163,6 +163,7 @@
         </table>
       </div>
 
+      <!-- Share Button -->
       <button id="shareBtn" class="share-btn hidden" onclick="shareResults()">
         <i class="fab fa-whatsapp"></i> Share Results on WhatsApp
       </button>
@@ -192,6 +193,7 @@
         return;
       }
 
+      // Get share button fresh every time
       const shareBtn = document.getElementById('shareBtn');
       shareBtn.classList.add('hidden');
 
@@ -254,46 +256,34 @@
         const canvas = await html2canvas(container, {
           scale: 2,
           useCORS: true,
-          backgroundColor: '#ffffff',
-          logging: false
+          backgroundColor: '#ffffff'
         });
 
         canvas.toBlob(async (blob) => {
-          const file = new File([blob], 'gp-soldiers-exam-results.png', { type: 'image/png' });
+          const file = new File([blob], 'gp-soldiers-results.png', { type: 'image/png' });
 
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            try {
-              await navigator.share({
-                files: [file],
-                title: 'GP Soldiers Academy Exam Results',
-                text: 'Check out the latest exam results!'
-              });
-            } catch (shareErr) {
-              fallbackDownload(canvas);
-            }
+            await navigator.share({
+              files: [file],
+              title: 'GP Soldiers Academy Results',
+              text: 'Check out the exam results!'
+            });
           } else {
-            fallbackDownload(canvas);
+            const url = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'gp-soldiers-results.png';
+            a.click();
+            alert("Image saved! Share it on WhatsApp manually.");
           }
-
           shareBtn.disabled = false;
           shareBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Share Results on WhatsApp';
-        }, 'image/png');
+        });
       } catch (err) {
-        fallbackDownload(null);
+        alert("Failed to capture image. Try again.");
         shareBtn.disabled = false;
         shareBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Share Results on WhatsApp';
       }
-    }
-
-    function fallbackDownload(canvas) {
-      if (canvas) {
-        const url = canvas.toDataURL('image/png');
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'gp-soldiers-exam-results.png';
-        a.click();
-      }
-      alert("Image downloaded! You can now attach and send it on WhatsApp.");
     }
 
     populateTestNumbers();
