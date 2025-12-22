@@ -3,44 +3,106 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Exam Results - Student Portal</title>
+  <title>Exam Results - Select Test</title>
   <link rel="icon" href="data:,">
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); margin: 0; padding: 0; color: #333; }
-    header { background: rgba(0,0,0,0.8); color: white; padding: 20px; text-align: center; position: fixed; top: 0; width: 100%; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    body { 
+      font-family: 'Segoe UI', Arial, sans-serif; 
+      background: linear-gradient(135deg, #667eea, #764ba2); 
+      margin: 0; padding: 0; color: #333; 
+      min-height: 100vh;
+    }
+    header { 
+      background: rgba(0,0,0,0.8); color: white; padding: 20px; 
+      text-align: center; position: fixed; top: 0; width: 100%; z-index: 1000; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+    }
     header h1 { font-size: 26px; }
     .main { margin-top: 90px; padding: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
-    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
     h2 { text-align: center; color: #333; margin-bottom: 20px; }
+    
+    .filter-section {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+    select, button {
+      padding: 14px 18px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      background: white;
+    }
+    select { min-width: 200px; }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+    button:hover { background: #1d4ed8; }
+
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+    th, td { padding: 14px; text-align: left; border-bottom: 1px solid #ddd; }
     th { background: #667eea; color: white; }
     tr:hover { background: #f8f9fa; }
-    .total-students { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 20px; }
-    .no-results { text-align: center; color: #d32f2f; font-size: 18px; }
+    .total-students { text-align: center; font-size: 18px; font-weight: bold; margin: 20px 0; color: #1e293b; }
+    .exam-info { text-align: center; font-size: 20px; font-weight: bold; color: #2563eb; margin-bottom: 10px; }
+    .no-results { text-align: center; color: #d32f2f; font-size: 18px; padding: 40px; }
+    .initial-msg { text-align: center; color: #64748b; font-size: 18px; padding: 40px; }
   </style>
 </head>
 <body>
   <header>
     <h1>Exam Results</h1>
   </header>
+
   <div class="main">
     <div class="card">
-      <h2>Exam Results for All Students</h2>
+      <h2>Select Exam to View Results</h2>
+
+      <div class="filter-section">
+        <select id="subjectSelect">
+          <option value="">Select Subject</option>
+          <option value="english">English</option>
+          <option value="kannada">Kannada</option>
+          <option value="gk">GK</option>
+          <option value="maths">Maths</option>
+        </select>
+
+        <select id="testNumberSelect">
+          <option value="">Select Test Number</option>
+        </select>
+
+        <button onclick="loadResults()">Show Results</button>
+      </div>
+
+      <div id="examInfo" class="exam-info" style="display:none;"></div>
       <div id="totalStudents" class="total-students"></div>
+
       <table id="resultsTable">
         <thead>
           <tr>
             <th>Student Name</th>
             <th>Roll Number</th>
             <th>Mobile</th>
-            <th>Exam Title</th>
-            <th>Marks (Correct/Total)</th>
+            <th>Score (Correct/Total)</th>
             <th>Submitted At</th>
           </tr>
         </thead>
         <tbody id="resultsBody">
-          <tr><td colspan="6" style="text-align:center;">Loading results...</td></tr>
+          <tr>
+            <td colspan="5" class="initial-msg">
+              Please select a Subject and Test Number, then click "Show Results"
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -49,45 +111,76 @@
   <script>
     const API_URL = "https://academy-backend-e02j.onrender.com";
 
+    // Populate Test Numbers 1 to 50
+    function populateTestNumbers() {
+      const select = document.getElementById('testNumberSelect');
+      select.innerHTML = '<option value="">Select Test Number</option>';
+      for (let i = 1; i <= 50; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Test ${i}`;
+        select.appendChild(opt);
+      }
+    }
+
     async function loadResults() {
+      const subject = document.getElementById('subjectSelect').value;
+      const testNumber = document.getElementById('testNumberSelect').value;
+
+      if (!subject || !testNumber) {
+        alert("Please select both Subject and Test Number");
+        return;
+      }
+
       try {
         const res = await fetch(`${API_URL}/results`);
-        if (!res.ok) {
-          throw new Error("Failed to load results");
-        }
-        const results = await res.json();
+        if (!res.ok) throw new Error("Failed to fetch results");
+        let results = await res.json();
+
+        // Filter by subject and testNumber
+        results = results.filter(r => 
+          r.examSubject?.toLowerCase() === subject && 
+          r.examTestNumber == parseInt(testNumber)
+        );
+
+        // Sort by latest submission
+        results.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
 
         const tbody = document.getElementById('resultsBody');
         const totalEl = document.getElementById('totalStudents');
+        const examInfoEl = document.getElementById('examInfo');
+
+        // Update exam title
+        const subjectName = subject.charAt(0).toUpperCase() + subject.slice(1);
+        examInfoEl.textContent = `${subjectName} - Test ${testNumber}`;
+        examInfoEl.style.display = 'block';
 
         if (results.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="no-results">No results available yet.</td></tr>';
-          totalEl.textContent = 'Total Students: 0';
+          tbody.innerHTML = '<tr><td colspan="5" class="no-results">No students have attempted this exam yet.</td></tr>';
+          totalEl.textContent = '';
           return;
         }
 
-        // Sort by submittedAt descending (latest first)
-        results.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+        totalEl.textContent = `Total Students Attempted: ${results.length}`;
 
         tbody.innerHTML = results.map(r => `
           <tr>
             <td>${r.studentName}</td>
             <td>${r.studentRoll || 'N/A'}</td>
             <td>${r.studentMobile}</td>
-            <td>${r.examTitle}</td>
-            <td>${r.correct} / ${r.total}</td>
+            <td><strong>${r.correct} / ${r.total}</strong></td>
             <td>${new Date(r.submittedAt).toLocaleString()}</td>
           </tr>
         `).join('');
 
-        totalEl.textContent = `Total Students Attempted: ${results.length}`;
       } catch (err) {
-        document.getElementById('resultsBody').innerHTML = `<tr><td colspan="6" class="no-results">Error loading results: ${err.message}</td></tr>`;
+        document.getElementById('resultsBody').innerHTML = 
+          `<tr><td colspan="5" class="no-results">Error loading results: ${err.message}</td></tr>`;
       }
     }
 
-    // Load results on page load
-    loadResults();
+    // Load test numbers on page load
+    populateTestNumbers();
   </script>
 </body>
 </html>
