@@ -1,4 +1,4 @@
-// server.js - FINAL WORKING VERSION (with testNumber support)
+// server.js - FULL UPDATED VERSION (with testNumber + result filtering support)
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -51,7 +51,6 @@ const Video = mongoose.model('Video', new mongoose.Schema({
   title: String
 }));
 
-// ADD testNumber to DraftExam
 const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   title: String,
   subject: String,
@@ -65,7 +64,6 @@ const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }));
 
-// ADD testNumber to Exam
 const Exam = mongoose.model('Exam', new mongoose.Schema({
   title: String,
   subject: String,
@@ -79,12 +77,15 @@ const Exam = mongoose.model('Exam', new mongoose.Schema({
   conductedAt: { type: Date, default: Date.now }
 }));
 
+// Added examSubject and examTestNumber for filtering
 const Result = mongoose.model('Result', new mongoose.Schema({
   studentMobile: String,
   studentName: String,
   studentRoll: String,
   examId: { type: mongoose.Schema.Types.ObjectId, ref: 'Exam' },
   examTitle: String,
+  examSubject: String,           // ← ADDED
+  examTestNumber: Number,        // ← ADDED
   score: Number,
   total: Number,
   correct: Number,
@@ -102,7 +103,6 @@ const Note = mongoose.model('Note', NoteSchema);
 
 // ====================== ALL API ROUTES ======================
 
-// Student Login (unchanged)
 app.post('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
@@ -116,7 +116,6 @@ app.post('/student-login', async (req, res) => {
   }
 });
 
-// Students CRUD (unchanged)
 app.get('/students', async (req, res) => res.json(await Student.find()));
 
 app.post('/students', async (req, res) => {
@@ -144,7 +143,6 @@ app.delete('/students/:id', async (req, res) => {
   res.json({ message: "Student deleted" });
 });
 
-// Videos (unchanged)
 app.get('/videos', async (req, res) => res.json(await Video.find()));
 
 app.post('/videos', async (req, res) => {
@@ -165,22 +163,22 @@ app.post('/videos', async (req, res) => {
 
 app.get('/drafts', async (req, res) => res.json(await DraftExam.find().sort({ createdAt: -1 })));
 
-// Updated /drafts POST to accept and save testNumber
+// Save draft with testNumber
 app.post('/drafts', async (req, res) => {
-  const { title, subject, testNumber, questions } = req.body;  // ← Added testNumber
+  const { title, subject, testNumber, questions } = req.body;
   if (!questions || questions.length === 0) return res.status(400).json({ error: "At least one question required" });
 
   let draft = await DraftExam.findOne({ title });
   if (draft) {
     draft.subject = subject;
-    draft.testNumber = testNumber;           // ← Save testNumber
+    draft.testNumber = testNumber;
     draft.questions = questions;
     draft.totalQuestions = questions.length;
   } else {
     draft = new DraftExam({
       title,
       subject,
-      testNumber,                            // ← Save testNumber
+      testNumber,
       questions,
       totalQuestions: questions.length
     });
@@ -189,7 +187,7 @@ app.post('/drafts', async (req, res) => {
   res.json({ message: "Draft saved" });
 });
 
-// Updated /conduct to copy testNumber
+// Conduct exam - copy testNumber
 app.post('/conduct/:draftId', async (req, res) => {
   const draft = await DraftExam.findById(req.params.draftId);
   if (!draft) return res.status(404).json({ error: "Draft not found" });
@@ -201,7 +199,7 @@ app.post('/conduct/:draftId', async (req, res) => {
     title: draft.title,
     subject: draft.subject,
     classNum: draft.classNum,
-    testNumber: draft.testNumber,            // ← COPY testNumber
+    testNumber: draft.testNumber,        // ← COPIED
     totalQuestions: draft.totalQuestions,
     questions: draft.questions
   });
@@ -219,6 +217,7 @@ app.get('/exam/:id', async (req, res) => {
   res.json(exam);
 });
 
+// Submit exam - save subject and testNumber in Result
 app.post('/submit-exam', async (req, res) => {
   const { examId, studentMobile, studentName, answers } = req.body;
   if (!examId || !studentMobile || !Array.isArray(answers)) return res.status(400).json({ error: "Invalid data" });
@@ -241,6 +240,8 @@ app.post('/submit-exam', async (req, res) => {
     studentRoll: student.roll || '',
     examId,
     examTitle: exam.title,
+    examSubject: exam.subject,              // ← SAVED
+    examTestNumber: exam.testNumber,        // ← SAVED
     score: correctCount,
     total: exam.totalQuestions,
     correct: correctCount,
@@ -264,7 +265,6 @@ app.get('/results', async (req, res) => {
   }
 });
 
-// Notes Routes (unchanged)
 app.post('/api/save-note', async (req, res) => {
   try {
     const { title, content } = req.body;
