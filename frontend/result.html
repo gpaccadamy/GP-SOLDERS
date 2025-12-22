@@ -57,6 +57,7 @@
     .exam-info { text-align: center; font-size: 20px; font-weight: bold; color: #2563eb; margin-bottom: 10px; }
     .no-results { text-align: center; color: #d32f2f; font-size: 18px; padding: 40px; }
     .initial-msg { text-align: center; color: #64748b; font-size: 18px; padding: 40px; }
+    .rank { font-weight: bold; color: #2563eb; }
   </style>
 </head>
 <body>
@@ -90,6 +91,7 @@
       <table id="resultsTable">
         <thead>
           <tr>
+            <th>Rank</th>
             <th>Student Name</th>
             <th>Roll Number</th>
             <th>Mobile</th>
@@ -99,7 +101,7 @@
         </thead>
         <tbody id="resultsBody">
           <tr>
-            <td colspan="5" class="initial-msg">
+            <td colspan="6" class="initial-msg">
               Please select a Subject and Test Number, then click "Show Results"
             </td>
           </tr>
@@ -143,8 +145,13 @@
           r.examTestNumber == parseInt(testNumber)
         );
 
-        // Sort by latest submission
-        results.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+        // Sort by highest score first, then by submission time (earliest first for same score)
+        results.sort((a, b) => {
+          if (b.correct !== a.correct) {
+            return b.correct - a.correct; // Highest marks first
+          }
+          return new Date(a.submittedAt) - new Date(b.submittedAt); // Earlier submission first if tie
+        });
 
         const tbody = document.getElementById('resultsBody');
         const totalEl = document.getElementById('totalStudents');
@@ -156,15 +163,16 @@
         examInfoEl.style.display = 'block';
 
         if (results.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" class="no-results">No students have attempted this exam yet.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" class="no-results">No students have attempted this exam yet.</td></tr>';
           totalEl.textContent = '';
           return;
         }
 
         totalEl.textContent = `Total Students Attempted: ${results.length}`;
 
-        tbody.innerHTML = results.map(r => `
+        tbody.innerHTML = results.map((r, index) => `
           <tr>
+            <td class="rank">#${index + 1}</td>
             <td>${r.studentName}</td>
             <td>${r.studentRoll || 'N/A'}</td>
             <td>${r.studentMobile}</td>
@@ -175,7 +183,7 @@
 
       } catch (err) {
         document.getElementById('resultsBody').innerHTML = 
-          `<tr><td colspan="5" class="no-results">Error loading results: ${err.message}</td></tr>`;
+          `<tr><td colspan="6" class="no-results">Error loading results: ${err.message}</td></tr>`;
       }
     }
 
