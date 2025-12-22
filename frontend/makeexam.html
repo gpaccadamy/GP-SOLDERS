@@ -42,7 +42,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Fixed typo here */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         .card {
             background: var(--card-bg);
@@ -187,7 +187,6 @@
     <div class="app-container">
         <div id="adminView">
             <div class="header">Admin Panel - Create Exam</div>
-
             <div class="card">
                 <h2>Create New Exam</h2>
                 <input type="text" id="examTitle" placeholder="Exam Title (e.g. Monthly Test - Dec)">
@@ -205,10 +204,9 @@
                 <button class="action-btn add-q-btn" onclick="addQuestionForm()">+ Add Question</button>
                 <button class="action-btn save-btn" onclick="saveDraft()">Save as Draft</button>
             </div>
-
             <div class="card">
                 <h2>Saved Drafts</h2>
-                <div id="draftsList">Loading...</div>
+                <div id="draftsList">Loading drafts...</div>
             </div>
         </div>
 
@@ -233,6 +231,7 @@
         const CLOUD_NAME = "djlkwjeb2";
         const UPLOAD_PRESET = "academy_exam_preset";
         const API_URL = "https://academy-backend-e02j.onrender.com";
+
         let currentQuestions = [];
 
         function showView(view) {
@@ -287,8 +286,9 @@
         }
 
         function removeQuestion(button, idx) {
-            button.parentElement.remove();
+            button.closest('.question-card').remove();
             currentQuestions.splice(idx, 1);
+            // Renumber questions
             document.querySelectorAll('#questionsList .question-card').forEach((card, i) => {
                 card.querySelector('h4').textContent = `Question ${i + 1}`;
             });
@@ -315,6 +315,7 @@
                     body: formData
                 });
                 const data = await res.json();
+
                 if (data.secure_url) {
                     currentQuestions[idx].imageUrl = data.secure_url;
                     img.src = data.secure_url;
@@ -322,7 +323,7 @@
                     status.textContent = "Uploaded successfully!";
                     status.style.color = "green";
                 } else {
-                    status.textContent = "Upload failed: " + (data.error?.message || "Unknown error");
+                    status.textContent = "Upload failed: " + (data.error?.message || "Unknown");
                     status.style.color = "red";
                 }
             } catch (err) {
@@ -333,7 +334,7 @@
         }
 
         function setCorrect(idx, ans) {
-            currentQuestions[idx].correctAnswer = ans;
+            currentQuestions[idx].correctAnswer = ans.toLowerCase();
             document.getElementById(`correct${idx}`).textContent = ans.toUpperCase();
         }
 
@@ -342,11 +343,14 @@
             const subject = document.getElementById('examSubject').value;
             const testNumber = document.getElementById('examTestNumber').value;
 
-            if (!title || !subject || !testNumber || currentQuestions.length === 0) {
-                return alert("Please fill all fields and add at least one question.");
+            if (!title || !subject || !testNumber) {
+                return alert("Please fill Exam Title, Subject, and Test Number.");
+            }
+            if (currentQuestions.length === 0) {
+                return alert("Please add at least one question.");
             }
             if (currentQuestions.some(q => !q.imageUrl || !q.correctAnswer)) {
-                return alert("Every question must have an image and correct answer.");
+                return alert("Every question must have an uploaded image and a selected correct answer.");
             }
 
             try {
@@ -356,12 +360,19 @@
                     body: JSON.stringify({
                         title,
                         subject,
-                        testNumber: parseInt(testNumber),
+                        testNumber: parseInt(testNumber),  // ← Crucial for filtering results
                         questions: currentQuestions
                     })
                 });
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.error || "Failed to save");
+                }
+
                 const data = await res.json();
                 alert(data.message || "Draft saved successfully!");
+
                 // Reset form
                 currentQuestions = [];
                 document.getElementById('questionsList').innerHTML = '';
@@ -370,50 +381,70 @@
                 document.getElementById('examTestNumber').value = '';
                 populateTestNumbers();
                 loadDrafts();
+
             } catch (err) {
-                alert("Failed to save draft. Check connection.");
+                alert("Error: " + err.message);
             }
         }
 
         async function loadDrafts() {
             try {
                 const res = await fetch(`${API_URL}/drafts`);
+                if (!res.ok) throw new Error("Failed to load drafts");
                 const drafts = await res.json();
+
                 const container = document.getElementById('draftsList');
                 if (drafts.length === 0) {
                     container.innerHTML = "<p style='text-align:center; color:#64748b;'>No drafts yet</p>";
                     return;
                 }
+
                 container.innerHTML = "";
                 drafts.forEach(d => {
                     const div = document.createElement('div');
                     div.className = 'card';
                     div.style.margin = '15px 0';
                     div.innerHTML = `
-                        <h4 style="color:var(--primary); margin:0 0 10px 0;">${d.title} (${(d.subject || '').toUpperCase()} - Test ${d.testNumber || 'N/A'})</h4>
-                        <p style="margin:5px 0;"><strong>${d.questions?.length || 0} Questions</strong></p>
-                        <button class="action-btn conduct-btn" onclick="conductExam('${d._id}')">Conduct Exam Now</button>
+                        <h4 style="color:var(--primary); margin:0 0 10px 0;">
+                            ${d.title}
+                        </h4>
+                        <p style="margin:5px 0;">
+                            <strong>${(d.subject || '').toUpperCase()} - Test ${d.testNumber || 'N/A'}</strong>
+                        </p>
+                        <p style="margin:5px 0;">${d.questions?.length || 0} Questions</p>
+                        <p style="margin:5px 0; color:#64748b; font-size:0.9rem;">
+                            Created: ${new Date(d.createdAt).toLocaleDateString()}
+                        </p>
+                        <button class="action-btn conduct-btn" onclick="conductExam('${d._id}')">
+                            Conduct Exam Now
+                        </button>
                     `;
                     container.appendChild(div);
                 });
             } catch (err) {
-                document.getElementById('draftsList').innerHTML = "<p style='text-align:center; color:red;'>Error loading drafts</p>";
+                document.getElementById('draftsList').innerHTML = 
+                    "<p style='text-align:center; color:red;'>Error loading drafts: " + err.message + "</p>";
             }
         }
 
         async function conductExam(draftId) {
-            if (!confirm("Conduct this exam now? Students will be able to attempt it.")) return;
+            if (!confirm("⚠️ Conduct this exam now?\nStudents will be able to attempt it immediately.")) return;
+
             try {
                 const res = await fetch(`${API_URL}/conduct/${draftId}`, { method: 'POST' });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || "Failed");
+                }
                 const data = await res.json();
-                alert(data.message || data.error || "Action completed");
+                alert("✅ " + (data.message || "Exam conducted successfully!"));
                 loadDrafts();
             } catch (err) {
-                alert("Error conducting exam");
+                alert("❌ Error: " + err.message);
             }
         }
 
-        // Initial load
+        // Load drafts on start
         loadDrafts();
     </script>
 </body>
