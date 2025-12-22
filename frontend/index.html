@@ -1,244 +1,255 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GP Soldiers Academy</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #2563eb; /* Vibrant blue */
-            --accent: #10b981; /* Green */
-            --light-bg: #f0f9ff; /* Very light sky blue */
-            --card-bg: #ffffff; /* White cards */
-            --gradient-start: #e0f2fe;
-            --gradient-end: #fefce8;
-            --text: #1e293b;
-        }
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: var(--light-bg);
-            color: var(--text);
-            padding-bottom: 70px;
-        }
-        .app-container {
-            max-width: 480px;
-            margin: 0 auto;
-            background: var(--card-bg);
-            min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0,0,0,0.08);
-        }
-        .header {
-            background: linear-gradient(135deg, var(--primary), #3b82f6);
-            color: white;
-            padding: 18px;
-            text-align: center;
-            font-size: 1.3rem;
-            font-weight: bold;
-        }
-        .banner {
-            position: relative;
-            height: 250px;
-            margin: 15px;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-        }
-        .slides {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-        .slide {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: no-repeat center/cover;
-            opacity: 0;
-            transition: opacity 1s ease;
-        }
-        .slide.active {
-            opacity: 1;
-        }
-        .banner-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.7));
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .banner-overlay p {
-            margin: 5px 0;
-            font-size: 1.1rem;
-        }
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 18px;
-            padding: 20px;
-        }
-        .feature-item {
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-            border-radius: 16px;
-            padding: 22px 12px;
-            text-align: center;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        .feature-item:hover {
-            transform: translateY(-8px) scale(1.05);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-        }
-        .feature-item i {
-            font-size: 3rem;
-            color: var(--primary);
-            margin-bottom: 12px;
-        }
-        .feature-item span {
-            display: block;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text);
-        }
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 12px 0;
-            max-width: 480px;
-            margin: 0 auto;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
-        }
-        .nav-item {
-            text-align: center;
-            color: var(--primary);
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-        .nav-item i {
-            font-size: 1.8rem;
-            display: block;
-            margin-bottom: 4px;
-        }
-        @media (max-width: 480px) {
-            .app-container { box-shadow: none; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GP Soldiers Academy</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      --primary: #2563eb; /* Vibrant blue */
+      --accent: #10b981; /* Green */
+      --light-bg: #f0f9ff; /* Very light sky blue */
+      --card-bg: #ffffff; /* White cards */
+      --gradient-start: #e0f2fe;
+      --gradient-end: #fefce8;
+      --text: #1e293b;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--light-bg);
+      color: var(--text);
+      padding-bottom: 70px;
+    }
+    .app-container {
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      min-height: 100vh;
+      box-shadow: 0 0 20px rgba(0,0,0,0.08);
+    }
+    .header {
+      background: linear-gradient(135deg, var(--primary), #3b82f6);
+      color: white;
+      padding: 18px;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+      position: relative; /* For positioning logo */
+    }
+    /* Circular Logo */
+    .logo {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    /* Adjust title to make space for logo */
+    .header-title {
+      margin-left: 60px; /* Space for logo */
+      font-size: 1.3rem;
+    }
+    .banner {
+      position: relative;
+      height: 250px;
+      margin: 15px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .slides {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: no-repeat center/cover;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+    .slide.active {
+      opacity: 1;
+    }
+    .banner-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .banner-overlay p {
+      margin: 5px 0;
+      font-size: 1.1rem;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      padding: 20px;
+    }
+    .feature-item {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      border-radius: 16px;
+      padding: 22px 12px;
+      text-align: center;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .feature-item:hover {
+      transform: translateY(-8px) scale(1.05);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+    }
+    .feature-item i {
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+    .feature-item span {
+      display: block;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 12px 0;
+      max-width: 480px;
+      margin: 0 auto;
+      box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+    }
+    .nav-item {
+      text-align: center;
+      color: var(--primary);
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .nav-item i {
+      font-size: 1.8rem;
+      display: block;
+      margin-bottom: 4px;
+    }
+    @media (max-width: 480px) {
+      .app-container { box-shadow: none; }
+    }
+  </style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="header">GP SOLDIERS ACADEMY</div>
-
-        <div class="banner">
-         <div class="slides">
-    <div class="slide active" style="background-image: url('gpposter1.jpg');"></div>
-    <div class="slide" style="background-image: url('image3.jpg');"></div>
-    <div class="slide" style="background-image: url('poster4.jpg');"></div>
-    <div class="slide" style="background-image: url('poster5.jpg');"></div>
-    <div class="slide" style="background-image: url('image1.jpg');"></div>
-</div>
-            <div class="banner-overlay">
-                <p>By GP Soldiers</p>
-            </div>
-        </div>
-
-        <div class="features-grid">
-            <!-- 1st: New Button -->
-            <div class="feature-item" onclick="window.location.href='army-video.html'">
-                <i class="fas fa-dumbbell"></i>
-                <span>Our Training Videos</span>
-            </div>
-
-            <!-- 2nd: Army Exam Test -->
-            <div class="feature-item" onclick="window.location.href='exams.html'">
-                <i class="fas fa-clipboard-check"></i>
-                <span>Army Exam Test</span>
-            </div>
-
-            <!-- 3rd -->
-            <div class="feature-item" onclick="window.location.href='my-courses.html'">
-                <i class="fas fa-book-open"></i>
-                <span>My Courses</span>
-            </div>
-
-            <!-- 4th -->
-            <div class="feature-item" onclick="window.location.href='army-exam-notes.html'">
-                <i class="fas fa-sticky-note"></i>
-                <span>Army Exam Notes</span>
-            </div>
-
-            <!-- 5th -->
-            <div class="feature-item" onclick="window.location.href='result.html'">
-                <i class="fas fa-trophy"></i>
-                <span>Results</span>
-            </div>
-
-            <!-- 6th: Army Video (second-last) -->
-            <div class="feature-item" onclick="window.location.href='liveclasses.html'">
-                <i class="fas fa-play-circle"></i>
-                <span>Army Video</span>
-            </div>
-
-            <!-- 7th: Previous Years (last) -->
-            <div class="feature-item" onclick="window.location.href='previous-years.html'">
-                <i class="fas fa-history"></i>
-                <span>Previous Years</span>
-            </div>
-        </div>
+  <div class="app-container">
+    <div class="header">
+      <!-- Small Circular Logo -->
+      <div class="logo">
+        <img src="gplogo.jpg" alt="GP Soldiers Logo">
+      </div>
+      <!-- Title with left margin to avoid overlapping logo -->
+      <div class="header-title">GP SOLDIERS ACADEMY</div>
     </div>
 
-    <div class="bottom-nav">
-        <div class="nav-item" onclick="window.location.href='index.html'">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-        </div>
-        <div class="nav-item" onclick="window.location.href='notes.html'">
-            <i class="fas fa-pen"></i>
-            <span>Write Notes</span>
-        </div>
-        <div class="nav-item">
-            <i class="fas fa-user"></i>
-            <span>Profile</span>
-        </div>
+    <div class="banner">
+      <div class="slides">
+        <div class="slide active" style="background-image: url('gpposter1.jpg');"></div>
+        <div class="slide" style="background-image: url('image3.jpg');"></div>
+        <div class="slide" style="background-image: url('poster4.jpg');"></div>
+        <div class="slide" style="background-image: url('poster5.jpg');"></div>
+        <div class="slide" style="background-image: url('image1.jpg');"></div>
+      </div>
+      <div class="banner-overlay">
+        <p>By GP Soldiers</p>
+      </div>
     </div>
 
-    <script>
-        // Auto slideshow
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
-        function nextSlide() {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
-        }
-        setInterval(nextSlide, 3000); // Change every 3 seconds
-    </script>
+    <div class="features-grid">
+      <div class="feature-item" onclick="window.location.href='army-video.html'">
+        <i class="fas fa-dumbbell"></i>
+        <span>Our Training Videos</span>
+      </div>
+
+      <div class="feature-item" onclick="window.location.href='exams.html'">
+        <i class="fas fa-clipboard-check"></i>
+        <span>Army Exam Test</span>
+      </div>
+
+      <div class="feature-item" onclick="window.location.href='my-courses.html'">
+        <i class="fas fa-book-open"></i>
+        <span>My Courses</span>
+      </div>
+
+      <div class="feature-item" onclick="window.location.href='army-exam-notes.html'">
+        <i class="fas fa-sticky-note"></i>
+        <span>Army Exam Notes</span>
+      </div>
+
+      <div class="feature-item" onclick="window.location.href='result.html'">
+        <i class="fas fa-trophy"></i>
+        <span>Results</span>
+      </div>
+
+      <div class="feature-item" onclick="window.location.href='liveclasses.html'">
+        <i class="fas fa-play-circle"></i>
+        <span>Army Video</span>
+      </div>
+
+      <div class="feature-item" onclick="window.location.href='previous-years.html'">
+        <i class="fas fa-history"></i>
+        <span>Previous Years</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="window.location.href='index.html'">
+      <i class="fas fa-home"></i>
+      <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='notes.html'">
+      <i class="fas fa-pen"></i>
+      <span>Write Notes</span>
+    </div>
+    <div class="nav-item">
+      <i class="fas fa-user"></i>
+      <span>Profile</span>
+    </div>
+  </div>
+
+  <script>
+    // Auto slideshow
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    function nextSlide() {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (currentSlide + 1) % slides.length;
+      slides[currentSlide].classList.add('active');
+    }
+    setInterval(nextSlide, 3000); // Change every 3 seconds
+  </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
