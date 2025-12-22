@@ -5,24 +5,54 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exam Results - Select Test</title>
   <link rel="icon" href="data:,">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    body { 
-      font-family: 'Segoe UI', Arial, sans-serif; 
-      background: linear-gradient(135deg, #667eea, #764ba2); 
-      margin: 0; padding: 0; color: #333; 
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      margin: 0; padding: 0; color: #333;
       min-height: 100vh;
     }
-    header { 
-      background: rgba(0,0,0,0.8); color: white; padding: 20px; 
-      text-align: center; position: fixed; top: 0; width: 100%; z-index: 1000; 
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+    header {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: white;
+      padding: 18px;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      position: relative;
     }
-    header h1 { font-size: 26px; }
+    .logo {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .header-title {
+      margin-left: 70px;
+      font-size: 1.3rem;
+    }
     .main { margin-top: 90px; padding: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
-    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; 
+    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
     h2 { text-align: center; color: #333; margin-bottom: 20px; }
-    
+
     .filter-section {
       display: flex;
       gap: 15px;
@@ -58,11 +88,30 @@
     .no-results { text-align: center; color: #d32f2f; font-size: 18px; padding: 40px; }
     .initial-msg { text-align: center; color: #64748b; font-size: 18px; padding: 40px; }
     .rank { font-weight: bold; color: #2563eb; }
+
+    .share-btn {
+      display: block;
+      margin: 30px auto 10px;
+      padding: 16px 32px;
+      background: #25D366;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(37,211,102,0.4);
+    }
+    .share-btn:hover { background: #128C7E; }
+    .share-btn:disabled { background: #999; cursor: not-allowed; }
   </style>
 </head>
 <body>
   <header>
-    <h1>Exam Results</h1>
+    <div class="logo">
+      <img src="gplogo.jpg" alt="GP Soldiers Logo">
+    </div>
+    <div class="header-title">Exam Results</div>
   </header>
 
   <div class="main">
@@ -88,32 +137,37 @@
       <div id="examInfo" class="exam-info" style="display:none;"></div>
       <div id="totalStudents" class="total-students"></div>
 
-      <table id="resultsTable">
-        <thead>
-          <tr>
-            <th>Rank</th>
-            <th>Student Name</th>
-            <th>Roll Number</th>
-            <th>Mobile</th>
-            <th>Score (Correct/Total)</th>
-            <th>Submitted At</th>
-          </tr>
-        </thead>
-        <tbody id="resultsBody">
-          <tr>
-            <td colspan="6" class="initial-msg">
-              Please select a Subject and Test Number, then click "Show Results"
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div id="resultsContainer">
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Student Name</th>
+              <th>Roll Number</th>
+              <th>Mobile</th>
+              <th>Score (Correct/Total)</th>
+              <th>Submitted At</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody">
+            <tr>
+              <td colspan="6" class="initial-msg">
+                Please select a Subject and Test Number, then click "Show Results"
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <button id="shareBtn" class="share-btn hidden" onclick="shareResults()">
+        Share Results on WhatsApp
+      </button>
     </div>
   </div>
 
   <script>
     const API_URL = "https://academy-backend-e02j.onrender.com";
 
-    // Populate Test Numbers 1 to 50
     function populateTestNumbers() {
       const select = document.getElementById('testNumberSelect');
       select.innerHTML = '<option value="">Select Test Number</option>';
@@ -134,30 +188,28 @@
         return;
       }
 
+      const shareBtn = document.getElementById('shareBtn');
+      shareBtn.classList.add('hidden');
+
       try {
         const res = await fetch(`${API_URL}/results`);
         if (!res.ok) throw new Error("Failed to fetch results");
         let results = await res.json();
 
-        // Filter by subject and testNumber
-        results = results.filter(r => 
-          r.examSubject?.toLowerCase() === subject && 
+        results = results.filter(r =>
+          r.examSubject?.toLowerCase() === subject &&
           r.examTestNumber == parseInt(testNumber)
         );
 
-        // Sort by highest score first, then by submission time (earliest first for same score)
         results.sort((a, b) => {
-          if (b.correct !== a.correct) {
-            return b.correct - a.correct; // Highest marks first
-          }
-          return new Date(a.submittedAt) - new Date(b.submittedAt); // Earlier submission first if tie
+          if (b.correct !== a.correct) return b.correct - a.correct;
+          return new Date(a.submittedAt) - new Date(b.submittedAt);
         });
 
         const tbody = document.getElementById('resultsBody');
         const totalEl = document.getElementById('totalStudents');
         const examInfoEl = document.getElementById('examInfo');
 
-        // Update exam title
         const subjectName = subject.charAt(0).toUpperCase() + subject.slice(1);
         examInfoEl.textContent = `${subjectName} - Test ${testNumber}`;
         examInfoEl.style.display = 'block';
@@ -169,6 +221,7 @@
         }
 
         totalEl.textContent = `Total Students Attempted: ${results.length}`;
+        shareBtn.classList.remove('hidden');
 
         tbody.innerHTML = results.map((r, index) => `
           <tr>
@@ -182,12 +235,53 @@
         `).join('');
 
       } catch (err) {
-        document.getElementById('resultsBody').innerHTML = 
-          `<tr><td colspan="6" class="no-results">Error loading results: ${err.message}</td></tr>`;
+        document.getElementById('resultsBody').innerHTML =
+          `<tr><td colspan="6" class="no-results">Error: ${err.message}</td></tr>`;
       }
     }
 
-    // Load test numbers on page load
+    async function shareResults() {
+      const container = document.getElementById('resultsContainer');
+      const shareBtn = document.getElementById('shareBtn');
+      shareBtn.disabled = true;
+      shareBtn.textContent = "Generating image...";
+
+      try {
+        const canvas = await html2canvas(container, {
+          scale: 2,
+          backgroundColor: '#ffffff',
+          logging: false
+        });
+
+        canvas.toBlob(async (blob) => {
+          const file = new File([blob], 'gp-soldiers-results.png', { type: 'image/png' });
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'GP Soldiers Academy - Exam Results',
+              text: 'Check out the latest exam results!'
+            });
+          } else {
+            // Fallback: Download image
+            const url = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'gp-soldiers-results.png';
+            a.click();
+            alert("Image downloaded! You can now share it manually on WhatsApp.");
+          }
+
+          shareBtn.disabled = false;
+          shareBtn.textContent = "Share Results on WhatsApp";
+        }, 'image/png');
+      } catch (err) {
+        alert("Failed to generate image. Try again.");
+        shareBtn.disabled = false;
+        shareBtn.textContent = "Share Results on WhatsApp";
+      }
+    }
+
     populateTestNumbers();
   </script>
 </body>
