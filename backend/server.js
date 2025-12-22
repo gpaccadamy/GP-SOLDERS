@@ -1,4 +1,5 @@
-// server.js - FINAL WORKING VERSION (Catch-all at the very end)
+// server.js - FINAL WORKING VERSION (with testNumber support)
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -12,11 +13,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve static frontend files (HTML, images, etc.)
-// Change '../frontend' to './frontend' if your folder structure is different
+// Serve static frontend files
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Uploads folder for images (questions, etc.)
+// Uploads folder
 const uploadDir = './uploads';
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 app.use('/uploads', express.static('uploads'));
@@ -51,10 +51,12 @@ const Video = mongoose.model('Video', new mongoose.Schema({
   title: String
 }));
 
+// ADD testNumber to DraftExam
 const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   title: String,
   subject: String,
   classNum: Number,
+  testNumber: { type: Number, required: true },  // ← ADDED
   totalQuestions: { type: Number, default: 0 },
   questions: [{
     imageUrl: { type: String, required: true },
@@ -63,10 +65,12 @@ const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }));
 
+// ADD testNumber to Exam
 const Exam = mongoose.model('Exam', new mongoose.Schema({
   title: String,
   subject: String,
   classNum: Number,
+  testNumber: { type: Number, required: true },  // ← ADDED
   totalQuestions: Number,
   questions: [{
     imageUrl: String,
@@ -89,7 +93,6 @@ const Result = mongoose.model('Result', new mongoose.Schema({
   submittedAt: { type: Date, default: Date.now }
 }));
 
-// Note Model - For Write Notes feature
 const NoteSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
@@ -99,7 +102,7 @@ const Note = mongoose.model('Note', NoteSchema);
 
 // ====================== ALL API ROUTES ======================
 
-// Student Login
+// Student Login (unchanged)
 app.post('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
@@ -113,7 +116,7 @@ app.post('/student-login', async (req, res) => {
   }
 });
 
-// Students CRUD
+// Students CRUD (unchanged)
 app.get('/students', async (req, res) => res.json(await Student.find()));
 
 app.post('/students', async (req, res) => {
@@ -141,7 +144,7 @@ app.delete('/students/:id', async (req, res) => {
   res.json({ message: "Student deleted" });
 });
 
-// Videos
+// Videos (unchanged)
 app.get('/videos', async (req, res) => res.json(await Video.find()));
 
 app.post('/videos', async (req, res) => {
@@ -162,34 +165,47 @@ app.post('/videos', async (req, res) => {
 
 app.get('/drafts', async (req, res) => res.json(await DraftExam.find().sort({ createdAt: -1 })));
 
+// Updated /drafts POST to accept and save testNumber
 app.post('/drafts', async (req, res) => {
-  const { title, subject, classNum, questions } = req.body;
+  const { title, subject, testNumber, questions } = req.body;  // ← Added testNumber
   if (!questions || questions.length === 0) return res.status(400).json({ error: "At least one question required" });
+
   let draft = await DraftExam.findOne({ title });
   if (draft) {
     draft.subject = subject;
-    draft.classNum = classNum;
+    draft.testNumber = testNumber;           // ← Save testNumber
     draft.questions = questions;
     draft.totalQuestions = questions.length;
   } else {
-    draft = new DraftExam({ title, subject, classNum, questions, totalQuestions: questions.length });
+    draft = new DraftExam({
+      title,
+      subject,
+      testNumber,                            // ← Save testNumber
+      questions,
+      totalQuestions: questions.length
+    });
   }
   await draft.save();
   res.json({ message: "Draft saved" });
 });
 
+// Updated /conduct to copy testNumber
 app.post('/conduct/:draftId', async (req, res) => {
   const draft = await DraftExam.findById(req.params.draftId);
   if (!draft) return res.status(404).json({ error: "Draft not found" });
+
   const existing = await Exam.findOne({ title: draft.title });
   if (existing) return res.status(400).json({ error: "Exam already conducted" });
+
   const exam = new Exam({
     title: draft.title,
     subject: draft.subject,
     classNum: draft.classNum,
+    testNumber: draft.testNumber,            // ← COPY testNumber
     totalQuestions: draft.totalQuestions,
     questions: draft.questions
   });
+
   await exam.save();
   await DraftExam.findByIdAndDelete(req.params.draftId);
   res.json({ message: "Exam conducted successfully!" });
@@ -206,15 +222,19 @@ app.get('/exam/:id', async (req, res) => {
 app.post('/submit-exam', async (req, res) => {
   const { examId, studentMobile, studentName, answers } = req.body;
   if (!examId || !studentMobile || !Array.isArray(answers)) return res.status(400).json({ error: "Invalid data" });
+
   const exam = await Exam.findById(examId);
   if (!exam) return res.status(404).json({ error: "Exam not found" });
+
   const student = await Student.findOne({ mobile: studentMobile });
   if (!student) return res.status(404).json({ error: "Student not registered" });
+
   let correctCount = 0;
   exam.questions.forEach((q, i) => {
     if (q.correctAnswer.toLowerCase() === answers[i]?.toLowerCase()) correctCount++;
   });
   const wrongCount = exam.totalQuestions - correctCount;
+
   await new Result({
     studentMobile: student.mobile,
     studentName: studentName || student.name,
@@ -227,6 +247,7 @@ app.post('/submit-exam', async (req, res) => {
     wrong: wrongCount,
     answers
   }).save();
+
   res.json({ message: "Exam submitted successfully!" });
 });
 
@@ -243,7 +264,7 @@ app.get('/results', async (req, res) => {
   }
 });
 
-// Notes Routes
+// Notes Routes (unchanged)
 app.post('/api/save-note', async (req, res) => {
   try {
     const { title, content } = req.body;
