@@ -8,10 +8,10 @@
   <link rel="icon" href="data:,">
   <style>
     :root {
-      --primary: #2563eb; /* Vibrant blue */
-      --accent: #10b981; /* Green */
-      --light-bg: #f0f9ff; /* Very light sky blue */
-      --card-bg: #ffffff; /* White cards */
+      --primary: #2563eb;
+      --accent: #10b981;
+      --light-bg: #f0f9ff;
+      --card-bg: #ffffff;
       --gradient-start: #e0f2fe;
       --gradient-end: #fefce8;
       --text: #1e293b;
@@ -37,9 +37,8 @@
       text-align: center;
       font-size: 1.3rem;
       font-weight: bold;
-      position: relative; /* For positioning logo */
+      position: relative;
     }
-    /* Circular Logo */
     .logo {
       position: absolute;
       left: 16px;
@@ -57,9 +56,8 @@
       height: 100%;
       object-fit: cover;
     }
-    /* Adjust title to make space for logo */
     .header-title {
-      margin-left: 60px; /* Space for logo */
+      margin-left: 60px;
       font-size: 1.3rem;
     }
     .banner {
@@ -158,21 +156,17 @@
       display: block;
       margin-bottom: 4px;
     }
-    @media (max-width: 480px) {
-      .app-container { box-shadow: none; }
-    }
   </style>
 </head>
 <body>
   <div class="app-container">
     <div class="header">
-      <!-- Small Circular Logo -->
       <div class="logo">
         <img src="gplogo.jpg" alt="GP Soldiers Logo">
       </div>
-      <!-- Title with left margin to avoid overlapping logo -->
       <div class="header-title">GP SOLDIERS ACADEMY</div>
     </div>
+
     <div class="banner">
       <div class="slides">
         <div class="slide active" style="background-image: url('gpposter1.jpg');"></div>
@@ -185,52 +179,54 @@
         <p>By GP Soldiers</p>
       </div>
     </div>
+
     <div class="features-grid">
-      <div class="feature-item" onclick="window.location.href='army-video.html'">
+      <div class="feature-item" onclick="checkLogin('army-video.html')">
         <i class="fas fa-dumbbell"></i>
         <span>Our Training Videos</span>
       </div>
-      <div class="feature-item" onclick="window.location.href='exams.html'">
+      <div class="feature-item" onclick="checkLogin('exams.html')">
         <i class="fas fa-clipboard-check"></i>
         <span>Army Exam Test</span>
       </div>
-      <div class="feature-item" onclick="window.location.href='my-courses.html'">
+      <div class="feature-item" onclick="checkLogin('my-courses.html')">
         <i class="fas fa-book-open"></i>
         <span>My Courses</span>
       </div>
-      <div class="feature-item" onclick="window.location.href='army-exam-notes.html'">
+      <div class="feature-item" onclick="checkLogin('army-exam-notes.html')">
         <i class="fas fa-sticky-note"></i>
         <span>Army Exam Notes</span>
       </div>
-      <div class="feature-item" onclick="window.location.href='result.html'">
+      <div class="feature-item" onclick="checkLogin('result.html')">
         <i class="fas fa-trophy"></i>
         <span>Results</span>
       </div>
-      <div class="feature-item" onclick="window.location.href='liveclasses.html'">
+      <div class="feature-item" onclick="checkLogin('liveclasses.html')">
         <i class="fas fa-play-circle"></i>
         <span>Army Video</span>
       </div>
-      <div class="feature-item" onclick="window.location.href='previous-years.html'">
+      <div class="feature-item" onclick="checkLogin('previous-years.html')">
         <i class="fas fa-history"></i>
         <span>Previous Years</span>
       </div>
     </div>
   </div>
+
   <div class="bottom-nav">
     <div class="nav-item" onclick="window.location.href='index.html'">
       <i class="fas fa-home"></i>
       <span>Home</span>
     </div>
-    <div class="nav-item" onclick="window.location.href='notes.html'">
+    <div class="nav-item" onclick="checkLogin('notes.html')">
       <i class="fas fa-pen"></i>
       <span>Write Notes</span>
     </div>
-    <!-- Profile Button Linked to profile.html -->
-    <div class="nav-item" onclick="window.location.href='profile.html'">
+    <div class="nav-item" onclick="showProfile()">
       <i class="fas fa-user"></i>
-      <span>Profile</span>
+      <span id="profileLabel">Profile</span>
     </div>
   </div>
+
   <script>
     // Auto slideshow
     let currentSlide = 0;
@@ -240,7 +236,35 @@
       currentSlide = (currentSlide + 1) % slides.length;
       slides[currentSlide].classList.add('active');
     }
-    setInterval(nextSlide, 3000); // Change every 3 seconds
+    setInterval(nextSlide, 3000);
+
+    // Update profile label
+    const profileLabel = document.getElementById('profileLabel');
+    const name = localStorage.getItem('studentName');
+    if (name) profileLabel.textContent = name;
+
+    // Check login before opening any page
+    function checkLogin(page) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'login.html?redirect=' + page;
+      } else {
+        window.location.href = page;
+      }
+    }
+
+    // Show profile info
+    function showProfile() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("Please log in to view profile");
+        window.location.href = 'login.html';
+        return;
+      }
+      const name = localStorage.getItem('studentName') || "Student";
+      const mobile = localStorage.getItem('studentMobile') || "Not available";
+      alert(`Name: ${name}\nMobile: ${mobile}`);
+    }
   </script>
 </body>
 </html>
