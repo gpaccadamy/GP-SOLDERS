@@ -1,5 +1,3 @@
-// server.js - FULL VERSION WITH JWT AUTH (PLAIN TEXT PASSWORDS)
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -10,19 +8,15 @@ require('dotenv').config();
 
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Serve static frontend files
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Uploads folder
 const uploadDir = './uploads';
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 app.use('/uploads', express.static('uploads'));
 
-// MongoDB Connection
 const MONGO_URI = process.env.MONGO_URI;
 if (!MONGO_URI) {
   console.error("❌ MONGO_URI not set");
@@ -36,15 +30,13 @@ mongoose.connect(MONGO_URI)
     process.exit(1);
   });
 
-// JWT Secret (use .env in production)
 const JWT_SECRET = process.env.JWT_SECRET || 'gp-soldiers-jwt-secret-2025';
 
-// MODELS (unchanged)
 const StudentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   roll: { type: String },
   mobile: { type: String, required: true, unique: true },
-  password: { type: String, required: true } // Plain text as requested
+  password: { type: String, required: true }
 });
 const Student = mongoose.model('Student', StudentSchema);
 
@@ -104,13 +96,10 @@ const NoteSchema = new mongoose.Schema({
 });
 const Note = mongoose.model('Note', NoteSchema);
 
-// JWT Middleware
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-
   if (!token) return res.status(401).json({ error: "Access token required" });
-
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ error: "Invalid or expired token" });
     req.user = user;
@@ -118,31 +107,24 @@ function authenticateToken(req, res, next) {
   });
 }
 
-// ====================== ROUTES ======================
-
-// Student Login - Returns JWT
 app.post('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
     if (!mobile || !password) return res.status(400).json({ error: "Mobile and password required" });
-
     const student = await Student.findOne({ mobile });
     if (!student) return res.status(404).json({ error: "Invalid credentials" });
     if (student.password !== password) return res.status(401).json({ error: "Invalid credentials" });
-
     const token = jwt.sign(
       { id: student._id, name: student.name, mobile: student.mobile },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
-
     res.json({ token, name: student.name, mobile: student.mobile });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
 });
 
-// Students CRUD (unchanged - plain password)
 app.get('/students', async (req, res) => res.json(await Student.find()));
 
 app.post('/students', async (req, res) => {
@@ -153,10 +135,8 @@ app.post('/students', async (req, res) => {
     roll = roll?.trim() || null;
     password = password?.trim();
     if (!name || !mobile || !password) return res.status(400).json({ error: "Name, mobile, password required" });
-
     const existing = await Student.findOne({ mobile });
     if (existing) return res.status(409).json({ error: "Mobile already registered" });
-
     const student = new Student({ name, roll, mobile, password });
     await student.save();
     res.json({ message: "Student added" });
@@ -172,7 +152,6 @@ app.delete('/students/:id', async (req, res) => {
   res.json({ message: "Student deleted" });
 });
 
-// Videos (unchanged)
 app.get('/videos', async (req, res) => res.json(await Video.find()));
 
 app.post('/videos', async (req, res) => {
@@ -191,13 +170,11 @@ app.post('/videos', async (req, res) => {
   res.json({ message: "Video saved" });
 });
 
-// Drafts - Protected
 app.get('/drafts', authenticateToken, async (req, res) => res.json(await DraftExam.find().sort({ createdAt: -1 })));
 
 app.post('/drafts', authenticateToken, async (req, res) => {
   const { title, subject, testNumber, questions } = req.body;
   if (!questions || questions.length === 0) return res.status(400).json({ error: "At least one question required" });
-
   let draft = await DraftExam.findOne({ title });
   if (draft) {
     draft.subject = subject;
@@ -214,10 +191,8 @@ app.post('/drafts', authenticateToken, async (req, res) => {
 app.post('/conduct/:draftId', authenticateToken, async (req, res) => {
   const draft = await DraftExam.findById(req.params.draftId);
   if (!draft) return res.status(404).json({ error: "Draft not found" });
-
   const existing = await Exam.findOne({ title: draft.title });
   if (existing) return res.status(400).json({ error: "Exam already conducted" });
-
   const exam = new Exam({
     title: draft.title,
     subject: draft.subject,
@@ -226,13 +201,11 @@ app.post('/conduct/:draftId', authenticateToken, async (req, res) => {
     totalQuestions: draft.totalQuestions,
     questions: draft.questions
   });
-
   await exam.save();
   await DraftExam.findByIdAndDelete(req.params.draftId);
   res.json({ message: "Exam conducted successfully!" });
 });
 
-// Active Exams - Public (students can see)
 app.get('/active-exams', async (req, res) => res.json(await Exam.find().sort({ conductedAt: -1 })));
 
 app.get('/exam/:id', async (req, res) => {
@@ -241,24 +214,20 @@ app.get('/exam/:id', async (req, res) => {
   res.json(exam);
 });
 
-// Submit Exam - Protected
 app.post('/submit-exam', authenticateToken, async (req, res) => {
   const { examId, answers } = req.body;
   if (!examId || !Array.isArray(answers)) return res.status(400).json({ error: "Invalid data" });
-
   const exam = await Exam.findById(examId);
   if (!exam) return res.status(404).json({ error: "Exam not found" });
-
   let correctCount = 0;
   exam.questions.forEach((q, i) => {
     if (q.correctAnswer.toLowerCase() === answers[i]?.toLowerCase()) correctCount++;
   });
   const wrongCount = exam.totalQuestions - correctCount;
-
   await new Result({
     studentMobile: req.user.mobile,
     studentName: req.user.name,
-    studentRoll: '', // You can add roll to JWT if needed
+    studentRoll: '',
     examId,
     examTitle: exam.title,
     examSubject: exam.subject,
@@ -269,11 +238,9 @@ app.post('/submit-exam', authenticateToken, async (req, res) => {
     wrong: wrongCount,
     answers
   }).save();
-
   res.json({ message: "Exam submitted successfully!" });
 });
 
-// Results - Protected (only logged in can see all results)
 app.get('/results', authenticateToken, async (req, res) => {
   try {
     const results = await Result.find().sort({ submittedAt: -1 });
@@ -283,7 +250,6 @@ app.get('/results', authenticateToken, async (req, res) => {
   }
 });
 
-// Notes (unchanged)
 app.post('/api/save-note', async (req, res) => {
   try {
     const { title, content } = req.body;
@@ -305,12 +271,10 @@ app.get('/api/notes', async (req, res) => {
   }
 });
 
-// Catch-all
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// Start Server
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
