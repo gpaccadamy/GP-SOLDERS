@@ -15,6 +15,7 @@
       --gradient-start: #e0f2fe;
       --gradient-end: #fefce8;
       --text: #1e293b;
+      --disabled: #94a3b8;
     }
     body {
       margin: 0;
@@ -115,7 +116,12 @@
       transition: all 0.3s ease;
       cursor: pointer;
     }
-    .feature-item:hover {
+    .feature-item.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    .feature-item:hover:not(.disabled) {
       transform: translateY(-8px) scale(1.05);
       box-shadow: 0 12px 25px rgba(0,0,0,0.15);
     }
@@ -156,6 +162,58 @@
       display: block;
       margin-bottom: 4px;
     }
+    /* Profile Popup */
+    .profile-popup {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .profile-card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      width: 90%;
+      max-width: 350px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    }
+    .profile-logo {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 0 auto 20px;
+      border: 5px solid var(--primary);
+    }
+    .profile-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .profile-name {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin: 10px 0;
+    }
+    .profile-mobile {
+      font-size: 1.2rem;
+      color: var(--text);
+      margin: 15px 0;
+    }
+    .close-popup {
+      background: var(--accent);
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -181,31 +239,31 @@
     </div>
 
     <div class="features-grid">
-      <div class="feature-item" onclick="checkLogin('army-video.html')">
+      <div class="feature-item" id="trainingBtn" onclick="goToPage('army-video.html')">
         <i class="fas fa-dumbbell"></i>
         <span>Our Training Videos</span>
       </div>
-      <div class="feature-item" onclick="checkLogin('exams.html')">
+      <div class="feature-item" id="examBtn" onclick="goToPage('exams.html')">
         <i class="fas fa-clipboard-check"></i>
         <span>Army Exam Test</span>
       </div>
-      <div class="feature-item" onclick="checkLogin('my-courses.html')">
+      <div class="feature-item" id="coursesBtn" onclick="goToPage('my-courses.html')">
         <i class="fas fa-book-open"></i>
         <span>My Courses</span>
       </div>
-      <div class="feature-item" onclick="checkLogin('army-exam-notes.html')">
+      <div class="feature-item" id="notesBtn" onclick="goToPage('army-exam-notes.html')">
         <i class="fas fa-sticky-note"></i>
         <span>Army Exam Notes</span>
       </div>
-      <div class="feature-item" onclick="checkLogin('result.html')">
+      <div class="feature-item" id="resultsBtn" onclick="goToPage('result.html')">
         <i class="fas fa-trophy"></i>
         <span>Results</span>
       </div>
-      <div class="feature-item" onclick="checkLogin('liveclasses.html')">
+      <div class="feature-item" id="videoBtn" onclick="goToPage('liveclasses.html')">
         <i class="fas fa-play-circle"></i>
         <span>Army Video</span>
       </div>
-      <div class="feature-item" onclick="checkLogin('previous-years.html')">
+      <div class="feature-item" id="previousBtn" onclick="goToPage('previous-years.html')">
         <i class="fas fa-history"></i>
         <span>Previous Years</span>
       </div>
@@ -217,13 +275,25 @@
       <i class="fas fa-home"></i>
       <span>Home</span>
     </div>
-    <div class="nav-item" onclick="checkLogin('notes.html')">
+    <div class="nav-item" onclick="goToPage('notes.html')">
       <i class="fas fa-pen"></i>
       <span>Write Notes</span>
     </div>
-    <div class="nav-item" onclick="showProfile()">
+    <div class="nav-item" onclick="showProfilePopup()">
       <i class="fas fa-user"></i>
       <span id="profileLabel">Profile</span>
+    </div>
+  </div>
+
+  <!-- Profile Popup -->
+  <div id="profilePopup" class="profile-popup">
+    <div class="profile-card">
+      <div class="profile-logo">
+        <img src="gplogo.jpg" alt="Logo">
+      </div>
+      <div class="profile-name" id="popupName">Guest Soldier</div>
+      <div class="profile-mobile" id="popupMobile">-</div>
+      <button class="close-popup" onclick="closeProfilePopup()">Close</button>
     </div>
   </div>
 
@@ -238,33 +308,52 @@
     }
     setInterval(nextSlide, 3000);
 
-    // Update profile label
-    const profileLabel = document.getElementById('profileLabel');
-    const name = localStorage.getItem('studentName');
-    if (name) profileLabel.textContent = name;
+    // Check login status
+    const token = localStorage.getItem('token');
+    const studentName = localStorage.getItem('studentName') || "Profile";
+    const studentMobile = localStorage.getItem('studentMobile') || "-";
 
-    // Check login before opening any page
-    function checkLogin(page) {
-      const token = localStorage.getItem('token');
+    // Update profile label
+    document.getElementById('profileLabel').textContent = studentName;
+
+    // Disable buttons if not logged in
+    if (!token) {
+      const buttons = document.querySelectorAll('.feature-item');
+      buttons.forEach(btn => btn.classList.add('disabled'));
+    }
+
+    // Go to page with login check
+    function goToPage(page) {
       if (!token) {
-        window.location.href = 'login.html?redirect=' + page;
+        alert("Please login first to access this feature!");
+        window.location.href = 'login.html';
       } else {
         window.location.href = page;
       }
     }
 
-    // Show profile info
-    function showProfile() {
-      const token = localStorage.getItem('token');
+    // Show profile popup
+    function showProfilePopup() {
       if (!token) {
-        alert("Please log in to view profile");
+        alert("Please login to view profile");
         window.location.href = 'login.html';
         return;
       }
-      const name = localStorage.getItem('studentName') || "Student";
-      const mobile = localStorage.getItem('studentMobile') || "Not available";
-      alert(`Name: ${name}\nMobile: ${mobile}`);
+      document.getElementById('popupName').textContent = studentName;
+      document.getElementById('popupMobile').textContent = studentMobile;
+      document.getElementById('profilePopup').style.display = 'flex';
     }
+
+    function closeProfilePopup() {
+      document.getElementById('profilePopup').style.display = 'none';
+    }
+
+    // Close popup when clicking outside
+    document.getElementById('profilePopup').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('profilePopup')) {
+        closeProfilePopup();
+      }
+    });
   </script>
 </body>
 </html>
