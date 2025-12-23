@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Exam Portal</title>
+  <title>Student Exam Portal - GP Soldiers Academy</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -26,6 +26,28 @@
       width: 100%;
       z-index: 1000;
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    .logo {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .header-title {
+      margin-left: 70px;
+      font-size: 1.3rem;
     }
     .back-btn {
       position: absolute;
@@ -35,6 +57,7 @@
       color: white;
       font-size: 1.5rem;
       cursor: pointer;
+      z-index: 10;
     }
     .main {
       margin-top: 80px;
@@ -168,10 +191,12 @@
   </style>
 </head>
 <body>
-  <div class="header">
-    <i class="fas fa-arrow-left back-btn" onclick="window.history.back()"></i>
-    Student Exam Portal
-  </div>
+  <header>
+    <div class="logo">
+      <img src="gplogo.jpg" alt="GP Soldiers Logo">
+    </div>
+    <div class="header-title">Student Exam Portal</div>
+  </header>
 
   <div class="main">
     <!-- Login Section -->
@@ -220,11 +245,27 @@
     let currentExam = null;
     let studentAnswers = [];
     let revisionMarked = new Set();
-    let loggedInStudent = null; // Stores { name, mobile }
+    let loggedInStudent = null;
 
-    // Show login on load
+    // Helper to get auth headers
+    function getAuthHeaders() {
+      const token = localStorage.getItem('token');
+      return {
+        "Content-Type": "application/json",
+        "Authorization": token ? `Bearer ${token}` : ""
+      };
+    }
+
     window.onload = () => {
-      document.getElementById('loginSection').style.display = 'block';
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Auto-login if token exists (optional)
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('examList').classList.remove('hidden');
+        loadAvailableExams();
+      } else {
+        document.getElementById('loginSection').style.display = 'block';
+      }
     };
 
     async function login() {
@@ -247,15 +288,16 @@
 
         if (!res.ok) {
           const data = await res.json();
-          throw new Error(data.error || "Invalid mobile or password");
+          throw new Error(data.error || "Invalid credentials");
         }
 
-        loggedInStudent = await res.json(); // { name, mobile }
+        const data = await res.json();
+        localStorage.setItem('token', data.token);
+        loggedInStudent = { name: data.name, mobile: data.mobile };
 
         errorEl.classList.add('hidden');
         document.getElementById('loginSection').classList.add('hidden');
         document.getElementById('examList').classList.remove('hidden');
-
         loadAvailableExams();
 
       } catch (err) {
@@ -269,7 +311,9 @@
       container.innerHTML = "Loading exams...";
 
       try {
-        const res = await fetch(`${API_URL}/active-exams`);
+        const res = await fetch(`${API_URL}/active-exams`, {
+          headers: getAuthHeaders()
+        });
         if (!res.ok) throw new Error("Failed to load exams");
 
         const exams = await res.json();
@@ -295,7 +339,9 @@
 
     async function startExam(examId) {
       try {
-        const res = await fetch(`${API_URL}/exam/${examId}`);
+        const res = await fetch(`${API_URL}/exam/${examId}`, {
+          headers: getAuthHeaders()
+        });
         if (!res.ok) throw new Error("Exam not available");
 
         currentExam = await res.json();
@@ -337,7 +383,7 @@
         `).join('');
 
         updateStats();
-        startTimer(30 * 60); // Change time as needed
+        startTimer(30 * 60);
 
       } catch (err) {
         alert("Error: " + err.message);
@@ -384,7 +430,6 @@
       }, 1000);
     }
 
-    // Submit Exam
     document.getElementById('examForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -396,11 +441,9 @@
       try {
         const res = await fetch(`${API_URL}/submit-exam`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getAuthHeaders(),
           body: JSON.stringify({
             examId: currentExam._id,
-            studentMobile: loggedInStudent.mobile,
-            studentName: loggedInStudent.name,
             answers: studentAnswers
           })
         });
@@ -411,7 +454,6 @@
         }
 
         alert("🎉 Exam submitted successfully!\nThank you, " + loggedInStudent.name + "!");
-
         document.getElementById('examTaking').classList.add('hidden');
         document.getElementById('examList').classList.remove('hidden');
         loadAvailableExams();
