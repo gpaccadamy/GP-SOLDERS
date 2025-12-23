@@ -120,6 +120,7 @@
       opacity: 0.6;
       cursor: not-allowed;
       transform: none !important;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
     .feature-item:hover:not(.disabled) {
       transform: translateY(-8px) scale(1.05);
@@ -180,6 +181,11 @@
       max-width: 350px;
       text-align: center;
       box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+    .profile-popup.active .profile-card {
+      transform: scale(1);
     }
     .profile-logo {
       width: 100px;
@@ -214,6 +220,9 @@
       font-size: 1.1rem;
       cursor: pointer;
     }
+    .close-popup:hover {
+      background: #059669;
+    }
   </style>
 </head>
 <body>
@@ -239,31 +248,31 @@
     </div>
 
     <div class="features-grid">
-      <div class="feature-item" id="trainingBtn" onclick="goToPage('army-video.html')">
+      <div class="feature-item" onclick="goToPage('army-video.html')">
         <i class="fas fa-dumbbell"></i>
         <span>Our Training Videos</span>
       </div>
-      <div class="feature-item" id="examBtn" onclick="goToPage('exams.html')">
+      <div class="feature-item" onclick="goToPage('exams.html')">
         <i class="fas fa-clipboard-check"></i>
         <span>Army Exam Test</span>
       </div>
-      <div class="feature-item" id="coursesBtn" onclick="goToPage('my-courses.html')">
+      <div class="feature-item" onclick="goToPage('my-courses.html')">
         <i class="fas fa-book-open"></i>
         <span>My Courses</span>
       </div>
-      <div class="feature-item" id="notesBtn" onclick="goToPage('army-exam-notes.html')">
+      <div class="feature-item" onclick="goToPage('army-exam-notes.html')">
         <i class="fas fa-sticky-note"></i>
         <span>Army Exam Notes</span>
       </div>
-      <div class="feature-item" id="resultsBtn" onclick="goToPage('result.html')">
+      <div class="feature-item" onclick="goToPage('result.html')">
         <i class="fas fa-trophy"></i>
         <span>Results</span>
       </div>
-      <div class="feature-item" id="videoBtn" onclick="goToPage('liveclasses.html')">
+      <div class="feature-item" onclick="goToPage('liveclasses.html')">
         <i class="fas fa-play-circle"></i>
         <span>Army Video</span>
       </div>
-      <div class="feature-item" id="previousBtn" onclick="goToPage('previous-years.html')">
+      <div class="feature-item" onclick="goToPage('previous-years.html')">
         <i class="fas fa-history"></i>
         <span>Previous Years</span>
       </div>
@@ -289,7 +298,7 @@
   <div id="profilePopup" class="profile-popup">
     <div class="profile-card">
       <div class="profile-logo">
-        <img src="gplogo.jpg" alt="Logo">
+        <img src="gplogo.jpg" alt="GP Soldiers Logo">
       </div>
       <div class="profile-name" id="popupName">Guest Soldier</div>
       <div class="profile-mobile" id="popupMobile">-</div>
@@ -313,16 +322,16 @@
     const studentName = localStorage.getItem('studentName') || "Profile";
     const studentMobile = localStorage.getItem('studentMobile') || "-";
 
-    // Update profile label
+    // Update profile label in bottom nav
     document.getElementById('profileLabel').textContent = studentName;
 
-    // Disable buttons if not logged in
+    // Disable all feature buttons if not logged in
     if (!token) {
-      const buttons = document.querySelectorAll('.feature-item');
-      buttons.forEach(btn => btn.classList.add('disabled'));
+      const featureItems = document.querySelectorAll('.feature-item');
+      featureItems.forEach(item => item.classList.add('disabled'));
     }
 
-    // Go to page with login check
+    // Function to handle page navigation
     function goToPage(page) {
       if (!token) {
         alert("Please login first to access this feature!");
@@ -335,20 +344,23 @@
     // Show profile popup
     function showProfilePopup() {
       if (!token) {
-        alert("Please login to view profile");
+        alert("Please login to view your profile");
         window.location.href = 'login.html';
         return;
       }
+
       document.getElementById('popupName').textContent = studentName;
       document.getElementById('popupMobile').textContent = studentMobile;
       document.getElementById('profilePopup').style.display = 'flex';
+      document.getElementById('profilePopup').classList.add('active');
     }
 
     function closeProfilePopup() {
       document.getElementById('profilePopup').style.display = 'none';
+      document.getElementById('profilePopup').classList.remove('active');
     }
 
-    // Close popup when clicking outside
+    // Close popup on outside click
     document.getElementById('profilePopup').addEventListener('click', (e) => {
       if (e.target === document.getElementById('profilePopup')) {
         closeProfilePopup();
