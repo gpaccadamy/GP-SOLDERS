@@ -1,10 +1,11 @@
-// server.js - FULL UPDATED VERSION (with testNumber + result filtering support)
+// server.js - FULL VERSION WITH JWT AUTH (PLAIN TEXT PASSWORDS)
 
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const app = express();
@@ -35,12 +36,15 @@ mongoose.connect(MONGO_URI)
     process.exit(1);
   });
 
-// MODELS
+// JWT Secret (use .env in production)
+const JWT_SECRET = process.env.JWT_SECRET || 'gp-soldiers-jwt-secret-2025';
+
+// MODELS (unchanged)
 const StudentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   roll: { type: String },
   mobile: { type: String, required: true, unique: true },
-  password: { type: String, required: true } // Plain text
+  password: { type: String, required: true } // Plain text as requested
 });
 const Student = mongoose.model('Student', StudentSchema);
 
@@ -55,7 +59,7 @@ const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   title: String,
   subject: String,
   classNum: Number,
-  testNumber: { type: Number, required: true },  // ← ADDED
+  testNumber: { type: Number, required: true },
   totalQuestions: { type: Number, default: 0 },
   questions: [{
     imageUrl: { type: String, required: true },
@@ -68,7 +72,7 @@ const Exam = mongoose.model('Exam', new mongoose.Schema({
   title: String,
   subject: String,
   classNum: Number,
-  testNumber: { type: Number, required: true },  // ← ADDED
+  testNumber: { type: Number, required: true },
   totalQuestions: Number,
   questions: [{
     imageUrl: String,
@@ -77,15 +81,14 @@ const Exam = mongoose.model('Exam', new mongoose.Schema({
   conductedAt: { type: Date, default: Date.now }
 }));
 
-// Added examSubject and examTestNumber for filtering
 const Result = mongoose.model('Result', new mongoose.Schema({
   studentMobile: String,
   studentName: String,
   studentRoll: String,
   examId: { type: mongoose.Schema.Types.ObjectId, ref: 'Exam' },
   examTitle: String,
-  examSubject: String,           // ← ADDED
-  examTestNumber: Number,        // ← ADDED
+  examSubject: String,
+  examTestNumber: Number,
   score: Number,
   total: Number,
   correct: Number,
@@ -101,21 +104,45 @@ const NoteSchema = new mongoose.Schema({
 });
 const Note = mongoose.model('Note', NoteSchema);
 
-// ====================== ALL API ROUTES ======================
+// JWT Middleware
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
+  if (!token) return res.status(401).json({ error: "Access token required" });
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: "Invalid or expired token" });
+    req.user = user;
+    next();
+  });
+}
+
+// ====================== ROUTES ======================
+
+// Student Login - Returns JWT
 app.post('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
     if (!mobile || !password) return res.status(400).json({ error: "Mobile and password required" });
+
     const student = await Student.findOne({ mobile });
-    if (!student) return res.status(404).json({ error: "Student not found" });
-    if (student.password !== password) return res.status(401).json({ error: "Invalid password" });
-    res.json({ name: student.name, mobile: student.mobile });
+    if (!student) return res.status(404).json({ error: "Invalid credentials" });
+    if (student.password !== password) return res.status(401).json({ error: "Invalid credentials" });
+
+    const token = jwt.sign(
+      { id: student._id, name: student.name, mobile: student.mobile },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({ token, name: student.name, mobile: student.mobile });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
 });
 
+// Students CRUD (unchanged - plain password)
 app.get('/students', async (req, res) => res.json(await Student.find()));
 
 app.post('/students', async (req, res) => {
@@ -126,8 +153,10 @@ app.post('/students', async (req, res) => {
     roll = roll?.trim() || null;
     password = password?.trim();
     if (!name || !mobile || !password) return res.status(400).json({ error: "Name, mobile, password required" });
+
     const existing = await Student.findOne({ mobile });
     if (existing) return res.status(409).json({ error: "Mobile already registered" });
+
     const student = new Student({ name, roll, mobile, password });
     await student.save();
     res.json({ message: "Student added" });
@@ -143,6 +172,7 @@ app.delete('/students/:id', async (req, res) => {
   res.json({ message: "Student deleted" });
 });
 
+// Videos (unchanged)
 app.get('/videos', async (req, res) => res.json(await Video.find()));
 
 app.post('/videos', async (req, res) => {
@@ -161,10 +191,10 @@ app.post('/videos', async (req, res) => {
   res.json({ message: "Video saved" });
 });
 
-app.get('/drafts', async (req, res) => res.json(await DraftExam.find().sort({ createdAt: -1 })));
+// Drafts - Protected
+app.get('/drafts', authenticateToken, async (req, res) => res.json(await DraftExam.find().sort({ createdAt: -1 })));
 
-// Save draft with testNumber
-app.post('/drafts', async (req, res) => {
+app.post('/drafts', authenticateToken, async (req, res) => {
   const { title, subject, testNumber, questions } = req.body;
   if (!questions || questions.length === 0) return res.status(400).json({ error: "At least one question required" });
 
@@ -175,20 +205,13 @@ app.post('/drafts', async (req, res) => {
     draft.questions = questions;
     draft.totalQuestions = questions.length;
   } else {
-    draft = new DraftExam({
-      title,
-      subject,
-      testNumber,
-      questions,
-      totalQuestions: questions.length
-    });
+    draft = new DraftExam({ title, subject, testNumber, questions, totalQuestions: questions.length });
   }
   await draft.save();
   res.json({ message: "Draft saved" });
 });
 
-// Conduct exam - copy testNumber
-app.post('/conduct/:draftId', async (req, res) => {
+app.post('/conduct/:draftId', authenticateToken, async (req, res) => {
   const draft = await DraftExam.findById(req.params.draftId);
   if (!draft) return res.status(404).json({ error: "Draft not found" });
 
@@ -199,7 +222,7 @@ app.post('/conduct/:draftId', async (req, res) => {
     title: draft.title,
     subject: draft.subject,
     classNum: draft.classNum,
-    testNumber: draft.testNumber,        // ← COPIED
+    testNumber: draft.testNumber,
     totalQuestions: draft.totalQuestions,
     questions: draft.questions
   });
@@ -209,6 +232,7 @@ app.post('/conduct/:draftId', async (req, res) => {
   res.json({ message: "Exam conducted successfully!" });
 });
 
+// Active Exams - Public (students can see)
 app.get('/active-exams', async (req, res) => res.json(await Exam.find().sort({ conductedAt: -1 })));
 
 app.get('/exam/:id', async (req, res) => {
@@ -217,16 +241,13 @@ app.get('/exam/:id', async (req, res) => {
   res.json(exam);
 });
 
-// Submit exam - save subject and testNumber in Result
-app.post('/submit-exam', async (req, res) => {
-  const { examId, studentMobile, studentName, answers } = req.body;
-  if (!examId || !studentMobile || !Array.isArray(answers)) return res.status(400).json({ error: "Invalid data" });
+// Submit Exam - Protected
+app.post('/submit-exam', authenticateToken, async (req, res) => {
+  const { examId, answers } = req.body;
+  if (!examId || !Array.isArray(answers)) return res.status(400).json({ error: "Invalid data" });
 
   const exam = await Exam.findById(examId);
   if (!exam) return res.status(404).json({ error: "Exam not found" });
-
-  const student = await Student.findOne({ mobile: studentMobile });
-  if (!student) return res.status(404).json({ error: "Student not registered" });
 
   let correctCount = 0;
   exam.questions.forEach((q, i) => {
@@ -235,13 +256,13 @@ app.post('/submit-exam', async (req, res) => {
   const wrongCount = exam.totalQuestions - correctCount;
 
   await new Result({
-    studentMobile: student.mobile,
-    studentName: studentName || student.name,
-    studentRoll: student.roll || '',
+    studentMobile: req.user.mobile,
+    studentName: req.user.name,
+    studentRoll: '', // You can add roll to JWT if needed
     examId,
     examTitle: exam.title,
-    examSubject: exam.subject,              // ← SAVED
-    examTestNumber: exam.testNumber,        // ← SAVED
+    examSubject: exam.subject,
+    examTestNumber: exam.testNumber,
     score: correctCount,
     total: exam.totalQuestions,
     correct: correctCount,
@@ -252,11 +273,8 @@ app.post('/submit-exam', async (req, res) => {
   res.json({ message: "Exam submitted successfully!" });
 });
 
-app.get('/exam/:id/results', async (req, res) => {
-  res.json(await Result.find({ examId: req.params.id }));
-});
-
-app.get('/results', async (req, res) => {
+// Results - Protected (only logged in can see all results)
+app.get('/results', authenticateToken, async (req, res) => {
   try {
     const results = await Result.find().sort({ submittedAt: -1 });
     res.json(results);
@@ -265,17 +283,15 @@ app.get('/results', async (req, res) => {
   }
 });
 
+// Notes (unchanged)
 app.post('/api/save-note', async (req, res) => {
   try {
     const { title, content } = req.body;
-    if (!title || !content) {
-      return res.status(400).json({ success: false, message: 'Title and content are required' });
-    }
+    if (!title || !content) return res.status(400).json({ success: false, message: 'Title and content required' });
     const newNote = new Note({ title: title.trim(), content: content.trim() });
     await newNote.save();
-    res.json({ success: true, message: 'Note saved successfully!' });
+    res.json({ success: true, message: 'Note saved!' });
   } catch (error) {
-    console.error('Error saving note:', error);
     res.status(500).json({ success: false, message: 'Failed to save note' });
   }
 });
@@ -289,7 +305,7 @@ app.get('/api/notes', async (req, res) => {
   }
 });
 
-// ====================== CATCH-ALL ROUTE (MUST BE LAST!) ======================
+// Catch-all
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
