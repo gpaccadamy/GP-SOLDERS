@@ -114,11 +114,7 @@
         localStorage.setItem('studentName', data.name);
         localStorage.setItem('studentMobile', data.mobile);
 
-        // Check if there's a redirect page
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirect = urlParams.get('redirect') || 'index.html';
-
-        window.location.href = redirect;
+        window.location.href = 'index.html';
 
       } catch (err) {
         error.textContent = err.message;
