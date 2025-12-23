@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const app = express();
@@ -29,8 +28,6 @@ mongoose.connect(MONGO_URI)
     console.error("❌ MongoDB connection failed:", err);
     process.exit(1);
   });
-
-const JWT_SECRET = process.env.JWT_SECRET || 'gp-soldiers-jwt-secret-2025';
 
 const StudentSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -96,17 +93,6 @@ const NoteSchema = new mongoose.Schema({
 });
 const Note = mongoose.model('Note', NoteSchema);
 
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ error: "Access token required" });
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: "Invalid or expired token" });
-    req.user = user;
-    next();
-  });
-}
-
 app.post('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
@@ -114,12 +100,7 @@ app.post('/student-login', async (req, res) => {
     const student = await Student.findOne({ mobile });
     if (!student) return res.status(404).json({ error: "Invalid credentials" });
     if (student.password !== password) return res.status(401).json({ error: "Invalid credentials" });
-    const token = jwt.sign(
-      { id: student._id, name: student.name, mobile: student.mobile },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-    res.json({ token, name: student.name, mobile: student.mobile });
+    res.json({ name: student.name, mobile: student.mobile });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
@@ -170,9 +151,9 @@ app.post('/videos', async (req, res) => {
   res.json({ message: "Video saved" });
 });
 
-app.get('/drafts', authenticateToken, async (req, res) => res.json(await DraftExam.find().sort({ createdAt: -1 })));
+app.get('/drafts', async (req, res) => res.json(await DraftExam.find().sort({ createdAt: -1 })));
 
-app.post('/drafts', authenticateToken, async (req, res) => {
+app.post('/drafts', async (req, res) => {
   const { title, subject, testNumber, questions } = req.body;
   if (!questions || questions.length === 0) return res.status(400).json({ error: "At least one question required" });
   let draft = await DraftExam.findOne({ title });
@@ -188,7 +169,7 @@ app.post('/drafts', authenticateToken, async (req, res) => {
   res.json({ message: "Draft saved" });
 });
 
-app.post('/conduct/:draftId', authenticateToken, async (req, res) => {
+app.post('/conduct/:draftId', async (req, res) => {
   const draft = await DraftExam.findById(req.params.draftId);
   if (!draft) return res.status(404).json({ error: "Draft not found" });
   const existing = await Exam.findOne({ title: draft.title });
@@ -214,8 +195,8 @@ app.get('/exam/:id', async (req, res) => {
   res.json(exam);
 });
 
-app.post('/submit-exam', authenticateToken, async (req, res) => {
-  const { examId, answers } = req.body;
+app.post('/submit-exam', async (req, res) => {
+  const { examId, answers, studentMobile, studentName } = req.body;
   if (!examId || !Array.isArray(answers)) return res.status(400).json({ error: "Invalid data" });
   const exam = await Exam.findById(examId);
   if (!exam) return res.status(404).json({ error: "Exam not found" });
@@ -225,8 +206,8 @@ app.post('/submit-exam', authenticateToken, async (req, res) => {
   });
   const wrongCount = exam.totalQuestions - correctCount;
   await new Result({
-    studentMobile: req.user.mobile,
-    studentName: req.user.name,
+    studentMobile,
+    studentName,
     studentRoll: '',
     examId,
     examTitle: exam.title,
@@ -241,7 +222,7 @@ app.post('/submit-exam', authenticateToken, async (req, res) => {
   res.json({ message: "Exam submitted successfully!" });
 });
 
-app.get('/results', authenticateToken, async (req, res) => {
+app.get('/results', async (req, res) => {
   try {
     const results = await Result.find().sort({ submittedAt: -1 });
     res.json(results);
