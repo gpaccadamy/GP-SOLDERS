@@ -1,371 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GP Soldiers Academy</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="icon" href="data:,">
-  <style>
-    :root {
-      --primary: #2563eb;
-      --accent: #10b981;
-      --light-bg: #f0f9ff;
-      --card-bg: #ffffff;
-      --gradient-start: #e0f2fe;
-      --gradient-end: #fefce8;
-      --text: #1e293b;
-      --disabled: #94a3b8;
-    }
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--light-bg);
-      color: var(--text);
-      padding-bottom: 70px;
-    }
-    .app-container {
-      max-width: 480px;
-      margin: 0 auto;
-      background: var(--card-bg);
-      min-height: 100vh;
-      box-shadow: 0 0 20px rgba(0,0,0,0.08);
-    }
-    .header {
-      background: linear-gradient(135deg, var(--primary), #3b82f6);
-      color: white;
-      padding: 18px;
-      text-align: center;
-      font-size: 1.3rem;
-      font-weight: bold;
-      position: relative;
-    }
-    .logo {
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 3px solid white;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-    .logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .header-title {
-      margin-left: 60px;
-      font-size: 1.3rem;
-    }
-    .banner {
-      position: relative;
-      height: 250px;
-      margin: 15px;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    }
-    .slides {
-      width: 100%;
-      height: 100%;
-      position: relative;
-    }
-    .slide {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: no-repeat center/cover;
-      opacity: 0;
-      transition: opacity 1s ease;
-    }
-    .slide.active {
-      opacity: 1;
-    }
-    .banner-overlay {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(transparent, rgba(0,0,0,0.7));
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-    .banner-overlay p {
-      margin: 5px 0;
-      font-size: 1.1rem;
-    }
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      padding: 20px;
-    }
-    .feature-item {
-      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-      border-radius: 16px;
-      padding: 22px 12px;
-      text-align: center;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-    .feature-item.disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-    .feature-item:hover:not(.disabled) {
-      transform: translateY(-8px) scale(1.05);
-      box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-    }
-    .feature-item i {
-      font-size: 3rem;
-      color: var(--primary);
-      margin-bottom: 12px;
-    }
-    .feature-item span {
-      display: block;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: white;
-      border-top: 1px solid #e2e8f0;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding: 12px 0;
-      max-width: 480px;
-      margin: 0 auto;
-      box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
-    }
-    .nav-item {
-      text-align: center;
-      color: var(--primary);
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-    .nav-item i {
-      font-size: 1.8rem;
-      display: block;
-      margin-bottom: 4px;
-    }
-    /* Profile Popup */
-    .profile-popup {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .profile-card {
-      background: white;
-      border-radius: 20px;
-      padding: 30px;
-      width: 90%;
-      max-width: 350px;
-      text-align: center;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-      transform: scale(0.9);
-      transition: transform 0.3s ease;
-    }
-    .profile-popup.active .profile-card {
-      transform: scale(1);
-    }
-    .profile-logo {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      overflow: hidden;
-      margin: 0 auto 20px;
-      border: 5px solid var(--primary);
-    }
-    .profile-logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .profile-name {
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: var(--primary);
-      margin: 10px 0;
-    }
-    .profile-mobile {
-      font-size: 1.2rem;
-      color: var(--text);
-      margin: 15px 0;
-    }
-    .close-popup {
-      background: var(--accent);
-      color: white;
-      padding: 12px 30px;
-      border: none;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      cursor: pointer;
-    }
-    .close-popup:hover {
-      background: #059669;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GP SOLDRES - Welcome</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .logo {
+            width: 200px;
+            height: auto;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .message {
+            font-size: 1.6em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .login-btn {
+            background: linear-gradient(45deg, #ff8c00, #ff0080);
+            color: white;
+            border: none;
+            padding: 18px 45px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.5);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .login-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 15px 40px rgba(255, 140, 0, 0.7);
+        }
+
+        .countdown {
+            margin-top: 30px;
+            font-size: 1.4em;
+            color: #ffd700;
+        }
+    </style>
 </head>
 <body>
-  <div class="app-container">
-    <div class="header">
-      <div class="logo">
-        <img src="gplogo.jpg" alt="GP Soldiers Logo">
-      </div>
-      <div class="header-title">GP SOLDIERS ACADEMY</div>
-    </div>
 
-    <div class="banner">
-      <div class="slides">
-        <div class="slide active" style="background-image: url('gpposter1.jpg');"></div>
-        <div class="slide" style="background-image: url('image3.jpg');"></div>
-        <div class="slide" style="background-image: url('poster4.jpg');"></div>
-        <div class="slide" style="background-image: url('poster5.jpg');"></div>
-        <div class="slide" style="background-image: url('image1.jpg');"></div>
-      </div>
-      <div class="banner-overlay">
-        <p>By GP Soldiers</p>
-      </div>
-    </div>
+    <!-- Your Logo -->
+    <img src="gplogo.jpg" alt="GP SOLDRES Logo" class="logo">
 
-    <div class="features-grid">
-      <div class="feature-item" onclick="goToPage('army-video.html')">
-        <i class="fas fa-dumbbell"></i>
-        <span>Our Training Videos</span>
-      </div>
-      <div class="feature-item" onclick="goToPage('exams.html')">
-        <i class="fas fa-clipboard-check"></i>
-        <span>Army Exam Test</span>
-      </div>
-      <div class="feature-item" onclick="goToPage('my-courses.html')">
-        <i class="fas fa-book-open"></i>
-        <span>My Courses</span>
-      </div>
-      <div class="feature-item" onclick="goToPage('army-exam-notes.html')">
-        <i class="fas fa-sticky-note"></i>
-        <span>Army Exam Notes</span>
-      </div>
-      <div class="feature-item" onclick="goToPage('result.html')">
-        <i class="fas fa-trophy"></i>
-        <span>Results</span>
-      </div>
-      <div class="feature-item" onclick="goToPage('liveclasses.html')">
-        <i class="fas fa-play-circle"></i>
-        <span>Army Video</span>
-      </div>
-      <div class="feature-item" onclick="goToPage('previous-years.html')">
-        <i class="fas fa-history"></i>
-        <span>Previous Years</span>
-      </div>
-    </div>
-  </div>
+    <!-- Welcome Text -->
+    <h1>Welcome to GP SOLDRES</h1>
+    <p class="message">Site is getting ready...</p>
 
-  <div class="bottom-nav">
-    <div class="nav-item" onclick="window.location.href='index.html'">
-      <i class="fas fa-home"></i>
-      <span>Home</span>
-    </div>
-    <div class="nav-item" onclick="goToPage('notes.html')">
-      <i class="fas fa-pen"></i>
-      <span>Write Notes</span>
-    </div>
-    <div class="nav-item" onclick="showProfilePopup()">
-      <i class="fas fa-user"></i>
-      <span id="profileLabel">Profile</span>
-    </div>
-  </div>
+    <!-- Login Button -->
+    <a href="https://academy-student-portal.onrender.com/index.html" 
+       class="login-btn" 
+       id="loginBtn">
+        Login Now
+    </a>
 
-  <!-- Profile Popup -->
-  <div id="profilePopup" class="profile-popup">
-    <div class="profile-card">
-      <div class="profile-logo">
-        <img src="gplogo.jpg" alt="GP Soldiers Logo">
-      </div>
-      <div class="profile-name" id="popupName">Guest Soldier</div>
-      <div class="profile-mobile" id="popupMobile">-</div>
-      <button class="close-popup" onclick="closeProfilePopup()">Close</button>
-    </div>
-  </div>
+    <!-- Countdown -->
+    <div class="countdown">Auto login in <span id="timer">5</span> seconds...</div>
 
-  <script>
-    // Auto slideshow
-    let currentSlide = 0;
-    const slides = document.querySelectorAll('.slide');
-    function nextSlide() {
-      slides[currentSlide].classList.remove('active');
-      currentSlide = (currentSlide + 1) % slides.length;
-      slides[currentSlide].classList.add('active');
-    }
-    setInterval(nextSlide, 3000);
+    <script>
+        const REDIRECT_URL = 'https://academy-student-portal.onrender.com/index.html';
+        let timeLeft = 5;
+        const timerEl = document.getElementById('timer');
+        const btn = document.getElementById('loginBtn');
 
-    // Check login status
-    const token = localStorage.getItem('token');
-    const studentName = localStorage.getItem('studentName') || "Profile";
-    const studentMobile = localStorage.getItem('studentMobile') || "-";
+        // Auto countdown and redirect
+        const countdown = setInterval(() => {
+            timeLeft--;
+            timerEl.textContent = timeLeft;
 
-    // Update profile label in bottom nav
-    document.getElementById('profileLabel').textContent = studentName;
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                btn.textContent = 'Entering Portal...';
+                btn.style.pointerEvents = 'none';
+                // Small delay to show message
+                setTimeout(() => {
+                    window.location.href = REDIRECT_URL;
+                }, 500);
+            }
+        }, 1000);
 
-    // Disable all feature buttons if not logged in
-    if (!token) {
-      const featureItems = document.querySelectorAll('.feature-item');
-      featureItems.forEach(item => item.classList.add('disabled'));
-    }
+        // If user clicks button early
+        btn.addEventListener('click', function(e) {
+            clearInterval(countdown);
+            btn.textContent = 'Entering Portal...';
+            btn.style.pointerEvents = 'none';
+        });
+    </script>
 
-    // Function to handle page navigation
-    function goToPage(page) {
-      if (!token) {
-        alert("Please login first to access this feature!");
-        window.location.href = 'login.html';
-      } else {
-        window.location.href = page;
-      }
-    }
-
-    // Show profile popup
-    function showProfilePopup() {
-      if (!token) {
-        alert("Please login to view your profile");
-        window.location.href = 'login.html';
-        return;
-      }
-
-      document.getElementById('popupName').textContent = studentName;
-      document.getElementById('popupMobile').textContent = studentMobile;
-      document.getElementById('profilePopup').style.display = 'flex';
-      document.getElementById('profilePopup').classList.add('active');
-    }
-
-    function closeProfilePopup() {
-      document.getElementById('profilePopup').style.display = 'none';
-      document.getElementById('profilePopup').classList.remove('active');
-    }
-
-    // Close popup on outside click
-    document.getElementById('profilePopup').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('profilePopup')) {
-        closeProfilePopup();
-      }
-    });
-  </script>
 </body>
 </html>
