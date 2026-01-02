@@ -7,18 +7,27 @@ require('dotenv').config();
 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-app.use(express.static(path.join(__dirname, '../frontend')));
+// Serve static files from the sibling 'frontend' folder
+const frontendPath = path.join(__dirname, '../frontend');
+console.log('🔍 Serving frontend from:', frontendPath); // Helpful debug line
 
+app.use(express.static(frontendPath));
+
+// Serve uploaded files
 const uploadDir = './uploads';
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
 app.use('/uploads', express.static('uploads'));
 
+// MongoDB connection
 const MONGO_URI = process.env.MONGO_URI;
 if (!MONGO_URI) {
-  console.error("❌ MONGO_URI not set");
+  console.error("❌ MONGO_URI not set in .env file");
   process.exit(1);
 }
 
@@ -29,6 +38,7 @@ mongoose.connect(MONGO_URI)
     process.exit(1);
   });
 
+// Models
 const StudentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   roll: { type: String },
@@ -93,6 +103,7 @@ const NoteSchema = new mongoose.Schema({
 });
 const Note = mongoose.model('Note', NoteSchema);
 
+// Routes
 app.post('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
@@ -252,11 +263,13 @@ app.get('/api/notes', async (req, res) => {
   }
 });
 
+// Catch-all route — serves index.html for any unknown route (important for SPA routing)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
+// Start server
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
