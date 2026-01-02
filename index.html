@@ -10,7 +10,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #1e3c72, #2a5298);
@@ -23,7 +22,6 @@
             text-align: center;
             overflow: hidden;
         }
-
         .logo {
             width: 200px;
             height: auto;
@@ -31,43 +29,21 @@
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         }
-
         h1 {
             font-size: 3.5em;
             margin-bottom: 20px;
             text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
         }
-
         .message {
             font-size: 1.6em;
             margin-bottom: 40px;
             opacity: 0.9;
         }
-
-        .login-btn {
-            background: linear-gradient(45deg, #ff8c00, #ff0080);
-            color: white;
-            border: none;
-            padding: 18px 45px;
-            font-size: 1.5em;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.5);
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .login-btn:hover {
-            transform: scale(1.08);
-            box-shadow: 0 15px 40px rgba(255, 140, 0, 0.7);
-        }
-
         .countdown {
             margin-top: 30px;
-            font-size: 1.4em;
+            font-size: 1.6em;
             color: #ffd700;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -80,16 +56,13 @@
     <h1>Welcome to GP SOLDRES</h1>
     <p class="message">Site is getting ready...</p>
 
-   
-
     <!-- Countdown -->
     <div class="countdown">Auto login in <span id="timer">5</span> seconds...</div>
 
     <script>
-        const REDIRECT_URL = 'https://academy-student-portal.onrender.com/index.html';
+        const REDIRECT_URL = 'https://academy-student-portal.onrender.com';  // No /index.html needed
         let timeLeft = 5;
         const timerEl = document.getElementById('timer');
-        const btn = document.getElementById('loginBtn');
 
         // Auto countdown and redirect
         const countdown = setInterval(() => {
@@ -98,21 +71,12 @@
 
             if (timeLeft <= 0) {
                 clearInterval(countdown);
-                btn.textContent = 'Entering Portal...';
-                btn.style.pointerEvents = 'none';
-                // Small delay to show message
+                timerEl.textContent = 'Entering Portal...';
                 setTimeout(() => {
                     window.location.href = REDIRECT_URL;
-                }, 500);
+                }, 800);  // Small delay to show "Entering..." message
             }
         }, 1000);
-
-        // If user clicks button early
-        btn.addEventListener('click', function(e) {
-            clearInterval(countdown);
-            btn.textContent = 'Entering Portal...';
-            btn.style.pointerEvents = 'none';
-        });
     </script>
 
 </body>
