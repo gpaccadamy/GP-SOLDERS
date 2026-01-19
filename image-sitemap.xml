@@ -1,23 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset 
-  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
+  <!-- Main homepage (optional but good practice) -->
   <url>
     <loc>https://gpsoldier.in/</loc>
+    <image:image>
+      <image:loc>https://gpsoldier.in/frontend/gplogo.jpg</image:loc>
+    </image:image>
+  </url>
 
+  <!-- Poster 1 -->
+  <url>
+    <loc>https://gpsoldier.in/frontend/gpposter1.jpg</loc>
     <image:image>
       <image:loc>https://gpsoldier.in/frontend/gpposter1.jpg</image:loc>
     </image:image>
+  </url>
 
+  <!-- Image 3 -->
+  <url>
+    <loc>https://gpsoldier.in/frontend/image3.jpg</loc>
     <image:image>
       <image:loc>https://gpsoldier.in/frontend/image3.jpg</image:loc>
     </image:image>
+  </url>
 
+  <!-- Poster (main) -->
+  <url>
+    <loc>https://gpsoldier.in/frontend/gpposter.jpg</loc>
     <image:image>
       <image:loc>https://gpsoldier.in/frontend/gpposter.jpg</image:loc>
     </image:image>
-
   </url>
 
 </urlset>
