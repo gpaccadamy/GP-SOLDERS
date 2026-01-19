@@ -4,18 +4,15 @@
   xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
   <url>
-    <loc>https://yourdomain.com/</loc>
+    <loc>https://gpsoldier.in/</loc>
     <image:image>
-      <image:loc>https://yourdomain.com/frontend/gpposter1.jpg</image:loc>
-      <image:title>GPSoldier Academy NDA Coaching Poster</image:title>
+      <image:loc>https://gpsoldier.in/frontend/gpposter1.jpg</image:loc>
     </image:image>
     <image:image>
-      <image:loc>https://yourdomain.com/frontend/image3.jpg</image:loc>
-      <image:title>GPSoldier Academy Defence Training</image:title>
+      <image:loc>https://gpsoldier.in/frontend/image3.jpg</image:loc>
     </image:image>
     <image:image>
-      <image:loc>https://yourdomain.com/frontend/gpposter.jpg</image:loc>
-      <image:title>GPSoldier Academy CDS Police SSC Coaching</image:title>
+      <image:loc>https://gpsoldier.in/frontend/gpposter.jpg</image:loc>
     </image:image>
   </url>
 
