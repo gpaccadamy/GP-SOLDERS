@@ -8,18 +8,16 @@
 
     <image:image>
       <image:loc>https://gpsoldier.in/frontend/gpposter1.jpg</image:loc>
-      <image:title>GPSoldier Academy Poster 1 NDA CDS SSC Defence Coaching</image:title>
     </image:image>
 
     <image:image>
       <image:loc>https://gpsoldier.in/frontend/image3.jpg</image:loc>
-      <image:title>GPSoldier Academy Defence Training Image</image:title>
     </image:image>
 
     <image:image>
       <image:loc>https://gpsoldier.in/frontend/gpposter.jpg</image:loc>
-      <image:title>GPSoldier Academy Coaching Poster</image:title>
     </image:image>
 
   </url>
+
 </urlset>
