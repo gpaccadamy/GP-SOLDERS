@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const multer = require('multer');          // ← NEWLY ADDED
 require('dotenv').config();
 
 const app = express();
@@ -13,8 +14,7 @@ app.use(express.json());
 
 // Serve static files from the sibling 'frontend' folder
 const frontendPath = path.join(__dirname, '../frontend');
-console.log('🔍 Serving frontend from:', frontendPath); // Helpful debug line
-
+console.log('🔍 Serving frontend from:', frontendPath);
 app.use(express.static(frontendPath));
 
 // Serve uploaded files
@@ -38,7 +38,8 @@ mongoose.connect(MONGO_URI)
     process.exit(1);
   });
 
-// Models
+// ==================== MODELS ====================
+
 const StudentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   roll: { type: String },
@@ -103,7 +104,28 @@ const NoteSchema = new mongoose.Schema({
 });
 const Note = mongoose.model('Note', NoteSchema);
 
-// Routes
+// ==================== NEW ARMY VIDEO MODEL ====================
+
+const ArmyVideoSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  url: {
+    type: String,
+    required: true
+  },
+  uploadedAt: {
+    type: Date,
+    default: Date.now
+  }
+}, { timestamps: true });
+
+const ArmyVideo = mongoose.model('ArmyVideo', ArmyVideoSchema);
+
+// ==================== ROUTES ====================
+
 app.post('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
@@ -263,7 +285,91 @@ app.get('/api/notes', async (req, res) => {
   }
 });
 
-// Catch-all route — serves index.html for any unknown route (important for SPA routing)
+// ==================== NEW ARMY VIDEO ROUTES ====================
+
+// Get all army training videos
+app.get('/api/army-videos', async (req, res) => {
+  try {
+    const videos = await ArmyVideo.find()
+      .sort({ uploadedAt: -1 })
+      .select('title url uploadedAt');
+    res.json(videos);
+  } catch (err) {
+    console.error('Error fetching army videos:', err);
+    res.status(500).json({ error: 'Failed to load videos' });
+  }
+});
+
+// Multer storage for army videos
+const armyStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const armyDir = path.join(__dirname, 'uploads', 'army-videos');
+    if (!fs.existsSync(armyDir)) {
+      fs.mkdirSync(armyDir, { recursive: true });
+    }
+    cb(null, armyDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  }
+});
+
+const uploadArmyVideo = multer({
+  storage: armyStorage,
+  limits: { fileSize: 500 * 1024 * 1024 }, // 500 MB
+  fileFilter: (req, file, cb) => {
+    const allowed = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only video files allowed'));
+    }
+  }
+});
+
+// Upload army training video
+app.post('/upload-army-video', uploadArmyVideo.single('video'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No video file uploaded' });
+    }
+
+    const title = req.body.title?.trim();
+    if (!title) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ error: 'Video title is required' });
+    }
+
+    const videoUrl = `/uploads/army-videos/${req.file.filename}`;
+
+    const newVideo = new ArmyVideo({
+      title,
+      url: videoUrl
+    });
+
+    await newVideo.save();
+
+    res.json({
+      success: true,
+      message: 'Army training video uploaded successfully',
+      video: {
+        title: newVideo.title,
+        url: videoUrl,
+        uploadedAt: newVideo.uploadedAt
+      }
+    });
+
+  } catch (err) {
+    console.error('Army video upload error:', err);
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    res.status(500).json({ error: 'Failed to upload video' });
+  }
+});
+
+// Catch-all route — serves index.html for any unknown route (important for SPA)
 app.get('*', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
@@ -272,4 +378,5 @@ app.get('*', (req, res) => {
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🎖️  GP Soldiers Academy - Army Video Upload Feature Active!`);
 });
