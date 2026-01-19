@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin - Upload Army Video</title>
+    <title>Admin - Upload Army Video | GP Soldiers Academy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="data:,">
     <style>
@@ -88,7 +88,9 @@
             color: white;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        .upload-btn { background: var(--accent); }
+        .upload-btn {
+            background: var(--accent);
+        }
         .status {
             font-style: italic;
             color: #64748b;
@@ -138,7 +140,7 @@
         
         <div class="card">
             <h2>Upload New Training Video</h2>
-            <input type="text" id="videoTitle" placeholder="Video Title (e.g. 5 Km Run Technique)">
+            <input type="text" id="videoTitle" placeholder="Video Title (e.g. 5 Km Running Technique)">
             <input type="file" accept="video/*" id="videoFile">
             <div class="status" id="uploadStatus">Select video to start</div>
             <button class="action-btn upload-btn" onclick="uploadVideo()">
@@ -148,7 +150,7 @@
 
         <div class="card">
             <h2>Recently Uploaded Videos</h2>
-            <div id="recentVideos">Loading...</div>
+            <div id="recentVideos">Loading recent videos...</div>
         </div>
     </div>
 
@@ -165,7 +167,7 @@
 
     <script>
         const CLOUD_NAME = "djlkwjeb2";
-        const UPLOAD_PRESET = "academy_exam_preset"; // Reuse your existing preset (must allow video)
+        const UPLOAD_PRESET = "academy_exam_preset"; // ← change if you created new preset
         const API_URL = "https://academy-backend-e02j.onrender.com";
 
         async function uploadVideo() {
@@ -179,30 +181,43 @@
             if (!title) return alert("Please enter video title");
             if (!file) return alert("Please select a video file");
 
-            status.textContent = "Uploading... (may take time for large files)";
+            status.textContent = "Uploading... (large files may take a few minutes)";
             status.className = "status";
 
             const formData = new FormData();
-            formData.append("video", file);
-            formData.append("title", title);
+            formData.append("file", file);
+            formData.append("upload_preset", UPLOAD_PRESET);
 
             try {
-                const res = await fetch(`${API_URL}/upload-army-video`, {
+                // Upload directly to Cloudinary
+                const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`, {
                     method: "POST",
                     body: formData
                 });
 
-                const data = await res.json();
+                const cloudData = await cloudRes.json();
 
-                if (res.ok && data.success) {
-                    status.textContent = "✓ Video uploaded successfully!";
-                    status.className = "status success";
-                    titleInput.value = "";
-                    fileInput.value = "";
-                    loadRecentVideos();
-                } else {
-                    throw new Error(data.error || "Upload failed");
+                if (!cloudData.secure_url) {
+                    throw new Error(cloudData.error?.message || "Upload failed");
                 }
+
+                // Save to your backend
+                const backendRes = await fetch(`${API_URL}/save-army-video`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        title: title,
+                        url: cloudData.secure_url
+                    })
+                });
+
+                if (!backendRes.ok) throw new Error("Failed to save to database");
+
+                status.textContent = "✓ Video uploaded successfully!";
+                status.className = "status success";
+                titleInput.value = "";
+                fileInput.value = "";
+                loadRecentVideos();
             } catch (err) {
                 status.textContent = "✗ " + err.message;
                 status.className = "status error";
@@ -212,34 +227,32 @@
 
         async function loadRecentVideos() {
             const container = document.getElementById('recentVideos');
-            container.innerHTML = "Loading recent videos...";
+            container.innerHTML = "Loading...";
 
             try {
                 const res = await fetch(`${API_URL}/api/army-videos`);
                 if (!res.ok) throw new Error("Failed to load");
-                
                 const videos = await res.json();
-                
+
                 if (videos.length === 0) {
-                    container.innerHTML = "<p style='text-align:center; color:#64748b;'>No videos uploaded yet</p>";
+                    container.innerHTML = "<p style='text-align:center; color:#64748b;'>No videos yet</p>";
                     return;
                 }
 
                 container.innerHTML = "";
                 videos.forEach(v => {
                     const div = document.createElement('div');
-                    div.style.margin = "15px 0";
+                    div.style.margin = "12px 0";
                     div.style.padding = "12px";
                     div.style.background = "#f8fafc";
-                    div.style.borderRadius = "12px";
+                    div.style.borderRadius = "10px";
                     div.innerHTML = `
                         <strong>${v.title}</strong><br>
                         <small style="color:#64748b;">
                             ${new Date(v.uploadedAt).toLocaleString('en-IN')}
-                        </small>
-                        <br>
-                        <a href="${v.url}" target="_blank" style="color:var(--primary); font-size:0.9rem;">
-                            Watch Video →
+                        </small><br>
+                        <a href="${v.url}" target="_blank" style="color:var(--primary);">
+                            Watch →
                         </a>
                     `;
                     container.appendChild(div);
@@ -249,7 +262,6 @@
             }
         }
 
-        // Load on page open
         loadRecentVideos();
     </script>
 </body>
