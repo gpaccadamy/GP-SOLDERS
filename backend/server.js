@@ -3,8 +3,9 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const multer = require('multer');          // ← NEWLY ADDED
+const multer = require('multer'); // ← NEWLY ADDED
 require('dotenv').config();
+const cloudinary = require('cloudinary').v2; // ← ADDED for Cloudinary
 
 const app = express();
 
@@ -30,7 +31,6 @@ if (!MONGO_URI) {
   console.error("❌ MONGO_URI not set in .env file");
   process.exit(1);
 }
-
 mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch(err => {
@@ -38,8 +38,14 @@ mongoose.connect(MONGO_URI)
     process.exit(1);
   });
 
-// ==================== MODELS ====================
+// ==================== Cloudinary Configuration - ADDED ====================
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
+// ==================== MODELS ====================
 const StudentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   roll: { type: String },
@@ -47,14 +53,12 @@ const StudentSchema = new mongoose.Schema({
   password: { type: String, required: true }
 });
 const Student = mongoose.model('Student', StudentSchema);
-
 const Video = mongoose.model('Video', new mongoose.Schema({
   subject: String,
   class: Number,
   videoId: String,
   title: String
 }));
-
 const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   title: String,
   subject: String,
@@ -67,7 +71,6 @@ const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   }],
   createdAt: { type: Date, default: Date.now }
 }));
-
 const Exam = mongoose.model('Exam', new mongoose.Schema({
   title: String,
   subject: String,
@@ -80,7 +83,6 @@ const Exam = mongoose.model('Exam', new mongoose.Schema({
   }],
   conductedAt: { type: Date, default: Date.now }
 }));
-
 const Result = mongoose.model('Result', new mongoose.Schema({
   studentMobile: String,
   studentName: String,
@@ -96,16 +98,13 @@ const Result = mongoose.model('Result', new mongoose.Schema({
   answers: [String],
   submittedAt: { type: Date, default: Date.now }
 }));
-
 const NoteSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
   createdAt: { type: Date, default: Date.now }
 });
 const Note = mongoose.model('Note', NoteSchema);
-
 // ==================== NEW ARMY VIDEO MODEL ====================
-
 const ArmyVideoSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -121,11 +120,8 @@ const ArmyVideoSchema = new mongoose.Schema({
     default: Date.now
   }
 }, { timestamps: true });
-
 const ArmyVideo = mongoose.model('ArmyVideo', ArmyVideoSchema);
-
 // ==================== ROUTES ====================
-
 app.post('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
@@ -138,9 +134,7 @@ app.post('/student-login', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
 app.get('/students', async (req, res) => res.json(await Student.find()));
-
 app.post('/students', async (req, res) => {
   try {
     let { name, roll, mobile, password } = req.body;
@@ -159,15 +153,12 @@ app.post('/students', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
 app.delete('/students/:id', async (req, res) => {
   const student = await Student.findByIdAndDelete(req.params.id);
   if (!student) return res.status(404).json({ error: "Student not found" });
   res.json({ message: "Student deleted" });
 });
-
 app.get('/videos', async (req, res) => res.json(await Video.find()));
-
 app.post('/videos', async (req, res) => {
   const { subject, classNum, youtubeUrl, title } = req.body;
   const match = youtubeUrl.match(/(?:v=|\/embed\/|youtu\.be\/|watch\?v=)([^#\&\?]{11})/);
@@ -183,9 +174,7 @@ app.post('/videos', async (req, res) => {
   await new Video({ subject, class: classNum, videoId, title: title || "Lesson" }).save();
   res.json({ message: "Video saved" });
 });
-
 app.get('/drafts', async (req, res) => res.json(await DraftExam.find().sort({ createdAt: -1 })));
-
 app.post('/drafts', async (req, res) => {
   const { title, subject, testNumber, questions } = req.body;
   if (!questions || questions.length === 0) return res.status(400).json({ error: "At least one question required" });
@@ -201,7 +190,6 @@ app.post('/drafts', async (req, res) => {
   await draft.save();
   res.json({ message: "Draft saved" });
 });
-
 app.post('/conduct/:draftId', async (req, res) => {
   const draft = await DraftExam.findById(req.params.draftId);
   if (!draft) return res.status(404).json({ error: "Draft not found" });
@@ -219,15 +207,12 @@ app.post('/conduct/:draftId', async (req, res) => {
   await DraftExam.findByIdAndDelete(req.params.draftId);
   res.json({ message: "Exam conducted successfully!" });
 });
-
 app.get('/active-exams', async (req, res) => res.json(await Exam.find().sort({ conductedAt: -1 })));
-
 app.get('/exam/:id', async (req, res) => {
   const exam = await Exam.findById(req.params.id);
   if (!exam) return res.status(404).json({ error: "Exam not found" });
   res.json(exam);
 });
-
 app.post('/submit-exam', async (req, res) => {
   const { examId, answers, studentMobile, studentName } = req.body;
   if (!examId || !Array.isArray(answers)) return res.status(400).json({ error: "Invalid data" });
@@ -254,7 +239,6 @@ app.post('/submit-exam', async (req, res) => {
   }).save();
   res.json({ message: "Exam submitted successfully!" });
 });
-
 app.get('/results', async (req, res) => {
   try {
     const results = await Result.find().sort({ submittedAt: -1 });
@@ -263,7 +247,6 @@ app.get('/results', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
 app.post('/api/save-note', async (req, res) => {
   try {
     const { title, content } = req.body;
@@ -275,7 +258,6 @@ app.post('/api/save-note', async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to save note' });
   }
 });
-
 app.get('/api/notes', async (req, res) => {
   try {
     const notes = await Note.find().sort({ createdAt: -1 });
@@ -284,9 +266,7 @@ app.get('/api/notes', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
-
 // ==================== NEW ARMY VIDEO ROUTES ====================
-
 // Get all army training videos
 app.get('/api/army-videos', async (req, res) => {
   try {
@@ -299,8 +279,30 @@ app.get('/api/army-videos', async (req, res) => {
     res.status(500).json({ error: 'Failed to load videos' });
   }
 });
+// ADDED: Save army video metadata (after frontend uploads to Cloudinary)
+app.post('/save-army-video', async (req, res) => {
+  try {
+    const { title, url } = req.body;
+    if (!title || !url) {
+      return res.status(400).json({ error: 'Title and Cloudinary URL required' });
+    }
+    const newVideo = new ArmyVideo({
+      title: title.trim(),
+      url
+    });
+    await newVideo.save();
+    res.json({
+      success: true,
+      message: 'Army video metadata saved',
+      video: newVideo
+    });
+  } catch (err) {
+    console.error('Save army video error:', err);
+    res.status(500).json({ error: 'Failed to save video metadata' });
+  }
+});
 
-// Multer storage for army videos
+// ==================== OLD DISK STORAGE ROUTE (KEPT AS IS - you can keep or remove later) ====================
 const armyStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const armyDir = path.join(__dirname, 'uploads', 'army-videos');
@@ -314,7 +316,6 @@ const armyStorage = multer.diskStorage({
     cb(null, uniqueName);
   }
 });
-
 const uploadArmyVideo = multer({
   storage: armyStorage,
   limits: { fileSize: 500 * 1024 * 1024 }, // 500 MB
@@ -327,29 +328,22 @@ const uploadArmyVideo = multer({
     }
   }
 });
-
-// Upload army training video
 app.post('/upload-army-video', uploadArmyVideo.single('video'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No video file uploaded' });
     }
-
     const title = req.body.title?.trim();
     if (!title) {
       fs.unlinkSync(req.file.path);
       return res.status(400).json({ error: 'Video title is required' });
     }
-
     const videoUrl = `/uploads/army-videos/${req.file.filename}`;
-
     const newVideo = new ArmyVideo({
       title,
       url: videoUrl
     });
-
     await newVideo.save();
-
     res.json({
       success: true,
       message: 'Army training video uploaded successfully',
@@ -359,7 +353,6 @@ app.post('/upload-army-video', uploadArmyVideo.single('video'), async (req, res)
         uploadedAt: newVideo.uploadedAt
       }
     });
-
   } catch (err) {
     console.error('Army video upload error:', err);
     if (req.file && fs.existsSync(req.file.path)) {
@@ -378,5 +371,5 @@ app.get('*', (req, res) => {
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`🎖️  GP Soldiers Academy - Army Video Upload Feature Active!`);
+  console.log(`🎖️ GP Soldiers Academy - Army Video Upload Feature Active!`);
 });
