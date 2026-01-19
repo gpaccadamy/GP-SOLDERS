@@ -1,19 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset 
-  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
+  <!-- Homepage with all three images (valid and useful) -->
   <url>
     <loc>https://gpsoldier.in/</loc>
     <image:image>
       <image:loc>https://gpsoldier.in/frontend/gpposter1.jpg</image:loc>
+      <!-- Optional but recommended -->
+      <image:title>GPSoldier Academy Main Poster</image:title>
+      <image:caption>Best Defence Coaching Institute in Delhi for NDA CDS</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gpsoldier.in/frontend/image3.jpg</image:loc>
+      <image:title>Academy Training Poster</image:title>
+      <image:caption>NDA CDS AFCAT Police SSC Preparation</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gpsoldier.in/frontend/gpposter.jpg</image:loc>
+      <image:title>GPSoldier Academy Banner</image:title>
+      <image:caption>Elite Defence Coaching</image:caption>
     </image:image>
   </url>
+
+  <!-- Optional: Separate entries if images appear on different pages -->
+  <!-- Example for gpposter1.jpg if it also appears on a courses page -->
+  <!--
+  <url>
+    <loc>https://gpsoldier.in/courses</loc>
+    <image:image>
+      <image:loc>https://gpsoldier.in/frontend/gpposter1.jpg</image:loc>
+      <image:title>GPSoldier Courses Banner</image:title>
+    </image:image>
+  </url>
+  -->
 
 </urlset>
