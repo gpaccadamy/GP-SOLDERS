@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Army Training Videos</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="data:,">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Admin - Upload Army Video</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
         :root {
             --primary: #2563eb;
@@ -13,19 +12,18 @@
             --light-bg: #f0f9ff;
             --card-bg: #ffffff;
             --text: #1e293b;
-            --danger: #ef4444;
         }
         body {
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
             background: var(--light-bg);
             color: var(--text);
-            padding-bottom: 80px;
+            padding-bottom: 90px;
         }
-        .app-container {
+        .container {
             max-width: 480px;
             margin: 0 auto;
-            background: var(--card-bg);
+            background: white;
             min-height: 100vh;
             box-shadow: 0 0 20px rgba(0,0,0,0.08);
         }
@@ -34,143 +32,131 @@
             color: white;
             padding: 18px;
             text-align: center;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             font-weight: bold;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        .video-card {
+        .card {
             background: white;
             border-radius: 16px;
-            margin: 15px;
-            overflow: hidden;
+            margin: 20px 15px;
+            padding: 24px;
             box-shadow: 0 6px 15px rgba(0,0,0,0.08);
         }
-        .video-card video {
+        input[type="text"], input[type="file"] {
             width: 100%;
-            height: 200px;
-            object-fit: cover;
+            padding: 14px;
+            margin: 12px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: #f8fafc;
         }
-        .video-info {
-            padding: 15px;
+        input[type="file"] {
+            border: 2px dashed #94a3b8;
+            text-align: center;
+            padding: 20px;
         }
-        .video-title {
-            margin: 0 0 8px;
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 12px;
             font-size: 1.1rem;
-            color: var(--primary);
-        }
-        .video-date {
-            color: #64748b;
-            font-size: 0.85rem;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #64748b;
-        }
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 12px 0;
-            max-width: 480px;
-            margin: 0 auto;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
-            z-index: 100;
-        }
-        .nav-item {
-            text-align: center;
-            color: var(--primary);
-            font-size: 0.9rem;
+            font-weight: bold;
+            margin-top: 15px;
             cursor: pointer;
         }
-        .nav-item i { font-size: 1.8rem; display: block; margin-bottom: 4px; }
-        .nav-item.active { color: var(--accent); }
+        .status {
+            text-align: center;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .success { color: var(--accent); }
+        .error { color: #ef4444; }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="header">Army Training Videos</div>
-        
-        <div id="videosContainer">
-            <div class="empty-state">
-                <i class="fas fa-video fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i>
-                <p>Loading training videos...</p>
-            </div>
-        </div>
+
+<div class="container">
+    <div class="header">Upload Army Training Video</div>
+
+    <div class="card">
+        <h2 style="margin-top:0; color:var(--primary); text-align:center;">New Video</h2>
+
+        <input type="text" id="title" placeholder="Video Title (e.g. Physical Training Day 1)" />
+
+        <input type="file" accept="video/*" id="videoInput" />
+
+        <div class="status" id="status">Ready to upload...</div>
+
+        <button class="btn" onclick="uploadVideo()">UPLOAD VIDEO</button>
     </div>
+</div>
 
-    <div class="bottom-nav">
-        <div class="nav-item" onclick="window.location.href='army-training-videos.html'">
-            <i class="fas fa-video"></i>
-            <span>Videos</span>
-        </div>
-        <div class="nav-item active" onclick="window.location.href='student-exams.html'">
-            <i class="fas fa-file-alt"></i>
-            <span>Exams</span>
-        </div>
-    </div>
+<script>
+const CLOUD_NAME = "djlkwjeb2";
 
-    <script>
-        const API_URL = "https://academy-backend-e02j.onrender.com";
+// Change this if you created a new preset!
+const UPLOAD_PRESET = "academy_exam_preset";   // ← or "army_video_preset" if you made new one
 
-        async function loadVideos() {
-            const container = document.getElementById('videosContainer');
-            
-            try {
-                const res = await fetch(`${API_URL}/api/army-videos`);
-                if (!res.ok) throw new Error("Failed to load videos");
-                
-                const videos = await res.json();
-                
-                if (videos.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-video fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i>
-                            <p>No training videos available yet</p>
-                            <p style="font-size:0.9rem;">Check back later for new Army preparation content</p>
-                        </div>`;
-                    return;
-                }
+const BACKEND_URL = "https://academy-backend-e02j.onrender.com";
 
-                container.innerHTML = "";
-                videos.forEach(v => {
-                    const card = document.createElement('div');
-                    card.className = 'video-card';
-                    card.innerHTML = `
-                        <video controls>
-                            <source src="${v.url}" type="video/mp4">
-                            Your browser does not support video.
-                        </video>
-                        <div class="video-info">
-                            <h3 class="video-title">${v.title}</h3>
-                            <div class="video-date">
-                                Uploaded: ${new Date(v.uploadedAt).toLocaleDateString('en-IN')}
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            } catch (err) {
-                container.innerHTML = `
-                    <div class="empty-state" style="color:var(--danger);">
-                        <i class="fas fa-exclamation-triangle fa-3x" style="margin-bottom:15px;"></i>
-                        <p>Error loading videos</p>
-                        <p style="font-size:0.9rem;">${err.message}</p>
-                    </div>`;
-            }
+async function uploadVideo() {
+    const title = document.getElementById("title").value.trim();
+    const fileInput = document.getElementById("videoInput");
+    const file = fileInput.files[0];
+    const status = document.getElementById("status");
+
+    if (!title) return alert("Please enter a title!");
+    if (!file) return alert("Please select a video file!");
+
+    status.textContent = "Uploading to Cloudinary... (large videos take time)";
+    status.className = "status";
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+
+    try {
+        // Step 1: Direct upload to Cloudinary (handles large files)
+        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`, {
+            method: "POST",
+            body: formData
+        });
+
+        const cloudData = await cloudRes.json();
+
+        if (!cloudData.secure_url) {
+            throw new Error(cloudData.error?.message || "Cloudinary upload failed");
         }
 
-        // Load videos when page opens
-        loadVideos();
-    </script>
+        // Step 2: Save title + Cloudinary URL to your database
+        const saveRes = await fetch(`${BACKEND_URL}/save-army-video`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, url: cloudData.secure_url })
+        });
+
+        if (!saveRes.ok) throw new Error("Database save failed");
+
+        status.textContent = "Success! Video uploaded and saved.";
+        status.className = "status success";
+
+        // Reset form
+        document.getElementById("title").value = "";
+        fileInput.value = "";
+
+    } catch (err) {
+        status.textContent = "Error: " + err.message;
+        status.className = "status error";
+        console.error(err);
+    }
+}
+</script>
 </body>
 </html>
