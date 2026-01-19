@@ -1,91 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Army Training Videos | GP Soldiers Academy</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@600&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Army Training Videos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:,">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --accent: #10b981;
+            --light-bg: #f0f9ff;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --danger: #ef4444;
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--light-bg);
+            color: var(--text);
+            padding-bottom: 80px;
+        }
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.08);
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: white;
+            padding: 18px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .video-card {
+            background: white;
+            border-radius: 16px;
+            margin: 15px;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        }
+        .video-card video {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .video-info {
+            padding: 15px;
+        }
+        .video-title {
+            margin: 0 0 8px;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+        .video-date {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 0;
+            max-width: 480px;
+            margin: 0 auto;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        .nav-item {
+            text-align: center;
+            color: var(--primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .nav-item i { font-size: 1.8rem; display: block; margin-bottom: 4px; }
+        .nav-item.active { color: var(--accent); }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white min-h-screen">
-  <div class="container mx-auto px-4 py-10">
-    <div class="text-center mb-12">
-      <h1 class="text-4xl md:text-6xl font-bold font-orbitron bg-gradient-to-r from-green-400 via-yellow-400 to-green-400 bg-clip-text text-transparent">
-        GP SOLDIERS ACADEMY
-      </h1>
-      <p class="text-2xl mt-4 text-green-300">Army Training Video Lectures</p>
-      <p class="text-lg mt-3 text-gray-400">Watch | Learn | Crack SSB & Army Exams 🇮🇳</p>
+<body>
+    <div class="app-container">
+        <div class="header">Army Training Videos</div>
+        
+        <div id="videosContainer">
+            <div class="empty-state">
+                <i class="fas fa-video fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i>
+                <p>Loading training videos...</p>
+            </div>
+        </div>
     </div>
 
-    <div id="videoContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-      <!-- Videos loaded here -->
-      <div class="col-span-full text-center text-gray-400 text-xl animate-pulse">
-        Loading Army Training Videos...
-      </div>
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="window.location.href='army-training-videos.html'">
+            <i class="fas fa-video"></i>
+            <span>Videos</span>
+        </div>
+        <div class="nav-item active" onclick="window.location.href='student-exams.html'">
+            <i class="fas fa-file-alt"></i>
+            <span>Exams</span>
+        </div>
     </div>
-  </div>
 
-  <script>
-    async function loadVideos() {
-      try {
-        const res = await fetch('https://your-render-app.onrender.com/api/army-videos');
-        const videos = await res.json();
+    <script>
+        const API_URL = "https://academy-backend-e02j.onrender.com";
 
-        const container = document.getElementById('videoContainer');
-        container.innerHTML = '';
+        async function loadVideos() {
+            const container = document.getElementById('videosContainer');
+            
+            try {
+                const res = await fetch(`${API_URL}/api/army-videos`);
+                if (!res.ok) throw new Error("Failed to load videos");
+                
+                const videos = await res.json();
+                
+                if (videos.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-video fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i>
+                            <p>No training videos available yet</p>
+                            <p style="font-size:0.9rem;">Check back later for new Army preparation content</p>
+                        </div>`;
+                    return;
+                }
 
-        if (videos.length === 0) {
-          container.innerHTML = `
-            <div class="col-span-full text-center py-16">
-              <p class="text-2xl text-gray-400 mb-6">No training videos available yet...</p>
-              <p class="text-lg text-gray-600">Check back soon for new Army preparation content!</p>
-            </div>`;
-          return;
+                container.innerHTML = "";
+                videos.forEach(v => {
+                    const card = document.createElement('div');
+                    card.className = 'video-card';
+                    card.innerHTML = `
+                        <video controls>
+                            <source src="${v.url}" type="video/mp4">
+                            Your browser does not support video.
+                        </video>
+                        <div class="video-info">
+                            <h3 class="video-title">${v.title}</h3>
+                            <div class="video-date">
+                                Uploaded: ${new Date(v.uploadedAt).toLocaleDateString('en-IN')}
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                container.innerHTML = `
+                    <div class="empty-state" style="color:var(--danger);">
+                        <i class="fas fa-exclamation-triangle fa-3x" style="margin-bottom:15px;"></i>
+                        <p>Error loading videos</p>
+                        <p style="font-size:0.9rem;">${err.message}</p>
+                    </div>`;
+            }
         }
 
-        videos.forEach(video => {
-          const card = document.createElement('div');
-          card.className = "bg-gray-800/80 backdrop-blur-sm rounded-xl overflow-hidden shadow-2xl hover:shadow-green-900/50 transition-all duration-300 border border-green-900/50 hover:border-green-600 group";
-
-          card.innerHTML = `
-            <div class="relative">
-              <video 
-                class="w-full h-48 object-cover" 
-                controls 
-                poster="https://source.unsplash.com/random/300x200/?army,soldier,training">
-                <source src="${video.url}" type="video/mp4">
-                Your browser does not support video.
-              </video>
-              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div class="absolute bottom-3 left-3 bg-green-600/90 text-white px-3 py-1 rounded-full text-xs font-bold">
-                ${video.subject || 'Training'}
-              </div>
-            </div>
-            <div class="p-5">
-              <h3 class="text-lg font-semibold text-white line-clamp-2 group-hover:text-green-400 transition-colors">
-                ${video.title}
-              </h3>
-              <p class="text-sm text-gray-400 mt-2">
-                ${new Date(video.uploadedAt).toLocaleDateString('en-IN', { 
-                  day: 'numeric', month: 'short', year: 'numeric' 
-                })}
-              </p>
-            </div>
-          `;
-          container.appendChild(card);
-        });
-
-      } catch (err) {
-        document.getElementById('videoContainer').innerHTML = 
-          `<div class="col-span-full text-center py-16 text-red-400 text-xl">
-            Failed to load videos<br>
-            <span class="text-lg text-gray-500 mt-2">Please try again later</span>
-          </div>`;
-      }
-    }
-
-    // Load videos when page opens
-    loadVideos();
-  </script>
+        // Load videos when page opens
+        loadVideos();
+    </script>
 </body>
 </html>
