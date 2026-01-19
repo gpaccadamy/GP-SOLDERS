@@ -1,121 +1,256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - Upload Army Video | GP Soldiers Academy</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@600&display=swap" rel="stylesheet">
-</head>
-<body class="bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white min-h-screen">
-  <div class="container mx-auto px-4 py-12 max-w-3xl">
-    <div class="text-center mb-12">
-      <h1 class="text-4xl md:text-5xl font-bold font-orbitron bg-gradient-to-r from-green-400 to-yellow-400 bg-clip-text text-transparent">
-        ADMIN PANEL
-      </h1>
-      <p class="text-xl mt-3 text-green-300">Upload New Army Training Video</p>
-    </div>
-
-    <div class="bg-gray-800/70 backdrop-blur-md border border-green-800 rounded-2xl shadow-2xl p-8">
-      <form id="uploadForm" class="space-y-8">
-        <div>
-          <label class="block text-lg font-medium text-green-400 mb-3">Video Title</label>
-          <input 
-            type="text" 
-            id="title" 
-            required 
-            class="w-full px-5 py-4 bg-gray-700 border border-gray-600 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-500/30 outline-none transition" 
-            placeholder="Example: 5 Km Running Technique for Army"/>
-        </div>
-
-        <div>
-          <label class="block text-lg font-medium text-green-400 mb-3">Select Video File (MP4 recommended)</label>
-          <input 
-            type="file" 
-            id="videoFile" 
-            accept="video/*" 
-            required 
-            class="w-full px-4 py-4 bg-gray-700 border border-gray-600 rounded-lg file:mr-6 file:py-3 file:px-8 file:rounded-lg file:border-0 file:bg-green-700 file:text-white hover:file:bg-green-600 cursor-pointer transition"/>
-        </div>
-
-        <button 
-          type="submit" 
-          class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-5 rounded-xl text-xl shadow-xl transform hover:scale-[1.02] transition duration-300 flex items-center justify-center gap-3">
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            UPLOAD VIDEO
-        </button>
-      </form>
-
-      <div id="status" class="mt-8 text-center text-xl font-bold hidden"></div>
-
-      <div id="progressContainer" class="mt-6 hidden">
-        <div class="bg-gray-700 rounded-full h-3 overflow-hidden">
-          <div id="progressBar" class="h-full bg-gradient-to-r from-green-500 to-emerald-500 w-0 transition-all duration-300"></div>
-        </div>
-        <p class="text-center mt-3 text-gray-300" id="progressText">0%</p>
-      </div>
-    </div>
-
-    <div class="text-center mt-10">
-      <a href="army-video.html" class="text-green-400 hover:text-green-300 text-lg underline">
-        ← Back to Video Gallery
-      </a>
-    </div>
-  </div>
-
-  <script>
-    const form = document.getElementById('uploadForm');
-    const status = document.getElementById('status');
-    const progressContainer = document.getElementById('progressContainer');
-    const progressBar = document.getElementById('progressBar');
-    const progressText = document.getElementById('progressText');
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const title = document.getElementById('title').value.trim();
-      const videoFile = document.getElementById('videoFile').files[0];
-
-      if (!title || !videoFile) return alert("Please fill title and select video");
-
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('video', videoFile);
-
-      status.classList.add('hidden');
-      progressContainer.classList.remove('hidden');
-      progressBar.style.width = '0%';
-      progressText.textContent = 'Uploading...';
-
-      try {
-        const response = await fetch('https://your-render-app.onrender.com/upload-army-video', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (response.ok) {
-          status.textContent = "✓ Video Uploaded Successfully!";
-          status.className = "text-green-400";
-          status.classList.remove('hidden');
-          progressBar.style.width = '100%';
-          progressText.textContent = '100% Complete';
-          form.reset();
-          setTimeout(() => {
-            progressContainer.classList.add('hidden');
-            status.classList.add('hidden');
-          }, 4000);
-        } else {
-          throw new Error('Upload failed');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin - Upload Army Video</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:,">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --accent: #10b981;
+            --light-bg: #f0f9ff;
+            --card-bg: #ffffff;
+            --gradient-start: #e0f2fe;
+            --gradient-end: #fefce8;
+            --text: #1e293b;
+            --danger: #ef4444;
+            --warning: #f59e0b;
         }
-      } catch (err) {
-        status.textContent = "✗ Upload Failed. Try Again.";
-        status.className = "text-red-500";
-        status.classList.remove('hidden');
-        progressContainer.classList.add('hidden');
-      }
-    });
-  </script>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--light-bg);
+            color: var(--text);
+            padding-bottom: 80px;
+        }
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.08);
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: white;
+            padding: 18px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px 15px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        }
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            margin: 12px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: #f8fafc;
+        }
+        input[type="file"] {
+            margin: 15px 0;
+            padding: 16px;
+            background: #f8fafc;
+            border: 2px dashed #94a3b8;
+            border-radius: 12px;
+            width: 100%;
+            text-align: center;
+        }
+        .action-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin: 12px 0;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .upload-btn { background: var(--accent); }
+        .status {
+            font-style: italic;
+            color: #64748b;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .success { color: var(--accent) !important; font-weight: bold; }
+        .error { color: var(--danger) !important; }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 0;
+            max-width: 480px;
+            margin: 0 auto;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        .nav-item {
+            text-align: center;
+            color: var(--primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .nav-item i {
+            font-size: 1.8rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .nav-item.active {
+            color: var(--accent);
+        }
+        @media (max-width: 480px) {
+            .app-container { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">Admin Panel - Army Videos</div>
+        
+        <div class="card">
+            <h2>Upload New Training Video</h2>
+            <input type="text" id="videoTitle" placeholder="Video Title (e.g. 5 Km Run Technique)">
+            <input type="file" accept="video/*" id="videoFile">
+            <div class="status" id="uploadStatus">Select video to start</div>
+            <button class="action-btn upload-btn" onclick="uploadVideo()">
+                <i class="fas fa-cloud-upload-alt"></i> Upload Video
+            </button>
+        </div>
+
+        <div class="card">
+            <h2>Recently Uploaded Videos</h2>
+            <div id="recentVideos">Loading...</div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="window.location.href='admin-army-video-upload.html'">
+            <i class="fas fa-video"></i>
+            <span>Videos</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='admin-create-exam.html'">
+            <i class="fas fa-file-alt"></i>
+            <span>Exams</span>
+        </div>
+    </div>
+
+    <script>
+        const CLOUD_NAME = "djlkwjeb2";
+        const UPLOAD_PRESET = "academy_exam_preset"; // Reuse your existing preset (must allow video)
+        const API_URL = "https://academy-backend-e02j.onrender.com";
+
+        async function uploadVideo() {
+            const titleInput = document.getElementById('videoTitle');
+            const fileInput = document.getElementById('videoFile');
+            const status = document.getElementById('uploadStatus');
+
+            const title = titleInput.value.trim();
+            const file = fileInput.files[0];
+
+            if (!title) return alert("Please enter video title");
+            if (!file) return alert("Please select a video file");
+
+            status.textContent = "Uploading... (may take time for large files)";
+            status.className = "status";
+
+            const formData = new FormData();
+            formData.append("video", file);
+            formData.append("title", title);
+
+            try {
+                const res = await fetch(`${API_URL}/upload-army-video`, {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    status.textContent = "✓ Video uploaded successfully!";
+                    status.className = "status success";
+                    titleInput.value = "";
+                    fileInput.value = "";
+                    loadRecentVideos();
+                } else {
+                    throw new Error(data.error || "Upload failed");
+                }
+            } catch (err) {
+                status.textContent = "✗ " + err.message;
+                status.className = "status error";
+                console.error(err);
+            }
+        }
+
+        async function loadRecentVideos() {
+            const container = document.getElementById('recentVideos');
+            container.innerHTML = "Loading recent videos...";
+
+            try {
+                const res = await fetch(`${API_URL}/api/army-videos`);
+                if (!res.ok) throw new Error("Failed to load");
+                
+                const videos = await res.json();
+                
+                if (videos.length === 0) {
+                    container.innerHTML = "<p style='text-align:center; color:#64748b;'>No videos uploaded yet</p>";
+                    return;
+                }
+
+                container.innerHTML = "";
+                videos.forEach(v => {
+                    const div = document.createElement('div');
+                    div.style.margin = "15px 0";
+                    div.style.padding = "12px";
+                    div.style.background = "#f8fafc";
+                    div.style.borderRadius = "12px";
+                    div.innerHTML = `
+                        <strong>${v.title}</strong><br>
+                        <small style="color:#64748b;">
+                            ${new Date(v.uploadedAt).toLocaleString('en-IN')}
+                        </small>
+                        <br>
+                        <a href="${v.url}" target="_blank" style="color:var(--primary); font-size:0.9rem;">
+                            Watch Video →
+                        </a>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (err) {
+                container.innerHTML = `<p style="color:var(--danger);">Error: ${err.message}</p>`;
+            }
+        }
+
+        // Load on page open
+        loadRecentVideos();
+    </script>
 </body>
 </html>
