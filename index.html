@@ -5,6 +5,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
   <title>GP Soldier Academy – Best Defence Coaching</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Simple Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 16px;
+      text-align: center;
+      max-width: 340px;
+      width: 90%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    .modal-content h2 {
+      margin-bottom: 20px;
+      color: #fbbf24;
+    }
+    .contact-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 14px;
+      margin: 12px 0;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .call-btn {
+      background: linear-gradient(to right, #10b981, #34d399);
+      color: white;
+    }
+    .whatsapp-btn {
+      background: #25D366;
+      color: white;
+    }
+    .whatsapp-btn img {
+      width: 24px;
+      margin-right: 12px;
+    }
+    .close-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
@@ -30,8 +93,13 @@
       Where Dreams Turn into Stars! India's Premier Defence Coaching with Proven 92% Success Rate.
     </p>
     <div class="hero-buttons">
-      <button class="btn-gold">Join Elite Batch Now</button>
-      <button class="btn-outline">Book Free Demo Class</button>
+      <!-- Contact Us Button -->
+      <button class="btn-gold" onclick="openContactModal()">Contact Us</button>
+      
+      <!-- Download App Button -->
+      <a href="GPSOLDIERS.apk" download class="btn-outline">
+        Download GP Soldier App
+      </a>
     </div>
   </div>
 </section>
@@ -68,6 +136,39 @@
   <p>📍 Solapur By Pass, Parekh Resorts Colony, Near Roopa Devi PU College, Chintamani Parswanath Temple, Vijayapura - 586101, Karnataka</p>
   <p class="copy">© 2026 GP Soldier Academy – All Rights Reserved</p>
 </footer>
+
+<!-- CONTACT MODAL -->
+<div id="contactModal" class="modal">
+  <div class="modal-content">
+    <h2>Contact Us</h2>
+    <button class="contact-btn call-btn" onclick="window.location.href='tel:+919419575333'">
+      📞 Call Now
+    </button>
+    <button class="contact-btn whatsapp-btn" onclick="window.open('https://wa.me/919419575333?text=Hello%20GP%20Soldier%20Academy%2C%20I%20want%20to%20know%20more%20about%20your%20courses!', '_blank')">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
+      Text via WhatsApp
+    </button>
+    <button class="close-btn" onclick="closeContactModal()">Close</button>
+  </div>
+</div>
+
+<script>
+  function openContactModal() {
+    document.getElementById('contactModal').style.display = 'flex';
+  }
+
+  function closeContactModal() {
+    document.getElementById('contactModal').style.display = 'none';
+  }
+
+  // Close modal when clicking outside
+  window.onclick = function(event) {
+    const modal = document.getElementById('contactModal');
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  }
+</script>
 
 </body>
 </html>
