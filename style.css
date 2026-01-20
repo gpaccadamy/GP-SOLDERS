@@ -17,11 +17,13 @@ body {
   display: flex;
   align-items: center;
 }
+
 .mobile-nav .logo {
   display: flex;
   align-items: center;
   gap: 10px;
 }
+
 .mobile-nav .icon {
   width: 38px;
   height: 38px;
@@ -35,50 +37,64 @@ body {
 /* HERO */
 .hero {
   height: 70vh;
-  background: url("https://images.unsplash.com/photo-1678558563173-e4c279c4ea82")
-    center/cover no-repeat;
+  background: url("https://images.unsplash.com/photo-1678558563173-e4c279c4ea82") center/cover no-repeat;
   position: relative;
   padding: 20px;
 }
+
 .hero-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(#0008, #000d);
 }
+
 .hero-text {
   position: relative;
   z-index: 2;
   margin-top: 40px;
 }
+
 .tag {
   background: rgba(212,175,55,0.2);
   padding: 6px 14px;
   border-radius: 14px;
   font-size: 12px;
 }
+
 .hero h1 {
   margin-top: 16px;
   font-size: 32px;
   line-height: 1.2;
 }
+
 .highlight {
   color: #D4AF37;
 }
+
 .sub {
   font-size: 14px;
   color: #ccc;
   margin: 14px 0;
 }
+
+.hero-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
 .btn-gold {
   width: 100%;
-  margin: 8px 0;
   padding: 12px;
   background: linear-gradient(to right, #D4AF37, #F4D03F);
   border: none;
   border-radius: 6px;
   color: #000;
   font-weight: bold;
+  cursor: pointer;
 }
+
 .btn-outline {
   width: 100%;
   padding: 12px;
@@ -86,6 +102,7 @@ body {
   border: 2px solid #D4AF37;
   border-radius: 6px;
   color: #fff;
+  cursor: pointer;
 }
 
 /* STATS */
@@ -95,12 +112,14 @@ body {
   gap: 12px;
   padding: 20px;
 }
+
 .stats div {
   text-align: center;
   padding: 18px;
   background: #111;
   border-radius: 10px;
 }
+
 .stats h2 {
   color: #D4AF37;
 }
@@ -109,28 +128,43 @@ body {
 .section {
   padding: 20px;
 }
+
 .section h2 {
   text-align: center;
-  margin-bottom: 14px;
+  margin-bottom: 20px;
   font-size: 24px;
 }
 
-/* CARDS */
-.result-card,
-.faculty-card {
+/* RESULT CARDS */
+.results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.result-card {
   background: #111;
   padding: 16px;
   border-radius: 12px;
-  margin: 12px 0;
+  text-align: center;
 }
+
 .result-card img {
   width: 100%;
-  height: 170px;
+  height: 220px;
   border-radius: 10px;
   object-fit: cover;
+  margin-bottom: 12px;
 }
-.faculty-card span {
-  color: #D4AF37;
+
+.result-card h3 {
+  margin: 8px 0;
+  font-size: 1.4em;
+}
+
+.result-card p {
+  color: #ccc;
+  font-size: 1em;
 }
 
 /* FOOTER */
@@ -140,6 +174,7 @@ footer {
   font-size: 14px;
   color: #ccc;
 }
+
 .copy {
   margin-top: 10px;
   color: #666;
