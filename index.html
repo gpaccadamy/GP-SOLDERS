@@ -4,105 +4,411 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
   <title>GP Soldier Academy – Best Defence Coaching</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: #0f172a;           /* Original deep navy */
+      color: #f1f5f9;                /* Light text */
+      padding-top: 80px;
+      line-height: 1.6;
+    }
+
+    /* FIXED HEADER */
+    .fixed-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background: #0f172a;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      border-bottom: 1px solid #334155;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #f1f5f9;
+    }
+
+    .logo-img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      border-radius: 50%;
+      border: 3px solid #f59e0b;
+      background: #1e293b;
+      padding: 4px;
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 90vh;
+      background: url("https://images.unsplash.com/photo-1678558563173-e4c279c4ea82") center/cover no-repeat;
+      position: relative;
+      padding: 30px 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.9));
+    }
+
+    .hero-text {
+      position: relative;
+      z-index: 2;
+      max-width: 560px;
+    }
+
+    .tag {
+      background: rgba(249, 115, 22, 0.2);
+      color: #fed7aa;
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 900;
+      margin: 16px 0;
+      line-height: 1.1;
+    }
+
+    .highlight {
+      background: linear-gradient(to right, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .sub {
+      font-size: 1.15rem;
+      margin: 24px 0;
+      color: #cbd5e1;
+    }
+
+    .hero-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;                    /* Good spacing for 3 buttons */
+      margin-top: 32px;
+    }
+
+    .btn {
+      padding: 16px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      border-radius: 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: block;
+    }
+
+    .btn-gold {
+      background: linear-gradient(to right, #f59e0b, #fbbf24);
+      color: #0f172a;
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(245, 158, 11, 0.55);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #fbbf24;
+      border: 2.5px solid #f59e0b;
+    }
+
+    .btn-outline:hover {
+      background: rgba(245, 158, 11, 0.15);
+      transform: translateY(-3px);
+    }
+
+    /* STATS */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      padding: 40px 20px;
+    }
+
+    .stats div {
+      text-align: center;
+      padding: 24px 12px;
+      background: #1e293b;
+      border-radius: 16px;
+      border: 1px solid #334155;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .stats h2 {
+      color: #fbbf24;
+      font-size: 2.6rem;
+      font-weight: 900;
+    }
+
+    .stats p {
+      color: #94a3b8;
+      font-size: 1rem;
+      margin-top: 6px;
+    }
+
+    /* RESULTS */
+    .section {
+      padding: 50px 20px;
+    }
+
+    .section h2 {
+      text-align: center;
+      font-size: 2.2rem;
+      color: #e2e8f0;
+      margin-bottom: 40px;
+      font-weight: 800;
+    }
+
+    .results-container {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .result-card {
+      background: #1e293b;
+      padding: 24px;
+      border-radius: 18px;
+      text-align: center;
+      border: 1px solid #334155;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      transition: transform 0.3s;
+    }
+
+    .result-card:hover {
+      transform: translateY(-10px);
+    }
+
+    .result-card img {
+      width: 100%;
+      height: 340px;
+      object-fit: contain;
+      border-radius: 14px;
+      background: #111827;
+      margin-bottom: 16px;
+      border: 2px solid #334155;
+    }
+
+    .result-card h3 {
+      color: #fbbf24;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 10px 0;
+    }
+
+    .result-card p {
+      color: #cbd5e1;
+      font-size: 1.1rem;
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 50px 20px;
+      text-align: center;
+      background: #0f172a;
+      color: #94a3b8;
+      border-top: 1px solid #334155;
+    }
+
+    footer p {
+      margin: 10px 0;
+      font-size: 1.05rem;
+    }
+
+    .copy {
+      margin-top: 20px;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    /* CONTACT MODAL */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      padding: 34px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 380px;
+      width: 100%;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+      border: 1px solid #334155;
+    }
+
+    .modal-content h2 {
+      color: #fbbf24;
+      margin-bottom: 24px;
+      font-size: 1.8rem;
+    }
+
+    .contact-btn {
+      width: 100%;
+      padding: 16px;
+      margin: 12px 0;
+      border: none;
+      border-radius: 14px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: 0.3s;
+    }
+
+    .call-btn {
+      background: #10b981;
+      color: white;
+    }
+
+    .whatsapp-btn {
+      background: #25D366;
+      color: white;
+    }
+
+    .whatsapp-btn img {
+      width: 28px;
+    }
+
+    .close-btn {
+      background: #ef4444;
+      color: white;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
 
-<!-- FIXED NAV HEADER -->
-<header class="mobile-nav fixed-header">
-  <div class="logo">
-    <img src="frontend/gplogo.jpg" alt="GP Soldier Academy Logo" class="logo-img" />
-    <span>GP Soldier Academy</span>
-  </div>
-</header>
+  <!-- HEADER -->
+  <header class="fixed-header">
+    <div class="logo">
+      <img src="frontend/gplogo.jpg" alt="GP Soldier Academy" class="logo-img" />
+      <span>GP Soldier Academy</span>
+    </div>
+  </header>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-overlay"></div>
-  <div class="hero-text">
-    <p class="tag">India's Trusted Defence Coaching – 5000+ Success Stories!</p>
-    <h1>
-      Become an <span class="highlight">Officer</span><br />
-      Join the <span class="highlight">Elite</span> – NDA | CDS | AFCAT
-    </h1>
-    <p class="sub">
-      GP Soldier Academy (also searched as <strong>gpaccadamy</strong>, <strong>gptigers</strong>, <strong>gpsoildiers</strong>) – 
-      Where Dreams Turn into Stars! India's Premier Defence Coaching with Proven 92% Success Rate.
-    </p>
-    <div class="hero-buttons">
-      <button class="btn btn-gold" onclick="openContactModal()">Contact Us</button>
-      <a href="GPSOLDIERS.apk" download class="btn btn-outline">
-        Download GP Soldier App
-      </a>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-text">
+      <p class="tag">India's Most Trusted Defence Academy</p>
+      <h1>Become an <span class="highlight">Officer</span><br>Join the <span class="highlight">Elite</span></h1>
+      <p class="sub">
+        NDA │ CDS │ AFCAT │ SSB │ Army, Navy, Air Force<br>
+        <strong>gpaccadamy • gptigers • gpsoildiers</strong><br>
+        5000+ Successful Students • 95%+ Selection Rate
+      </p>
+
+      <div class="hero-buttons">
+        <button class="btn btn-gold" onclick="openContactModal()">Contact Us Now</button>
+        <a href="GPSOLDIERS.apk" download class="btn btn-outline">Download GP Soldier App</a>
+        <a href="video.html" class="btn btn-outline">Academy Videos</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats">
+    <div><h2>5000+</h2><p>Successful Students</p></div>
+    <div><h2>95%</h2><p>Selection Rate</p></div>
+    <div><h2>10+</h2><p>Years of Excellence</p></div>
+    <div><h2>100%</h2><p>Free Physical Training</p></div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="section">
+    <h2>Our Proud Achievers</h2>
+    <div class="results-container">
+      <div class="result-card">
+        <img src="gurrsirf.png" alt="Shri Guru Desai" />
+        <h3>SHRI GURU DESAI</h3>
+        <p>Retired Ex-Army Officer • Chief Mentor</p>
+      </div>
+      <div class="result-card">
+        <img src="PINTUSIR1.jpg" alt="Shri Pintu Rathod" />
+        <h3>SHRI PINTU RATHOD</h3>
+        <p>Retired Ex-Army • Physical & SSB Expert</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>📞 +91 94195 75333 | +91 94830 69504 | +91 94496 022738</p>
+    <p>📧 gpaccadamy@gmail.com</p>
+    <p>📍 Solapur By Pass, Near Roopa Devi PU College, Vijayapura, Karnataka</p>
+    <p class="copy">© 2026 GP Soldier Academy – All Rights Reserved</p>
+  </footer>
+
+  <!-- CONTACT MODAL -->
+  <div id="contactModal" class="modal">
+    <div class="modal-content">
+      <h2>Get in Touch</h2>
+      <button class="contact-btn call-btn" onclick="window.location.href='tel:+919419575333'">
+        Call Now
+      </button>
+      <button class="contact-btn whatsapp-btn" onclick="window.open('https://wa.me/919419575333?text=Namaste%21%20I%20want%20to%20join%20GP%20Soldier%20Academy%20%F0%9F%87%AE%F0%9F%87%B3')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
+        Chat on WhatsApp
+      </button>
+      <button class="contact-btn close-btn" onclick="closeContactModal()">Close</button>
     </div>
   </div>
-</section>
 
-<!-- STATS -->
-<section class="stats">
-  <div><h2>50+</h2><p>Successful Students</p></div>
-  <div><h2>95%</h2><p>Selection Rate</p></div>
-  <div><h2>10+</h2><p>Years of Excellence</p></div>
-  <div><h2>100%</h2><p>Free Physical Training</p></div>
-</section>
-
-<!-- RESULTS -->
-<section class="section">
-  <h2>EXPERTS</h2>
-  <div class="results-container">
-    <div class="result-card">
-      <img src="gurusirgp.png" alt="NDA Topper - GP Soldier Academy" />
-      <h3>SHRI GURU DESAI</h3>
-      <p>RETIRED EX ARMY</p>
-    </div>
-    <div class="result-card">
-      <img src="PINTUSIR1.jpg" alt="CDS Topper - GP Soldier Academy" />
-      <h3>SHRI PINTU Rathod</h3>
-      <p>RETIRED EX ARMY</p>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <p>📞 +91 94195 75333 | +91 94830 69504 | +91 94496 022738</p>
-  <p>📧 gpaccadamy@gmail.com</p>
-  <p>📍 Solapur By Pass, Parekh Resorts Colony, Near Roopa Devi PU College, Chintamani Parswanath Temple, Vijayapura - 586101, Karnataka</p>
-  <p class="copy">© 2026 GP Soldier Academy – All Rights Reserved</p>
-</footer>
-
-<!-- CONTACT MODAL -->
-<div id="contactModal" class="modal">
-  <div class="modal-content">
-    <h2>Contact Us</h2>
-    <button class="contact-btn call-btn" onclick="window.location.href='tel:+919419575333'">
-      📞 Call Now
-    </button>
-    <button class="contact-btn whatsapp-btn" onclick="window.open('https://wa.me/919419575333?text=Hello%20GP%20Soldier%20Academy%2C%20I%20want%20to%20know%20more%20about%20your%20courses!', '_blank')">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
-      Text via WhatsApp
-    </button>
-    <button class="close-btn" onclick="closeContactModal()">Close</button>
-  </div>
-</div>
-
-<script>
-  function openContactModal() {
-    document.getElementById('contactModal').style.display = 'flex';
-  }
-
-  function closeContactModal() {
-    document.getElementById('contactModal').style.display = 'none';
-  }
-
-  // Close modal when clicking outside
-  window.onclick = function(event) {
-    const modal = document.getElementById('contactModal');
-    if (event.target === modal) {
-      modal.style.display = 'none';
+  <script>
+    function openContactModal() {
+      document.getElementById('contactModal').style.display = 'flex';
     }
-  }
-</script>
+    function closeContactModal() {
+      document.getElementById('contactModal').style.display = 'none';
+    }
+    window.onclick = function(e) {
+      const modal = document.getElementById('contactModal');
+      if (e.target === modal) modal.style.display = 'none';
+    }
+  </script>
 
 </body>
 </html>
