@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GP Soldier Academy – Academy Videos</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: #0f172a;
+      color: #f1f5f9;
+      line-height: 1.6;
+    }
+
+    /* HEADER */
+    .fixed-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background: #0f172a;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      border-bottom: 1px solid #334155;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #f1f5f9;
+    }
+
+    .logo-img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      border-radius: 50%;
+      border: 3px solid #f59e0b;
+      background: #1e293b;
+      padding: 4px;
+    }
+
+    /* MAIN CONTENT */
+    .container {
+      padding: 100px 20px 60px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.4rem;
+      color: #fbbf24;
+      margin-bottom: 40px;
+      font-weight: 800;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 30px;
+    }
+
+    .video-card {
+      background: #1e293b;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #334155;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .video-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 35px rgba(245, 158, 11, 0.25);
+    }
+
+    .video-card video {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .video-info {
+      padding: 16px;
+      text-align: center;
+    }
+
+    .video-info h3 {
+      color: #fbbf24;
+      font-size: 1.35rem;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .video-info p {
+      color: #cbd5e1;
+      font-size: 1rem;
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 40px 20px;
+      text-align: center;
+      background: #0f172a;
+      color: #94a3b8;
+      border-top: 1px solid #334155;
+    }
+
+    footer p {
+      margin: 8px 0;
+    }
+
+    .copy {
+      margin-top: 20px;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; }
+      .video-card video { height: 200px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER (same as index.html) -->
+  <header class="fixed-header">
+    <div class="logo">
+      <img src="frontend/gplogo.jpg" alt="GP Soldier Academy" class="logo-img" />
+      <span>GP Soldier Academy</span>
+    </div>
+  </header>
+
+  <!-- MAIN VIDEO SECTION -->
+  <div class="container">
+    <h1>GP Soldier Academy Videos</h1>
+
+    <div class="video-grid">
+      <!-- Video 1 -->
+      <div class="video-card">
+        <video controls preload="metadata">
+          <source src="gpvideo1.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="video-info">
+          <h3>Video 1 – NDA Motivation & Training</h3>
+          <p>Watch our powerful NDA preparation sessions</p>
+        </div>
+      </div>
+
+      <!-- Video 2 -->
+      <div class="video-card">
+        <video controls preload="metadata">
+          <source src="gpvideo2.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="video-info">
+          <h3>Video 2 – CDS SSB Interview Tips</h3>
+          <p>Expert guidance for cracking SSB interviews</p>
+        </div>
+      </div>
+
+      <!-- Video 3 -->
+      <div class="video-card">
+        <video controls preload="metadata">
+          <source src="gpvideo3.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="video-info">
+          <h3>Video 3 – AFCAT Written Exam Strategy</h3>
+          <p>Complete strategy to score high in AFCAT</p>
+        </div>
+      </div>
+
+      <!-- Video 4 -->
+      <div class="video-card">
+        <video controls preload="metadata">
+          <source src="gpvideo4.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="video-info">
+          <h3>Video 4 – Physical Training Demo</h3>
+          <p>Our free physical training sessions in action</p>
+        </div>
+      </div>
+
+      <!-- Video 5 -->
+      <div class="video-card">
+        <video controls preload="metadata">
+          <source src="gpvideo5.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="video-info">
+          <h3>Video 5 – Success Stories & Motivation</h3>
+          <p>Hear from our selected students</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>📞 +91 94195 75333 | +91 94830 69504 | +91 94496 022738</p>
+    <p>📧 gpaccadamy@gmail.com</p>
+    <p>📍 Solapur By Pass, Near Roopa Devi PU College, Vijayapura, Karnataka</p>
+    <p class="copy">© 2026 GP Soldier Academy – All Rights Reserved</p>
+  </footer>
+
+</body>
+</html>
