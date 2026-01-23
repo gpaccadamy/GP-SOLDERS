@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Exam Results - Select Test</title>
+  <title>Exam Results - GP Soldiers Academy</title>
   <link rel="icon" href="data:,">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
@@ -79,8 +79,20 @@
     }
     button:hover { background: #1d4ed8; }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { padding: 14px; text-align: left; border-bottom: 1px solid #ddd; }
+    .table-wrapper {
+      overflow-x: auto;
+      margin-top: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
+    }
+    th, td {
+      padding: 14px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
     th { background: #667eea; color: white; }
     tr:hover { background: #f8f9fa; }
     .total-students { text-align: center; font-size: 18px; font-weight: bold; margin: 20px 0; color: #1e293b; }
@@ -138,10 +150,10 @@
         <button onclick="loadResults()">Show Results</button>
       </div>
 
-      <div id="examInfo" class="exam-info" style="display:none;"></div>
+      <div id="examInfo" class="exam-info hidden"></div>
       <div id="totalStudents" class="total-students"></div>
 
-      <div id="resultsContainer">
+      <div class="table-wrapper">
         <table id="resultsTable">
           <thead>
             <tr>
@@ -193,7 +205,6 @@
         return;
       }
 
-      // Get share button fresh every time
       const shareBtn = document.getElementById('shareBtn');
       shareBtn.classList.add('hidden');
 
@@ -203,13 +214,13 @@
         let results = await res.json();
 
         results = results.filter(r =>
-          r.examSubject?.toLowerCase() === subject &&
+          r.examSubject?.toLowerCase() === subject.toLowerCase() &&
           r.examTestNumber == parseInt(testNumber)
         );
 
         results.sort((a, b) => {
           if (b.correct !== a.correct) return b.correct - a.correct;
-          return new Date(a.submittedAt) - new Date(b.submittedAt);
+          return new Date(b.submittedAt) - new Date(a.submittedAt); // Latest first
         });
 
         const tbody = document.getElementById('resultsBody');
@@ -218,7 +229,7 @@
 
         const subjectName = subject.charAt(0).toUpperCase() + subject.slice(1);
         examInfoEl.textContent = `${subjectName} - Test ${testNumber}`;
-        examInfoEl.style.display = 'block';
+        examInfoEl.classList.remove('hidden');
 
         if (results.length === 0) {
           tbody.innerHTML = '<tr><td colspan="6" class="no-results">No students have attempted this exam yet.</td></tr>';
@@ -232,17 +243,17 @@
         tbody.innerHTML = results.map((r, index) => `
           <tr>
             <td class="rank">#${index + 1}</td>
-            <td>${r.studentName}</td>
+            <td>${r.studentName || 'Guest / Anonymous'}</td>
             <td>${r.studentRoll || 'N/A'}</td>
-            <td>${r.studentMobile}</td>
-            <td><strong>${r.correct} / ${r.total}</strong></td>
+            <td>${r.studentMobile || 'N/A'}</td>
+            <td><strong>${r.correct || 0} / ${r.total || 'N/A'}</strong></td>
             <td>${new Date(r.submittedAt).toLocaleString()}</td>
           </tr>
         `).join('');
 
       } catch (err) {
         document.getElementById('resultsBody').innerHTML =
-          `<tr><td colspan="6" class="no-results">Error: ${err.message}</td></tr>`;
+          `<tr><td colspan="6" class="no-results">Error loading results: ${err.message}</td></tr>`;
       }
     }
 
@@ -260,13 +271,13 @@
         });
 
         canvas.toBlob(async (blob) => {
-          const file = new File([blob], 'gp-soldiers-results.png', { type: 'image/png' });
+          const file = new File([blob], 'gp-soldiers-exam-results.png', { type: 'image/png' });
 
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({
               files: [file],
-              title: 'GP Soldiers Academy Results',
-              text: 'Check out the exam results!'
+              title: 'GP Soldiers Academy Exam Results',
+              text: 'Check out the latest results!'
             });
           } else {
             const url = canvas.toDataURL('image/png');
@@ -274,13 +285,13 @@
             a.href = url;
             a.download = 'gp-soldiers-results.png';
             a.click();
-            alert("Image saved! Share it on WhatsApp manually.");
+            alert("Image downloaded! Share it on WhatsApp manually.");
           }
           shareBtn.disabled = false;
           shareBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Share Results on WhatsApp';
         });
       } catch (err) {
-        alert("Failed to capture image. Try again.");
+        alert("Failed to generate image. Try again.");
         shareBtn.disabled = false;
         shareBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Share Results on WhatsApp';
       }
