@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GP Soldier Academy – Contact & Information</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --text: #e2e8f0;
+      --accent: #f59e0b;
+      --primary: #3b82f6;
+      --card: #1e293b;
+      --gradient: linear-gradient(135deg, #1e3a8a, #0f172a);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.6;
+    }
+
+    /* Header / Hero */
+    .hero {
+      background: var(--gradient);
+      padding: 100px 20px 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 30% 20%, rgba(245,158,11,0.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      max-width: 640px;
+      margin: 0 auto 32px;
+      opacity: 0.9;
+    }
+
+    /* Main Footer Content */
+    footer {
+      background: var(--card);
+      padding: 80px 20px 40px;
+      margin-top: auto;
+      border-top: 1px solid rgba(59,130,246,0.15);
+    }
+
+    .footer-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 48px;
+      text-align: center;
+    }
+
+    .footer-brand {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 16px;
+      letter-spacing: 1px;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      font-size: 1.15rem;
+      transition: all 0.3s ease;
+    }
+
+    .contact-item:hover {
+      color: var(--accent);
+      transform: translateY(-3px);
+    }
+
+    .contact-item i {
+      font-size: 1.6rem;
+      color: var(--primary);
+    }
+
+    .copy {
+      text-align: center;
+      margin-top: 60px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 2.3rem; }
+      .hero p  { font-size: 1.1rem; }
+      footer    { padding: 60px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <h1>GP Soldier Academy</h1>
+    <p>Train Hard • Fight Easy<br>Discipline • Dedication • Determination</p>
+  </section>
+
+  <!-- Footer Content -->
+  <footer>
+    <div class="footer-container">
+
+      <div>
+        <div class="footer-brand">Contact Us</div>
+
+        <div class="contact-item">
+          <i class="fas fa-phone-volume"></i>
+          <span>+91 94195 75333</span>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-phone-volume"></i>
+          <span>+91 94830 69504</span>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-phone-volume"></i>
+          <span>+91 94496 022738</span>
+        </div>
+
+        <div class="contact-item" style="margin-top: 28px;">
+          <i class="fas fa-envelope"></i>
+          <span>gpaccadamy@gmail.com</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-brand">Location</div>
+        <div class="contact-item" style="align-items: flex-start; text-align: left; justify-content: center;">
+          <i class="fas fa-map-marker-alt" style="font-size: 2rem; padding-top: 6px;"></i>
+          <span>Solapur By Pass,<br>Near Roopa Devi PU College,<br>Vijayapura, Karnataka</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="copy">
+      © 2026 GP Soldier Academy – All Rights Reserved<br>
+      <small>Strength Through Knowledge • JAI HIND 🇮🇳</small>
+    </div>
+  </footer>
+
+</body>
+</html>

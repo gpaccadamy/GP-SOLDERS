@@ -1,4 +1,6 @@
-<html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>GP Soldiers Academy</title>
@@ -13,14 +15,13 @@
       --gradient-start: #e0f2fe;
       --gradient-end: #fefce8;
       --text: #1e293b;
-      --disabled: #94a3b8;
     }
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       background: var(--light-bg);
       color: var(--text);
-      padding-bottom: 70px;
+      padding-bottom: 80px;
     }
     .app-container {
       max-width: 480px;
@@ -80,7 +81,7 @@
       height: 100%;
       background: no-repeat center/cover;
       opacity: 0;
-      transition: opacity 1s ease;
+      transition: opacity 1.2s ease-in-out;
     }
     .slide.active {
       opacity: 1;
@@ -114,13 +115,7 @@
       transition: all 0.3s ease;
       cursor: pointer;
     }
-    .feature-item.disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-    .feature-item:hover:not(.disabled) {
+    .feature-item:hover {
       transform: translateY(-8px) scale(1.05);
       box-shadow: 0 12px 25px rgba(0,0,0,0.15);
     }
@@ -161,15 +156,21 @@
       display: block;
       margin-bottom: 4px;
     }
-    /* Profile Popup */
+    /* Profile Popup (optional - kept for now) */
     .profile-popup {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      inset: 0;
       background: rgba(0,0,0,0.7);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .profile-popup.active {
+      display: flex;
+      opacity: 1;
     }
     .profile-card {
       background: white;
@@ -179,7 +180,7 @@
       max-width: 350px;
       text-align: center;
       box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-      transform: scale(0.9);
+      transform: scale(0.85);
       transition: transform 0.3s ease;
     }
     .profile-popup.active .profile-card {
@@ -221,6 +222,14 @@
     .close-popup:hover {
       background: #059669;
     }
+    @media (max-width: 400px) {
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .feature-item i {
+        font-size: 2.5rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -234,8 +243,8 @@
 
     <div class="banner">
       <div class="slides">
-        <div class="slide" style="background-image: url('gpposter1.jpg');"></div>
-        <div class="slide active" style="background-image: url('image3.jpg');"></div>
+        <div class="slide active" style="background-image: url('gpposter1.jpg');"></div>
+        <div class="slide" style="background-image: url('image3.jpg');"></div>
         <div class="slide" style="background-image: url('poster4.jpg');"></div>
         <div class="slide" style="background-image: url('poster5.jpg');"></div>
         <div class="slide" style="background-image: url('image1.jpg');"></div>
@@ -253,10 +262,6 @@
       <div class="feature-item" onclick="goToPage('exams.html')">
         <i class="fas fa-clipboard-check"></i>
         <span>Army Exam Test</span>
-      </div>
-      <div class="feature-item" onclick="goToPage('my-courses.html')">
-        <i class="fas fa-book-open"></i>
-        <span>My Courses</span>
       </div>
       <div class="feature-item" onclick="goToPage('army-exam-notes.html')">
         <i class="fas fa-sticky-note"></i>
@@ -282,80 +287,61 @@
       <i class="fas fa-home"></i>
       <span>Home</span>
     </div>
-    <div class="nav-item" onclick="goToPage('notes.html')">
-      <i class="fas fa-pen"></i>
-      <span>Write Notes</span>
+    <div class="nav-item" onclick="window.location.href='address.html'">
+      <i class="fas fa-map-marker-alt"></i>
+      <span>Address</span>
     </div>
-    <div class="nav-item" onclick="showProfilePopup()">
-      <i class="fas fa-user"></i>
-      <span id="profileLabel">shivu</span>
-    </div>
+   <div class="nav-item" onclick="window.location.href='info.html'">
+  <i class="fas fa-info-circle"></i>
+  <span>About Us</span>
+</div>
   </div>
 
-  <!-- Profile Popup -->
+  <!-- Profile Popup (shows guest message) -->
   <div id="profilePopup" class="profile-popup">
     <div class="profile-card">
       <div class="profile-logo">
         <img src="gplogo.jpg" alt="GP Soldiers Logo">
       </div>
-      <div class="profile-name" id="popupName">Guest Soldier</div>
-      <div class="profile-mobile" id="popupMobile">-</div>
+      <div class="profile-name">Guest Soldier</div>
+      <div class="profile-mobile">Welcome to GP Soldiers Academy</div>
       <button class="close-popup" onclick="closeProfilePopup()">Close</button>
     </div>
   </div>
 
   <script>
-    // Auto slideshow
+    // Banner slideshow
     let currentSlide = 0;
     const slides = document.querySelectorAll('.slide');
+    
     function nextSlide() {
       slides[currentSlide].classList.remove('active');
       currentSlide = (currentSlide + 1) % slides.length;
       slides[currentSlide].classList.add('active');
     }
-    setInterval(nextSlide, 3000);
+    
+    // Start with first slide visible
+    slides[0].classList.add('active');
+    setInterval(nextSlide, 4000);
 
-    // Check login status
-    const token = localStorage.getItem('token');
-    const studentName = localStorage.getItem('studentName') || "Profile";
-    const studentMobile = localStorage.getItem('studentMobile') || "-";
-
-    // Update profile label in bottom nav
-    document.getElementById('profileLabel').textContent = studentName;
-
-    // Disable all feature buttons if not logged in
-    if (!token) {
-      const featureItems = document.querySelectorAll('.feature-item');
-      featureItems.forEach(item => item.classList.add('disabled'));
-    }
-
-    // Function to handle page navigation
+    // Simple navigation
     function goToPage(page) {
-      if (!token) {
-        alert("Please login first to access this feature!");
-        window.location.href = 'login.html';
-      } else {
-        window.location.href = page;
-      }
+      window.location.href = page;
     }
 
-    // Show profile popup
+    // Profile popup (shows guest message)
     function showProfilePopup() {
-      if (!token) {
-        alert("Please login to view your profile");
-        window.location.href = 'login.html';
-        return;
-      }
-
-      document.getElementById('popupName').textContent = studentName;
-      document.getElementById('popupMobile').textContent = studentMobile;
-      document.getElementById('profilePopup').style.display = 'flex';
-      document.getElementById('profilePopup').classList.add('active');
+      const popup = document.getElementById('profilePopup');
+      popup.style.display = 'flex';
+      setTimeout(() => popup.classList.add('active'), 10);
     }
 
     function closeProfilePopup() {
-      document.getElementById('profilePopup').style.display = 'none';
-      document.getElementById('profilePopup').classList.remove('active');
+      const popup = document.getElementById('profilePopup');
+      popup.classList.remove('active');
+      setTimeout(() => {
+        popup.style.display = 'none';
+      }, 300);
     }
 
     // Close popup on outside click
@@ -365,6 +351,5 @@
       }
     });
   </script>
-
-
-</body></html>
+</body>
+</html>

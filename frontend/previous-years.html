@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Previous Years Papers – GP Soldiers Academy</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --accent: #f59e0b;
+      --dark: #0f172a;
+      --light: #f8fafc;
+      --card: #1e293b;
+      --text: #f1f5f9;
+      --gray: #94a3b8;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, var(--dark) 0%, #1e293b 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: linear-gradient(135deg, var(--primary), #3b82f6);
+      padding: 70px 16px 50px;
+      text-align: center;
+      position: relative;
+    }
+    .back-btn {
+      position: absolute;
+      left: 16px;
+      top: 20px;
+      color: white;
+      font-size: 1.8rem;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    .back-btn:hover {
+      transform: scale(1.2);
+    }
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: white;
+    }
+    .subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+    .coming-soon-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 48px 24px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+      border: 1px solid rgba(245,158,11,0.15);
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    .coming-soon-icon {
+      font-size: 5rem;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+    .coming-soon-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .coming-soon-text {
+      font-size: 1.15rem;
+      color: var(--gray);
+      margin-bottom: 32px;
+    }
+    .btn {
+      background: var(--primary);
+      color: white;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-3px);
+    }
+    footer {
+      background: var(--dark);
+      color: var(--gray);
+      text-align: center;
+      padding: 40px 16px;
+      font-size: 0.95rem;
+      border-top: 1px solid #334155;
+    }
+    footer .highlight {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    @media (max-width: 480px) {
+      h1 { font-size: 2rem; }
+      .coming-soon-title { font-size: 1.9rem; }
+      .coming-soon-icon { font-size: 4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="back-btn" onclick="window.location.href='index.html'">
+      <i class="fas fa-arrow-left"></i>
+    </div>
+    <h1>Previous Years Papers</h1>
+    <p class="subtitle">Practice real exam questions • Boost your preparation</p>
+  </header>
+
+  <main class="main">
+    <div class="coming-soon-card">
+      <div class="coming-soon-icon">
+        <i class="fas fa-clock-rotate-left"></i>
+      </div>
+      <h2 class="coming-soon-title">Coming Soon!</h2>
+      <p class="coming-soon-text">
+        We are preparing a powerful collection of previous year question papers for NDA, CDS, AFCAT, CRPF, BSF, Police exams and more.<br><br>
+        <strong>High-quality PDFs • Solved papers • Topic-wise analysis</strong><br>
+        Will be available very soon — stay tuned, Soldier!
+      </p>
+      <button class="btn" onclick="window.location.href='index.html'">
+        <i class="fas fa-home"></i> Back to Home
+      </button>
+    </div>
+  </main>
+
+  <footer>
+    <p>GP Soldiers Academy • Train Hard • Fight Easy</p>
+    <p class="highlight">JAI HIND 🇮🇳</p>
+    <p style="margin-top:20px;">© 2026 GP Soldier Academy – All Rights Reserved</p>
+  </footer>
+
+</body>
+</html>

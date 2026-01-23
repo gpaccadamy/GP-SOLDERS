@@ -49,16 +49,6 @@
       margin-left: 70px;
       font-size: 1.3rem;
     }
-    .back-btn {
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: white;
-      font-size: 1.5rem;
-      cursor: pointer;
-      z-index: 10;
-    }
     .main {
       margin-top: 80px;
       padding: 20px;
@@ -153,40 +143,58 @@
     }
     .hidden { display: none; }
 
-    /* Login Styles */
-    input[type="tel"], input[type="password"] {
+    /* Student Info Popup on Submit */
+    .student-info-popup {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    .student-info-card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    }
+    .student-info-card h3 {
+      text-align: center;
+      color: #2563eb;
+      margin-bottom: 20px;
+    }
+    .student-info-card input {
       width: 100%;
       padding: 14px;
       margin: 12px 0;
       border: 1px solid #cbd5e1;
       border-radius: 12px;
       font-size: 1.1rem;
-      background: #f8fafc;
-      box-sizing: border-box;
     }
-    .login-btn {
-      background: #2563eb;
+    .submit-final-btn {
+      background: #10b981;
       color: white;
       padding: 16px;
-      font-size: 1.2rem;
       border: none;
       border-radius: 12px;
       width: 100%;
+      font-size: 1.2rem;
       cursor: pointer;
-      margin-top: 10px;
-      font-weight: 600;
+      margin-top: 15px;
     }
-    .login-btn:hover {
-      background: #1d4ed8;
+    .submit-final-btn:hover {
+      background: #059669;
     }
     .error-msg {
       color: #dc2626;
       text-align: center;
-      padding: 12px;
+      padding: 10px;
       background: #fee2e2;
       border-radius: 8px;
-      margin: 15px 0;
-      font-weight: 500;
+      margin: 10px 0;
     }
   </style>
 </head>
@@ -199,17 +207,8 @@
   </header>
 
   <div class="main">
-    <!-- Login Section -->
-    <div id="loginSection" class="card">
-      <h2 style="text-align:center; color:#2563eb; margin-bottom:20px;">Student Login</h2>
-      <input type="tel" id="mobile" placeholder="Mobile Number" maxlength="10">
-      <input type="password" id="password" placeholder="Password">
-      <button class="login-btn" onclick="login()">Login</button>
-      <div id="loginError" class="error-msg hidden"></div>
-    </div>
-
     <!-- Exam List -->
-    <div id="examList" class="card hidden">
+    <div id="examList" class="card">
       <h2 style="text-align:center; color:#2563eb;">Available Exams</h2>
       <div id="examsContainer">Loading exams...</div>
     </div>
@@ -239,81 +238,35 @@
     </div>
   </div>
 
+  <!-- Student Info Popup (shown before final submit) -->
+  <div id="studentInfoPopup" class="student-info-popup">
+    <div class="student-info-card">
+      <h3>Enter Your Details</h3>
+      <input type="text" id="studentNameInput" placeholder="Your Name (e.g. Suraj Kumar)" required>
+      <input type="tel" id="studentMobileInput" placeholder="Mobile Number" maxlength="10" required>
+      <input type="text" id="studentRollInput" placeholder="Roll Number (optional)">
+      <div id="infoError" class="error-msg hidden"></div>
+      <button class="submit-final-btn" onclick="submitExamWithDetails()">Submit Exam</button>
+    </div>
+  </div>
+
   <script>
     const API_URL = "https://academy-backend-e02j.onrender.com";
 
     let currentExam = null;
     let studentAnswers = [];
     let revisionMarked = new Set();
-    let loggedInStudent = null;
-
-    // Helper to get auth headers
-    function getAuthHeaders() {
-      const token = localStorage.getItem('token');
-      return {
-        "Content-Type": "application/json",
-        "Authorization": token ? `Bearer ${token}` : ""
-      };
-    }
 
     window.onload = () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        // Auto-login if token exists (optional)
-        document.getElementById('loginSection').classList.add('hidden');
-        document.getElementById('examList').classList.remove('hidden');
-        loadAvailableExams();
-      } else {
-        document.getElementById('loginSection').style.display = 'block';
-      }
+      loadAvailableExams();
     };
-
-    async function login() {
-      const mobile = document.getElementById('mobile').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const errorEl = document.getElementById('loginError');
-
-      if (!mobile || !password) {
-        errorEl.textContent = "Please enter mobile number and password";
-        errorEl.classList.remove('hidden');
-        return;
-      }
-
-      try {
-        const res = await fetch(`${API_URL}/student-login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mobile, password })
-        });
-
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || "Invalid credentials");
-        }
-
-        const data = await res.json();
-        localStorage.setItem('token', data.token);
-        loggedInStudent = { name: data.name, mobile: data.mobile };
-
-        errorEl.classList.add('hidden');
-        document.getElementById('loginSection').classList.add('hidden');
-        document.getElementById('examList').classList.remove('hidden');
-        loadAvailableExams();
-
-      } catch (err) {
-        errorEl.textContent = err.message;
-        errorEl.classList.remove('hidden');
-      }
-    }
 
     async function loadAvailableExams() {
       const container = document.getElementById('examsContainer');
       container.innerHTML = "Loading exams...";
 
       try {
-        const res = await fetch(`${API_URL}/active-exams`, {
-          headers: getAuthHeaders()
-        });
+        const res = await fetch(`${API_URL}/active-exams`);
         if (!res.ok) throw new Error("Failed to load exams");
 
         const exams = await res.json();
@@ -333,15 +286,13 @@
         `).join('');
 
       } catch (err) {
-        container.innerHTML = `<div class="error-msg">Error: ${err.message}</div>`;
+        container.innerHTML = `<div style="color:#dc2626; text-align:center;">Error: ${err.message}</div>`;
       }
     }
 
     async function startExam(examId) {
       try {
-        const res = await fetch(`${API_URL}/exam/${examId}`, {
-          headers: getAuthHeaders()
-        });
+        const res = await fetch(`${API_URL}/exam/${examId}`);
         if (!res.ok) throw new Error("Exam not available");
 
         currentExam = await res.json();
@@ -383,10 +334,10 @@
         `).join('');
 
         updateStats();
-        startTimer(30 * 60);
+        startTimer(30 * 60); // 30 minutes
 
       } catch (err) {
-        alert("Error: " + err.message);
+        alert("Error loading exam: " + err.message);
       }
     }
 
@@ -424,27 +375,42 @@
 
         if (seconds <= 0) {
           clearInterval(interval);
-          alert("⏰ Time is over! Auto-submitting...");
-          document.getElementById('examForm').dispatchEvent(new Event('submit'));
+          alert("⏰ Time is over! Submitting your exam...");
+          showStudentInfoPopup(); // Show name/mobile/roll popup
         }
       }, 1000);
     }
 
-    document.getElementById('examForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // Show popup to collect student details before final submit
+    function showStudentInfoPopup() {
+      document.getElementById('studentInfoPopup').style.display = 'flex';
+    }
 
-      const unanswered = studentAnswers.filter(a => a === null).length;
-      if (unanswered > 0 && !confirm(`You have ${unanswered} unanswered questions.\nSubmit anyway?`)) {
+    async function submitExamWithDetails() {
+      const name = document.getElementById('studentNameInput').value.trim();
+      const mobile = document.getElementById('studentMobileInput').value.trim();
+      const roll = document.getElementById('studentRollInput').value.trim();
+      const errorEl = document.getElementById('infoError');
+
+      if (!name || !mobile) {
+        errorEl.textContent = "Name and Mobile Number are required!";
+        errorEl.classList.remove('hidden');
         return;
       }
+
+      errorEl.classList.add('hidden');
+      document.getElementById('studentInfoPopup').style.display = 'none';
 
       try {
         const res = await fetch(`${API_URL}/submit-exam`, {
           method: "POST",
-          headers: getAuthHeaders(),
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             examId: currentExam._id,
-            answers: studentAnswers
+            answers: studentAnswers,
+            studentName: name,
+            studentMobile: mobile,
+            studentRoll: roll || "N/A"
           })
         });
 
@@ -453,7 +419,7 @@
           throw new Error(err.error || "Submission failed");
         }
 
-        alert("🎉 Exam submitted successfully!\nThank you, " + loggedInStudent.name + "!");
+        alert(`🎉 Exam submitted successfully!\nThank you, ${name}!`);
         document.getElementById('examTaking').classList.add('hidden');
         document.getElementById('examList').classList.remove('hidden');
         loadAvailableExams();
@@ -461,6 +427,12 @@
       } catch (err) {
         alert("❌ Submission failed: " + err.message);
       }
+    }
+
+    // Intercept form submit → show student info popup instead of direct submit
+    document.getElementById('examForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      showStudentInfoPopup();
     });
   </script>
 </body>
