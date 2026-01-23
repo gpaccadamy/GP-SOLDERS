@@ -3,18 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Exam Portal - GP Soldiers Academy</title>
+  <title>Exam Results - GP Soldiers Academy</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f0f9ff;
-      margin: 0;
-      padding: 0;
-      color: #333;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      margin: 0; padding: 0; color: #333;
+      min-height: 100vh;
     }
-    .header {
+    header {
       background: linear-gradient(135deg, #2563eb, #3b82f6);
       color: white;
       padding: 18px;
@@ -25,7 +24,7 @@
       top: 0;
       width: 100%;
       z-index: 1000;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
       position: relative;
     }
     .logo {
@@ -49,153 +48,78 @@
       margin-left: 70px;
       font-size: 1.3rem;
     }
-    .main {
-      margin-top: 80px;
-      padding: 20px;
-      max-width: 480px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
+    .main { margin-top: 90px; padding: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
+    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    h2 { text-align: center; color: #333; margin-bottom: 20px; }
+
+    .filter-section {
+      display: flex;
+      gap: 15px;
       margin-bottom: 30px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-    .timer-bar {
-      background: #e0f2fe;
-      padding: 12px;
-      border-radius: 12px;
-      text-align: center;
-      font-weight: bold;
-      color: #2563eb;
-      margin-bottom: 20px;
-    }
-    .stats {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 20px;
-    }
-    .stat-item {
-      text-align: center;
-    }
-    .stat-number {
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: #2563eb;
-    }
-    .stat-label {
-      font-size: 0.9rem;
-      color: #64748b;
-    }
-    .question-container {
-      background: #f8fafc;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    .question-img {
-      max-width: 100%;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-    }
-    .options {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .option {
-      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       align-items: center;
-      padding: 16px;
-      background: white;
+    }
+    select, button {
+      padding: 14px 18px;
+      font-size: 16px;
       border-radius: 12px;
-      border: 2px solid #e2e8f0;
+      border: 1px solid #cbd5e1;
+      background: white;
+    }
+    select { min-width: 200px; }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
       cursor: pointer;
+      font-weight: 600;
       transition: 0.3s;
     }
-    .option:hover {
-      border-color: #2563eb;
-    }
-    .option input {
-      margin-right: 16px;
-      transform: scale(1.4);
-    }
-    .option span {
-      font-size: 1.1rem;
-    }
-    .submit-btn {
-      background: #10b981;
-      color: white;
-      padding: 16px;
-      font-size: 1.2rem;
-      border: none;
-      border-radius: 12px;
-      width: 100%;
-      cursor: pointer;
-      box-shadow: 0 6px 15px rgba(16,185,129,0.3);
+    button:hover { background: #1d4ed8; }
+
+    .table-wrapper {
+      overflow-x: auto;
       margin-top: 20px;
     }
-    .submit-btn:hover {
-      background: #059669;
-    }
-    .hidden { display: none; }
-
-    /* Student Info Popup on Submit */
-    .student-info-popup {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-    }
-    .student-info-card {
-      background: white;
-      border-radius: 16px;
-      padding: 30px;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-    }
-    .student-info-card h3 {
-      text-align: center;
-      color: #2563eb;
-      margin-bottom: 20px;
-    }
-    .student-info-card input {
+    table {
       width: 100%;
-      padding: 14px;
-      margin: 12px 0;
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      font-size: 1.1rem;
+      border-collapse: collapse;
+      min-width: 700px;
     }
-    .submit-final-btn {
-      background: #10b981;
+    th, td {
+      padding: 14px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th { background: #667eea; color: white; }
+    tr:hover { background: #f8f9fa; }
+    .total-students { text-align: center; font-size: 18px; font-weight: bold; margin: 20px 0; color: #1e293b; }
+    .exam-info { text-align: center; font-size: 20px; font-weight: bold; color: #2563eb; margin-bottom: 10px; }
+    .no-results { text-align: center; color: #d32f2f; font-size: 18px; padding: 40px; }
+    .initial-msg { text-align: center; color: #64748b; font-size: 18px; padding: 40px; }
+    .rank { font-weight: bold; color: #2563eb; }
+
+    .share-btn {
+      display: block;
+      margin: 30px auto 10px;
+      padding: 16px 32px;
+      background: #25D366;
       color: white;
-      padding: 16px;
       border: none;
       border-radius: 12px;
-      width: 100%;
-      font-size: 1.2rem;
+      font-size: 18px;
+      font-weight: 600;
       cursor: pointer;
-      margin-top: 15px;
+      box-shadow: 0 6px 15px rgba(37,211,102,0.4);
     }
-    .submit-final-btn:hover {
-      background: #059669;
+    .share-btn:hover { background: #128C7E; }
+    .share-btn:disabled {
+      background: #999;
+      cursor: not-allowed;
     }
-    .error-msg {
-      color: #dc2626;
-      text-align: center;
-      padding: 10px;
-      background: #fee2e2;
-      border-radius: 8px;
-      margin: 10px 0;
-    }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -203,237 +127,177 @@
     <div class="logo">
       <img src="gplogo.jpg" alt="GP Soldiers Logo">
     </div>
-    <div class="header-title">Student Exam Portal</div>
+    <div class="header-title">Exam Results</div>
   </header>
 
   <div class="main">
-    <!-- Exam List -->
-    <div id="examList" class="card">
-      <h2 style="text-align:center; color:#2563eb;">Available Exams</h2>
-      <div id="examsContainer">Loading exams...</div>
-    </div>
+    <div class="card">
+      <h2>Select Exam to View Results</h2>
 
-    <!-- Exam Taking -->
-    <div id="examTaking" class="card hidden">
-      <h2 id="examTitleDisplay" style="text-align:center; color:#2563eb;"></h2>
-      <div class="timer-bar" id="timer">Time Remaining: --</div>
-      <div class="stats">
-        <div class="stat-item">
-          <div class="stat-number" id="attempted">0</div>
-          <div class="stat-label">Attempted</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number" id="notAttempted">0</div>
-          <div class="stat-label">Not Attempted</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number" id="revision">0</div>
-          <div class="stat-label">Revision</div>
-        </div>
+      <div class="filter-section">
+        <select id="subjectSelect">
+          <option value="">Select Subject</option>
+          <option value="english">English</option>
+          <option value="kannada">Kannada</option>
+          <option value="gk">GK</option>
+          <option value="maths">Maths</option>
+        </select>
+
+        <select id="testNumberSelect">
+          <option value="">Select Test Number</option>
+        </select>
+
+        <button onclick="loadResults()">Show Results</button>
       </div>
-      <form id="examForm">
-        <div id="questionsContainer"></div>
-        <button type="submit" class="submit-btn">Submit Exam</button>
-      </form>
-    </div>
-  </div>
 
-  <!-- Student Info Popup (shown before final submit) -->
-  <div id="studentInfoPopup" class="student-info-popup">
-    <div class="student-info-card">
-      <h3>Enter Your Details</h3>
-      <input type="text" id="studentNameInput" placeholder="Your Name (e.g. Suraj Kumar)" required>
-      <input type="tel" id="studentMobileInput" placeholder="Mobile Number" maxlength="10" required>
-      <input type="text" id="studentRollInput" placeholder="Roll Number (optional)">
-      <div id="infoError" class="error-msg hidden"></div>
-      <button class="submit-final-btn" onclick="submitExamWithDetails()">Submit Exam</button>
+      <div id="examInfo" class="exam-info hidden"></div>
+      <div id="totalStudents" class="total-students"></div>
+
+      <div class="table-wrapper">
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Student Name</th>
+              <th>Roll Number</th>
+              <th>Mobile</th>
+              <th>Score (Correct/Total)</th>
+              <th>Submitted At</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody">
+            <tr>
+              <td colspan="6" class="initial-msg">
+                Please select a Subject and Test Number, then click "Show Results"
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Share Button -->
+      <button id="shareBtn" class="share-btn hidden" onclick="shareResults()">
+        <i class="fab fa-whatsapp"></i> Share Results on WhatsApp
+      </button>
     </div>
   </div>
 
   <script>
     const API_URL = "https://academy-backend-e02j.onrender.com";
 
-    let currentExam = null;
-    let studentAnswers = [];
-    let revisionMarked = new Set();
-
-    window.onload = () => {
-      loadAvailableExams();
-    };
-
-    async function loadAvailableExams() {
-      const container = document.getElementById('examsContainer');
-      container.innerHTML = "Loading exams...";
-
-      try {
-        const res = await fetch(`${API_URL}/active-exams`);
-        if (!res.ok) throw new Error("Failed to load exams");
-
-        const exams = await res.json();
-
-        if (exams.length === 0) {
-          container.innerHTML = "<p style='text-align:center; color:#64748b;'>No active exams right now.</p>";
-          return;
-        }
-
-        container.innerHTML = exams.map(exam => `
-          <div style="background:#f8fafc; padding:20px; border-radius:16px; text-align:center; margin-bottom:16px; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.05);" onclick="startExam('${exam._id}')">
-            <h3 style="margin:0 0 10px 0; color:#2563eb;">${exam.title}</h3>
-            <p style="margin:5px 0;"><strong>${(exam.subject || '').toUpperCase()} - Test ${exam.testNumber || 'N/A'}</strong></p>
-            <p style="margin:5px 0;">${exam.totalQuestions} Questions</p>
-            <p style="color:#10b981; font-weight:bold; margin-top:12px;">Tap to Start →</p>
-          </div>
-        `).join('');
-
-      } catch (err) {
-        container.innerHTML = `<div style="color:#dc2626; text-align:center;">Error: ${err.message}</div>`;
+    function populateTestNumbers() {
+      const select = document.getElementById('testNumberSelect');
+      select.innerHTML = '<option value="">Select Test Number</option>';
+      for (let i = 1; i <= 50; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Test ${i}`;
+        select.appendChild(opt);
       }
     }
 
-    async function startExam(examId) {
-      try {
-        const res = await fetch(`${API_URL}/exam/${examId}`);
-        if (!res.ok) throw new Error("Exam not available");
+    async function loadResults() {
+      const subject = document.getElementById('subjectSelect').value;
+      const testNumber = document.getElementById('testNumberSelect').value;
 
-        currentExam = await res.json();
-        studentAnswers = new Array(currentExam.totalQuestions).fill(null);
-        revisionMarked = new Set();
-
-        document.getElementById('examList').classList.add('hidden');
-        document.getElementById('examTaking').classList.remove('hidden');
-        document.getElementById('examTitleDisplay').textContent = currentExam.title;
-
-        const qContainer = document.getElementById('questionsContainer');
-        qContainer.innerHTML = currentExam.questions.map((q, i) => `
-          <div class="question-container">
-            <img src="${q.imageUrl}" alt="Question ${i+1}" class="question-img" loading="lazy">
-            <div class="options">
-              <label class="option">
-                <input type="radio" name="q${i}" value="a" onchange="saveAnswer(${i}, 'a')">
-                <span>A</span>
-              </label>
-              <label class="option">
-                <input type="radio" name="q${i}" value="b" onchange="saveAnswer(${i}, 'b')">
-                <span>B</span>
-              </label>
-              <label class="option">
-                <input type="radio" name="q${i}" value="c" onchange="saveAnswer(${i}, 'c')">
-                <span>C</span>
-              </label>
-              <label class="option">
-                <input type="radio" name="q${i}" value="d" onchange="saveAnswer(${i}, 'd')">
-                <span>D</span>
-              </label>
-            </div>
-            <div style="text-align:right; margin-top:10px;">
-              <button type="button" onclick="markRevision(${i})" style="background:none; border:none; color:#f59e0b; font-size:1.2rem; cursor:pointer;">
-                <i class="fas fa-flag"></i> Mark for Revision
-              </button>
-            </div>
-          </div>
-        `).join('');
-
-        updateStats();
-        startTimer(30 * 60); // 30 minutes
-
-      } catch (err) {
-        alert("Error loading exam: " + err.message);
-      }
-    }
-
-    function saveAnswer(index, ans) {
-      studentAnswers[index] = ans;
-      updateStats();
-    }
-
-    function markRevision(index) {
-      revisionMarked.has(index) ? revisionMarked.delete(index) : revisionMarked.add(index);
-      updateStats();
-    }
-
-    function updateStats() {
-      const attempted = studentAnswers.filter(a => a !== null).length;
-      const total = currentExam?.totalQuestions || 0;
-      document.getElementById('attempted').textContent = attempted;
-      document.getElementById('notAttempted').textContent = total - attempted;
-      document.getElementById('revision').textContent = revisionMarked.size;
-    }
-
-    function startTimer(secondsTotal) {
-      let seconds = secondsTotal;
-      const timerEl = document.getElementById('timer');
-      const interval = setInterval(() => {
-        seconds--;
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        timerEl.textContent = `Time Remaining: ${mins}:${secs < 10 ? '0' + secs : secs}`;
-
-        if (seconds <= 300) {
-          timerEl.style.color = "#ef4444";
-          timerEl.style.fontWeight = "bold";
-        }
-
-        if (seconds <= 0) {
-          clearInterval(interval);
-          alert("⏰ Time is over! Submitting your exam...");
-          showStudentInfoPopup(); // Show name/mobile/roll popup
-        }
-      }, 1000);
-    }
-
-    // Show popup to collect student details before final submit
-    function showStudentInfoPopup() {
-      document.getElementById('studentInfoPopup').style.display = 'flex';
-    }
-
-    async function submitExamWithDetails() {
-      const name = document.getElementById('studentNameInput').value.trim();
-      const mobile = document.getElementById('studentMobileInput').value.trim();
-      const roll = document.getElementById('studentRollInput').value.trim();
-      const errorEl = document.getElementById('infoError');
-
-      if (!name || !mobile) {
-        errorEl.textContent = "Name and Mobile Number are required!";
-        errorEl.classList.remove('hidden');
+      if (!subject || !testNumber) {
+        alert("Please select both Subject and Test Number");
         return;
       }
 
-      errorEl.classList.add('hidden');
-      document.getElementById('studentInfoPopup').style.display = 'none';
+      const shareBtn = document.getElementById('shareBtn');
+      shareBtn.classList.add('hidden');
 
       try {
-        const res = await fetch(`${API_URL}/submit-exam`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            examId: currentExam._id,
-            answers: studentAnswers,
-            studentName: name,
-            studentMobile: mobile,
-            studentRoll: roll || "N/A"
-          })
+        const res = await fetch(`${API_URL}/results`);
+        if (!res.ok) throw new Error("Failed to fetch results");
+        let results = await res.json();
+
+        results = results.filter(r =>
+          r.examSubject?.toLowerCase() === subject.toLowerCase() &&
+          r.examTestNumber == parseInt(testNumber)
+        );
+
+        results.sort((a, b) => {
+          if (b.correct !== a.correct) return b.correct - a.correct;
+          return new Date(b.submittedAt) - new Date(a.submittedAt); // Latest first
         });
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || "Submission failed");
+        const tbody = document.getElementById('resultsBody');
+        const totalEl = document.getElementById('totalStudents');
+        const examInfoEl = document.getElementById('examInfo');
+
+        const subjectName = subject.charAt(0).toUpperCase() + subject.slice(1);
+        examInfoEl.textContent = `${subjectName} - Test ${testNumber}`;
+        examInfoEl.classList.remove('hidden');
+
+        if (results.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="no-results">No students have attempted this exam yet.</td></tr>';
+          totalEl.textContent = '';
+          return;
         }
 
-        alert(`🎉 Exam submitted successfully!\nThank you, ${name}!`);
-        document.getElementById('examTaking').classList.add('hidden');
-        document.getElementById('examList').classList.remove('hidden');
-        loadAvailableExams();
+        totalEl.textContent = `Total Students Attempted: ${results.length}`;
+        shareBtn.classList.remove('hidden');
+
+        tbody.innerHTML = results.map((r, index) => `
+          <tr>
+            <td class="rank">#${index + 1}</td>
+            <td>${r.studentName || 'Guest / Anonymous'}</td>
+            <td>${r.studentRoll || 'N/A'}</td>
+            <td>${r.studentMobile || 'N/A'}</td>
+            <td><strong>${r.correct || 0} / ${r.total || 'N/A'}</strong></td>
+            <td>${new Date(r.submittedAt).toLocaleString()}</td>
+          </tr>
+        `).join('');
 
       } catch (err) {
-        alert("❌ Submission failed: " + err.message);
+        document.getElementById('resultsBody').innerHTML =
+          `<tr><td colspan="6" class="no-results">Error loading results: ${err.message}</td></tr>`;
       }
     }
 
-    // Intercept form submit → show student info popup instead of direct submit
-    document.getElementById('examForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      showStudentInfoPopup();
-    });
+    async function shareResults() {
+      const container = document.getElementById('resultsContainer');
+      const shareBtn = document.getElementById('shareBtn');
+      shareBtn.disabled = true;
+      shareBtn.innerHTML = "Generating image...";
+
+      try {
+        const canvas = await html2canvas(container, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff'
+        });
+
+        canvas.toBlob(async (blob) => {
+          const file = new File([blob], 'gp-soldiers-exam-results.png', { type: 'image/png' });
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'GP Soldiers Academy Exam Results',
+              text: 'Check out the latest results!'
+            });
+          } else {
+            const url = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'gp-soldiers-results.png';
+            a.click();
+            alert("Image downloaded! Share it on WhatsApp manually.");
+          }
+          shareBtn.disabled = false;
+          shareBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Share Results on WhatsApp';
+        });
+      } catch (err) {
+        alert("Failed to generate image. Try again.");
+        shareBtn.disabled = false;
+        shareBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Share Results on WhatsApp';
+      }
+    }
+
+    populateTestNumbers();
   </script>
 </body>
 </html>
