@@ -1,213 +1,225 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Army Training Videos | GP Soldiers Academy</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="data:,">
-    <style>
-        :root {
-            --primary: #2563eb;
-            --accent: #10b981;
-            --light-bg: #f0f9ff;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-        }
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: var(--light-bg);
-            color: var(--text);
-            padding-bottom: 90px;
-        }
-        .app-container {
-            max-width: 900px; /* wider on big screens */
-            margin: 0 auto;
-            background: var(--card-bg);
-            min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0,0,0,0.08);
-        }
-        .header {
-            background: linear-gradient(135deg, var(--primary), #3b82f6);
-            color: white;
-            padding: 18px;
-            text-align: center;
-            font-size: 1.4rem;
-            font-weight: bold;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .videos-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            padding: 15px;
-        }
-        @media (min-width: 600px) {
-            .videos-grid {
-                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            }
-        }
-        .video-card {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        .video-card:hover {
-            transform: translateY(-5px);
-        }
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            padding-top: 56.25%; /* 16:9 aspect ratio */
-            background: #000;
-        }
-        .video-wrapper video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .video-info {
-            padding: 15px;
-        }
-        .video-title {
-            margin: 0 0 8px;
-            font-size: 1.1rem;
-            color: var(--primary);
-            font-weight: 600;
-        }
-        .video-date {
-            color: #64748b;
-            font-size: 0.85rem;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #64748b;
-        }
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 12px 0;
-            max-width: 900px;
-            margin: 0 auto;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
-            z-index: 100;
-        }
-        .nav-item {
-            text-align: center;
-            color: var(--primary);
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-        .nav-item i {
-            font-size: 1.8rem;
-            display: block;
-            margin-bottom: 4px;
-        }
-        .nav-item.active {
-            color: var(--accent);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GP Soldier Academy – Academy Videos</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: #0f172a;
+      color: #f1f5f9;
+      line-height: 1.6;
+    }
+
+    /* HEADER */
+    .fixed-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background: #0f172a;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      border-bottom: 1px solid #334155;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #f1f5f9;
+    }
+
+    .logo-img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      border-radius: 50%;
+      border: 3px solid #f59e0b;
+      background: #1e293b;
+      padding: 4px;
+    }
+
+    /* MAIN CONTENT */
+    .container {
+      padding: 100px 20px 60px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.4rem;
+      color: #fbbf24;
+      margin-bottom: 40px;
+      font-weight: 800;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 30px;
+    }
+
+    .video-card {
+      background: #1e293b;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #334155;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .video-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 35px rgba(245, 158, 11, 0.25);
+    }
+
+    .video-card video {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .video-info {
+      padding: 16px;
+      text-align: center;
+    }
+
+    .video-info h3 {
+      color: #fbbf24;
+      font-size: 1.35rem;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .video-info p {
+      color: #cbd5e1;
+      font-size: 1rem;
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 40px 20px;
+      text-align: center;
+      background: #0f172a;
+      color: #94a3b8;
+      border-top: 1px solid #334155;
+    }
+
+    footer p {
+      margin: 8px 0;
+    }
+
+    .copy {
+      margin-top: 20px;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; }
+      .video-card video { height: 200px; }
+    }
+  </style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="header">Army Training Videos</div>
-        
-        <div class="videos-grid" id="videosContainer">
-            <!-- Videos will be added here -->
-        </div>
+
+  <!-- HEADER (same as index.html) -->
+  <header class="fixed-header">
+    <div class="logo">
+      <img src="frontend/gplogo.jpg" alt="GP Soldier Academy" class="logo-img" />
+      <span>GP Soldier Academy</span>
     </div>
+  </header>
 
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="window.location.href='army-training-videos.html'">
-            <i class="fas fa-video"></i>
-            <span>Videos</span>
+  <!-- MAIN VIDEO SECTION -->
+  <div class="container">
+    <h1>GP Soldier Academy Videos</h1>
+
+    <div class="video-grid">
+      <!-- Video 1 -->
+      <div class="video-card">
+        <video controls preload="metadata">
+          <source src="gpvideo1.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="video-info">
+          <h3>Video 1 – NDA Motivation & Training</h3>
+          <p>Watch our powerful NDA preparation sessions</p>
         </div>
-        <div class="nav-item" onclick="window.location.href='student-exams.html'">
-            <i class="fas fa-file-alt"></i>
-            <span>Exams</span>
+      </div>
+
+      <!-- Video 2 -->
+      <div class="video-card">
+        <video controls preload="metadata">
+          <source src="gpvideo2.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="video-info">
+          <h3>Video 2 – CDS SSB Interview Tips</h3>
+          <p>Expert guidance for cracking SSB interviews</p>
         </div>
+      </div>
+
+      <!-- Video 3 -->
+      <div class="video-card">
+        <video controls preload="metadata">
+          <source src="gpvideo3.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="video-info">
+          <h3>Video 3 – AFCAT Written Exam Strategy</h3>
+          <p>Our free physical training sessions in action</p>
+        </div>
+      </div>
+
+      <!-- Video 4 -->
+      <div class="video-card">
+        <video controls preload="metadata">
+          <source src="gpvideo4.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="video-info">
+          <h3>Video 4 – Physical Training Demo</h3> //
+          <p>Complete strategy to score high</p>
+        </div>
+      </div>
+
+      <!-- Video 5 -->
+      <div class="video-card">
+        <video controls preload="metadata">
+          <source src="gpvideo5.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="video-info">
+          <h3>Video 5 – Success Stories & Motivation</h3>
+          <p>Hear from our selected students</p>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        const API_URL = "https://academy-backend-e02j.onrender.com";
+  <!-- FOOTER -->
+  <footer>
+    <p>📞 +91 94195 75333 | +91 94830 69504 | +91 94496 022738</p>
+    <p>📧 gpaccadamy@gmail.com</p>
+    <p>📍 Solapur By Pass, Near Roopa Devi PU College, Vijayapura, Karnataka</p>
+    <p class="copy">© 2026 GP Soldier Academy – All Rights Reserved</p>
+  </footer>
 
-        async function loadVideos() {
-            const container = document.getElementById('videosContainer');
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-spinner fa-spin fa-3x" style="color:var(--primary); margin-bottom:15px;"></i>
-                    <p>Loading training videos...</p>
-                </div>`;
-
-            try {
-                const res = await fetch(`${API_URL}/api/army-videos`);
-                if (!res.ok) throw new Error("Failed to load videos");
-                
-                const videos = await res.json();
-                
-                if (videos.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-video fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i>
-                            <p>No training videos available yet</p>
-                            <p style="font-size:0.9rem;">New Army preparation videos coming soon!</p>
-                        </div>`;
-                    return;
-                }
-
-                container.innerHTML = "";
-                videos.forEach(v => {
-                    const card = document.createElement('div');
-                    card.className = 'video-card';
-                    card.innerHTML = `
-                        <div class="video-wrapper">
-                            <video controls preload="metadata" poster="https://via.placeholder.com/640x360/000/fff?text=Army+Training">
-                                <source src="${v.url}" type="video/mp4">
-                                Your browser does not support video.
-                            </video>
-                        </div>
-                        <div class="video-info">
-                            <h3 class="video-title">${v.title}</h3>
-                            <div class="video-date">
-                                Uploaded: ${new Date(v.uploadedAt).toLocaleDateString('en-IN', {
-                                    day: 'numeric',
-                                    month: 'short',
-                                    year: 'numeric'
-                                })}
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            } catch (err) {
-                container.innerHTML = `
-                    <div class="empty-state" style="color:#ef4444;">
-                        <i class="fas fa-exclamation-triangle fa-3x" style="margin-bottom:15px;"></i>
-                        <p>Error loading videos</p>
-                        <p style="font-size:0.9rem;">${err.message}</p>
-                    </div>`;
-            }
-        }
-
-        // Load videos when page opens
-        loadVideos();
-    </script>
 </body>
 </html>
