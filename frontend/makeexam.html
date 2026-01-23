@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin - Create Exam</title>
+    <title>Admin - Create Exam | GP Soldiers Academy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="data:,">
     <style>
@@ -17,94 +17,95 @@
             --text: #1e293b;
             --danger: #ef4444;
             --warning: #f59e0b;
+            --gray: #64748b;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--light-bg);
             color: var(--text);
-            padding-bottom: 80px;
+            min-height: 100vh;
+            padding-bottom: 90px;
         }
         .app-container {
-            max-width: 480px;
+            max-width: 1200px;
             margin: 0 auto;
             background: var(--card-bg);
             min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0,0,0,0.08);
         }
         .header {
             background: linear-gradient(135deg, var(--primary), #3b82f6);
             color: white;
-            padding: 18px;
+            padding: 16px;
             text-align: center;
-            font-size: 1.3rem;
+            font-size: clamp(1.2rem, 5vw, 1.5rem);
             font-weight: bold;
             position: sticky;
             top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .container {
+            padding: 16px;
         }
         .card {
             background: var(--card-bg);
             border-radius: 16px;
-            padding: 24px;
-            margin: 20px 15px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+            padding: 20px;
+            margin: 16px 0;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
         }
-        .card h2 {
-            margin-top: 0;
+        h2 {
             color: var(--primary);
-            font-size: 1.4rem;
+            font-size: clamp(1.4rem, 5vw, 1.8rem);
             margin-bottom: 20px;
             text-align: center;
         }
-        input[type="text"], select {
+        input[type="text"], select, input[type="file"] {
             width: 100%;
             padding: 14px;
             margin: 12px 0;
-            border: 1px solid #cbd5e1;
+            border: 1px solid #d1d5db;
             border-radius: 12px;
             font-size: 1rem;
-            background: #f8fafc;
+            background: #f9fafb;
+        }
+        input[type="file"] {
+            padding: 12px;
+            background: #f1f5f9;
+            border: 2px dashed var(--gray);
+            text-align: center;
         }
         .action-btn {
-            padding: 14px;
+            width: 100%;
+            padding: 16px;
+            margin: 12px 0;
             border: none;
             border-radius: 12px;
             font-size: 1.1rem;
             font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            margin: 12px 0;
             color: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.2s;
         }
         .add-q-btn { background: var(--accent); }
         .save-btn { background: var(--warning); }
         .conduct-btn { background: var(--danger); }
-        .remove-btn {
-            background: var(--danger);
-            padding: 10px 16px;
-            font-size: 0.95rem;
-            margin-top: 15px;
-            border: none;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
+        .action-btn:active { transform: scale(0.98); }
+        .question-card {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
-        input[type="file"] {
-            margin: 15px 0;
-            padding: 16px;
-            background: #f8fafc;
-            border: 2px dashed #94a3b8;
-            border-radius: 12px;
-            width: 100%;
-            text-align: center;
-        }
-        img {
+        .question-card img {
             max-width: 100%;
             border-radius: 12px;
-            margin: 15px 0;
+            margin: 12px 0;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .option-btns {
@@ -123,17 +124,21 @@
             font-weight: bold;
             cursor: pointer;
         }
-        .status {
-            font-style: italic;
-            color: #64748b;
-            margin: 10px 0;
-            text-align: center;
+        .remove-btn {
+            background: var(--danger);
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 12px;
+            width: 100%;
         }
-        .question-card {
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
+        .status {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 0.95rem;
+            color: var(--gray);
         }
         .bottom-nav {
             position: fixed;
@@ -144,42 +149,47 @@
             border-top: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-around;
-            align-items: center;
             padding: 12px 0;
-            max-width: 480px;
-            margin: 0 auto;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
-            z-index: 100;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
+            z-index: 999;
         }
         .nav-item {
             text-align: center;
             color: var(--primary);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
+            padding: 6px 12px;
         }
         .nav-item i {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             display: block;
             margin-bottom: 4px;
         }
         .nav-item.active {
             color: var(--accent);
+            font-weight: 600;
         }
-        .portal-view {
-            display: none;
-        }
-        .portal-view.active {
-            display: block;
-        }
-        .portal-iframe {
-            width: 100%;
-            height: calc(100vh - 140px);
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            .container {
+                padding: 24px;
+                max-width: 900px;
+            }
+            .option-btns {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .question-card {
+                padding: 24px;
+            }
         }
         @media (max-width: 480px) {
-            .app-container { box-shadow: none; }
+            .option-btns {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .action-btn {
+                font-size: 1rem;
+                padding: 14px;
+            }
         }
     </style>
 </head>
@@ -187,26 +197,31 @@
     <div class="app-container">
         <div id="adminView">
             <div class="header">Admin Panel - Create Exam</div>
-            <div class="card">
-                <h2>Create New Exam</h2>
-                <input type="text" id="examTitle" placeholder="Exam Title (e.g. Monthly Test - Dec)">
-                <select id="examSubject">
-                    <option value="">Select Subject</option>
-                    <option value="english">English</option>
-                    <option value="kannada">Kannada</option>
-                    <option value="gk">GK</option>
-                    <option value="maths">Maths</option>
-                </select>
-                <select id="examTestNumber">
-                    <option value="">Select Test Number</option>
-                </select>
-                <div id="questionsList" style="margin-top: 20px;"></div>
-                <button class="action-btn add-q-btn" onclick="addQuestionForm()">+ Add Question</button>
-                <button class="action-btn save-btn" onclick="saveDraft()">Save as Draft</button>
-            </div>
-            <div class="card">
-                <h2>Saved Drafts</h2>
-                <div id="draftsList">Loading drafts...</div>
+            <div class="container">
+                <div class="card">
+                    <h2>Create New Exam</h2>
+                    <input type="text" id="examTitle" placeholder="Exam Title (e.g. Monthly Test - Dec)">
+                    <select id="examSubject">
+                        <option value="">Select Subject</option>
+                        <option value="english">English</option>
+                        <option value="kannada">Kannada</option>
+                        <option value="gk">GK</option>
+                        <option value="maths">Maths</option>
+                    </select>
+                    <select id="examTestNumber">
+                        <option value="">Select Test Number</option>
+                    </select>
+
+                    <div id="questionsList"></div>
+
+                    <button class="action-btn add-q-btn" onclick="addQuestionForm()">+ Add Question</button>
+                    <button class="action-btn save-btn" onclick="saveDraft()">Save as Draft</button>
+                </div>
+
+                <div class="card">
+                    <h2>Saved Drafts</h2>
+                    <div id="draftsList">Loading drafts...</div>
+                </div>
             </div>
         </div>
 
@@ -360,7 +375,7 @@
                     body: JSON.stringify({
                         title,
                         subject,
-                        testNumber: parseInt(testNumber),  // ← Crucial for filtering results
+                        testNumber: parseInt(testNumber),
                         questions: currentQuestions
                     })
                 });
