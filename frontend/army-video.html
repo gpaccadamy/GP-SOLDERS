@@ -11,13 +11,11 @@
       box-sizing: border-box;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
-
     body {
       background: #0f172a;
       color: #f1f5f9;
       line-height: 1.6;
     }
-
     /* HEADER */
     .fixed-header {
       position: fixed;
@@ -32,7 +30,6 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
       border-bottom: 1px solid #334155;
     }
-
     .logo {
       display: flex;
       align-items: center;
@@ -41,7 +38,6 @@
       font-weight: 800;
       color: #f1f5f9;
     }
-
     .logo-img {
       width: 56px;
       height: 56px;
@@ -51,14 +47,12 @@
       background: #1e293b;
       padding: 4px;
     }
-
     /* MAIN CONTENT */
     .container {
       padding: 100px 20px 60px;
       max-width: 1100px;
       margin: 0 auto;
     }
-
     h1 {
       text-align: center;
       font-size: 2.4rem;
@@ -66,13 +60,11 @@
       margin-bottom: 40px;
       font-weight: 800;
     }
-
     .video-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 30px;
     }
-
     .video-card {
       background: #1e293b;
       border-radius: 16px;
@@ -81,36 +73,30 @@
       box-shadow: 0 8px 25px rgba(0,0,0,0.4);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-
     .video-card:hover {
       transform: translateY(-10px);
       box-shadow: 0 15px 35px rgba(245, 158, 11, 0.25);
     }
-
     .video-card video {
       width: 100%;
       height: 240px;
       object-fit: cover;
       display: block;
     }
-
     .video-info {
       padding: 16px;
       text-align: center;
     }
-
     .video-info h3 {
       color: #fbbf24;
       font-size: 1.35rem;
       margin-bottom: 8px;
       font-weight: 700;
     }
-
     .video-info p {
       color: #cbd5e1;
       font-size: 1rem;
     }
-
     /* FOOTER */
     footer {
       padding: 40px 20px;
@@ -119,17 +105,14 @@
       color: #94a3b8;
       border-top: 1px solid #334155;
     }
-
     footer p {
       margin: 8px 0;
     }
-
     .copy {
       margin-top: 20px;
       color: #64748b;
       font-size: 0.95rem;
     }
-
     @media (max-width: 600px) {
       h1 { font-size: 2rem; }
       .video-card video { height: 200px; }
@@ -137,7 +120,6 @@
   </style>
 </head>
 <body>
-
   <!-- HEADER (same as index.html) -->
   <header class="fixed-header">
     <div class="logo">
@@ -149,12 +131,11 @@
   <!-- MAIN VIDEO SECTION -->
   <div class="container">
     <h1>GP Soldier Academy Videos</h1>
-
     <div class="video-grid">
       <!-- Video 1 -->
       <div class="video-card">
         <video controls preload="metadata">
-          <source src="gpvideo1.mp4" type="video/mp4">
+          <source src="../gpvideo1.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
         <div class="video-info">
@@ -166,7 +147,7 @@
       <!-- Video 2 -->
       <div class="video-card">
         <video controls preload="metadata">
-          <source src="gpvideo2.mp4" type="video/mp4">
+          <source src="../gpvideo2.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
         <div class="video-info">
@@ -178,7 +159,7 @@
       <!-- Video 3 -->
       <div class="video-card">
         <video controls preload="metadata">
-          <source src="gpvideo3.mp4" type="video/mp4">
+          <source src="../gpvideo3.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
         <div class="video-info">
@@ -190,11 +171,11 @@
       <!-- Video 4 -->
       <div class="video-card">
         <video controls preload="metadata">
-          <source src="gpvideo4.mp4" type="video/mp4">
+          <source src="../gpvideo4.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
         <div class="video-info">
-          <h3>Video 4 – Physical Training Demo</h3> //
+          <h3>Video 4 – Physical Training Demo</h3>
           <p>Complete strategy to score high</p>
         </div>
       </div>
@@ -202,7 +183,7 @@
       <!-- Video 5 -->
       <div class="video-card">
         <video controls preload="metadata">
-          <source src="gpvideo5.mp4" type="video/mp4">
+          <source src="../gpvideo5.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
         <div class="video-info">
@@ -220,6 +201,5 @@
     <p>📍 Solapur By Pass, Near Roopa Devi PU College, Vijayapura, Karnataka</p>
     <p class="copy">© 2026 GP Soldier Academy – All Rights Reserved</p>
   </footer>
-
 </body>
 </html>
