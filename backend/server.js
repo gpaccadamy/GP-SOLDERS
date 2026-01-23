@@ -3,14 +3,38 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const multer = require('multer'); // ← NEWLY ADDED
+const multer = require('multer');
 require('dotenv').config();
-const cloudinary = require('cloudinary').v2; // ← ADDED for Cloudinary
+const cloudinary = require('cloudinary').v2;
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// ────────────────────────────────────────────────
+// IMPROVED CORS CONFIGURATION (this fixes your CORS error)
+// Placed early in the middleware stack
+// ────────────────────────────────────────────────
+const allowedOrigins = [
+  'https://academy-student-portal.onrender.com',   // Your actual frontend URL on Render
+  'http://localhost:3000',                         // For local development/testing
+  // You can add more domains later if needed
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like curl, Postman) or matching allowed origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],  // Explicitly allow these methods
+  allowedHeaders: ['Content-Type', 'Authorization'],     // Allow JSON content type + future auth headers
+  credentials: false,                                    // Change to true only if using cookies/sessions later
+  optionsSuccessStatus: 200                              // Some older browsers require 200 for OPTIONS
+}));
+
+// Standard JSON parsing middleware
 app.use(express.json());
 
 // Serve static files from the sibling 'frontend' folder
@@ -38,14 +62,16 @@ mongoose.connect(MONGO_URI)
     process.exit(1);
   });
 
-// ==================== Cloudinary Configuration - ADDED ====================
+// Cloudinary Configuration
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// ==================== MODELS ====================
+// ────────────────────────────────────────────────
+// MODELS
+// ────────────────────────────────────────────────
 const StudentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   roll: { type: String },
@@ -53,12 +79,14 @@ const StudentSchema = new mongoose.Schema({
   password: { type: String, required: true }
 });
 const Student = mongoose.model('Student', StudentSchema);
+
 const Video = mongoose.model('Video', new mongoose.Schema({
   subject: String,
   class: Number,
   videoId: String,
   title: String
 }));
+
 const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   title: String,
   subject: String,
@@ -71,6 +99,7 @@ const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   }],
   createdAt: { type: Date, default: Date.now }
 }));
+
 const Exam = mongoose.model('Exam', new mongoose.Schema({
   title: String,
   subject: String,
@@ -83,6 +112,7 @@ const Exam = mongoose.model('Exam', new mongoose.Schema({
   }],
   conductedAt: { type: Date, default: Date.now }
 }));
+
 const Result = mongoose.model('Result', new mongoose.Schema({
   studentMobile: String,
   studentName: String,
@@ -98,30 +128,26 @@ const Result = mongoose.model('Result', new mongoose.Schema({
   answers: [String],
   submittedAt: { type: Date, default: Date.now }
 }));
+
 const NoteSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
   createdAt: { type: Date, default: Date.now }
 });
 const Note = mongoose.model('Note', NoteSchema);
-// ==================== NEW ARMY VIDEO MODEL ====================
+
 const ArmyVideoSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  url: {
-    type: String,
-    required: true
-  },
-  uploadedAt: {
-    type: Date,
-    default: Date.now
-  }
+  title: { type: String, required: true, trim: true },
+  url: { type: String, required: true },
+  uploadedAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 const ArmyVideo = mongoose.model('ArmyVideo', ArmyVideoSchema);
-// ==================== ROUTES ====================
+
+// ────────────────────────────────────────────────
+// ROUTES
+// ────────────────────────────────────────────────
+
+// Student login
 app.post('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
@@ -134,7 +160,9 @@ app.post('/student-login', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 app.get('/students', async (req, res) => res.json(await Student.find()));
+
 app.post('/students', async (req, res) => {
   try {
     let { name, roll, mobile, password } = req.body;
@@ -153,28 +181,60 @@ app.post('/students', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 app.delete('/students/:id', async (req, res) => {
   const student = await Student.findByIdAndDelete(req.params.id);
   if (!student) return res.status(404).json({ error: "Student not found" });
   res.json({ message: "Student deleted" });
 });
+
+// ────────────────────────────────────────────────
+// UPDATED /videos route - now expects videoId (11 chars) directly
+// Matches what frontend sends after extracting ID from URL
+// ────────────────────────────────────────────────
 app.get('/videos', async (req, res) => res.json(await Video.find()));
+
 app.post('/videos', async (req, res) => {
-  const { subject, classNum, youtubeUrl, title } = req.body;
-  const match = youtubeUrl.match(/(?:v=|\/embed\/|youtu\.be\/|watch\?v=)([^#\&\?]{11})/);
-  if (!match) return res.status(400).json({ error: "Invalid YouTube URL" });
-  const videoId = match[1];
-  let video = await Video.findOne({ subject, class: classNum });
-  if (video) {
-    video.videoId = videoId;
-    video.title = title || "Lesson";
-    await video.save();
-    return res.json({ message: "Video updated" });
+  const { subject, class: classNum, videoId, title } = req.body;
+
+  // Basic validation for videoId
+  if (!videoId || typeof videoId !== 'string' || videoId.length !== 11) {
+    return res.status(400).json({ error: "Invalid videoId - must be exactly 11 characters" });
   }
-  await new Video({ subject, class: classNum, videoId, title: title || "Lesson" }).save();
-  res.json({ message: "Video saved" });
+
+  if (!subject || !classNum) {
+    return res.status(400).json({ error: "Subject and class are required" });
+  }
+
+  try {
+    let video = await Video.findOne({ subject, class: classNum });
+
+    if (video) {
+      // Update existing video
+      video.videoId = videoId;
+      video.title = title || "Lesson";
+      await video.save();
+      return res.json({ message: "Video updated" });
+    }
+
+    // Create new video
+    await new Video({
+      subject,
+      class: classNum,
+      videoId,
+      title: title || "Lesson"
+    }).save();
+
+    res.json({ message: "Video saved" });
+  } catch (err) {
+    console.error("Error saving video:", err);
+    res.status(500).json({ error: "Server error while saving video" });
+  }
 });
+
+// Draft exams
 app.get('/drafts', async (req, res) => res.json(await DraftExam.find().sort({ createdAt: -1 })));
+
 app.post('/drafts', async (req, res) => {
   const { title, subject, testNumber, questions } = req.body;
   if (!questions || questions.length === 0) return res.status(400).json({ error: "At least one question required" });
@@ -190,6 +250,7 @@ app.post('/drafts', async (req, res) => {
   await draft.save();
   res.json({ message: "Draft saved" });
 });
+
 app.post('/conduct/:draftId', async (req, res) => {
   const draft = await DraftExam.findById(req.params.draftId);
   if (!draft) return res.status(404).json({ error: "Draft not found" });
@@ -207,12 +268,15 @@ app.post('/conduct/:draftId', async (req, res) => {
   await DraftExam.findByIdAndDelete(req.params.draftId);
   res.json({ message: "Exam conducted successfully!" });
 });
+
 app.get('/active-exams', async (req, res) => res.json(await Exam.find().sort({ conductedAt: -1 })));
+
 app.get('/exam/:id', async (req, res) => {
   const exam = await Exam.findById(req.params.id);
   if (!exam) return res.status(404).json({ error: "Exam not found" });
   res.json(exam);
 });
+
 app.post('/submit-exam', async (req, res) => {
   const { examId, answers, studentMobile, studentName } = req.body;
   if (!examId || !Array.isArray(answers)) return res.status(400).json({ error: "Invalid data" });
@@ -239,6 +303,7 @@ app.post('/submit-exam', async (req, res) => {
   }).save();
   res.json({ message: "Exam submitted successfully!" });
 });
+
 app.get('/results', async (req, res) => {
   try {
     const results = await Result.find().sort({ submittedAt: -1 });
@@ -247,6 +312,7 @@ app.get('/results', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 app.post('/api/save-note', async (req, res) => {
   try {
     const { title, content } = req.body;
@@ -258,6 +324,7 @@ app.post('/api/save-note', async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to save note' });
   }
 });
+
 app.get('/api/notes', async (req, res) => {
   try {
     const notes = await Note.find().sort({ createdAt: -1 });
@@ -266,8 +333,8 @@ app.get('/api/notes', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
-// ==================== NEW ARMY VIDEO ROUTES ====================
-// Get all army training videos
+
+// Army video routes
 app.get('/api/army-videos', async (req, res) => {
   try {
     const videos = await ArmyVideo.find()
@@ -279,7 +346,7 @@ app.get('/api/army-videos', async (req, res) => {
     res.status(500).json({ error: 'Failed to load videos' });
   }
 });
-// ADDED: Save army video metadata (after frontend uploads to Cloudinary)
+
 app.post('/save-army-video', async (req, res) => {
   try {
     const { title, url } = req.body;
@@ -302,7 +369,7 @@ app.post('/save-army-video', async (req, res) => {
   }
 });
 
-// ==================== OLD DISK STORAGE ROUTE (KEPT AS IS - you can keep or remove later) ====================
+// Old disk storage route for army videos (kept as is)
 const armyStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const armyDir = path.join(__dirname, 'uploads', 'army-videos');
@@ -316,6 +383,7 @@ const armyStorage = multer.diskStorage({
     cb(null, uniqueName);
   }
 });
+
 const uploadArmyVideo = multer({
   storage: armyStorage,
   limits: { fileSize: 500 * 1024 * 1024 }, // 500 MB
@@ -328,6 +396,7 @@ const uploadArmyVideo = multer({
     }
   }
 });
+
 app.post('/upload-army-video', uploadArmyVideo.single('video'), async (req, res) => {
   try {
     if (!req.file) {
@@ -362,7 +431,7 @@ app.post('/upload-army-video', uploadArmyVideo.single('video'), async (req, res)
   }
 });
 
-// Catch-all route — serves index.html for any unknown route (important for SPA)
+// Catch-all route for SPA (serves index.html)
 app.get('*', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
