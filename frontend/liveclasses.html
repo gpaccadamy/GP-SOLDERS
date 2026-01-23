@@ -35,21 +35,45 @@
         .header {
             background: linear-gradient(135deg, var(--primary), #3b82f6);
             color: white;
-            padding: 18px 60px;
+            padding: 18px 20px;
             text-align: center;
             font-weight: bold;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .title {
             margin: 0;
             font-size: 1.3rem;
             line-height: 1.2;
         }
-        .menu-btn {
+        .nav-left {
             position: absolute;
             left: 15px;
             top: 50%;
             transform: translateY(-50%);
+            display: flex;
+            gap: 12px;
+        }
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.3rem;
+            transition: background 0.3s;
+            color: white;
+            text-decoration: none;
+        }
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .menu-btn {
             background: rgba(255,255,255,0.2);
             width: 40px;
             height: 40px;
@@ -278,8 +302,16 @@
 
     <div class="app-container">
         <div class="header">
-            <div class="menu-btn" onclick="toggleMenu()">
-                <i class="fas fa-bars"></i>
+            <div class="nav-left">
+                <div class="menu-btn" onclick="toggleMenu()">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <a href="cart.jsx" class="nav-btn" title="Edit Items">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a href="OrderStock.jsx" class="nav-btn" title="Order Tablets">
+                    <i class="fas fa-tablet-alt"></i>
+                </a>
             </div>
             <div class="title">GP SOLDIERS ACADEMY</div>
             <div class="back-btn" onclick="history.back()">
@@ -327,17 +359,15 @@
             document.getElementById('overlay').classList.remove('active');
         }
 
-        // Correct API URL (no /api) – This fixes the 404 error!
         const API = 'https://academy-backend-e02j.onrender.com';
-
         let allVideos = [];
 
         async function loadVideos(subject = null) {
             try {
                 const res = await fetch(`${API}/videos`);
-                const videos = await res.json(); // Directly array from your server
+                if (!res.ok) throw new Error('Fetch failed');
+                const videos = await res.json();
                 allVideos = videos;
-
                 renderVideos(subject);
             } catch (err) {
                 document.getElementById('videoContainer').innerHTML = `
@@ -345,12 +375,18 @@
                         <h2>Connection Failed</h2>
                         <p>Please check internet or try later.</p>
                     </div>`;
+                console.error('Load error:', err);
             }
         }
 
         function renderVideos(subject = null) {
             const container = document.getElementById('videoContainer');
-            let displayVideos = subject ? allVideos.filter(v => v.subject === subject) : allVideos;
+            
+            let normalizedSubject = subject ? subject.toLowerCase() : null;
+
+            let displayVideos = normalizedSubject 
+                ? allVideos.filter(v => v.subject.toLowerCase() === normalizedSubject)
+                : allVideos;
 
             if (displayVideos.length === 0) {
                 container.innerHTML = `
@@ -369,7 +405,7 @@
                     </div>
                     <div class="video-body">
                         <div class="subject">${getFullSubjectName(video.subject)}</div>
-                        <div class="class-tag">CLASS ${video.class}</div>
+                        <div class="class-tag">CLASS / VIDEO ${video.class}</div>
                         <iframe class="video-frame"
                             src="https://www.youtube.com/embed/${video.videoId}"
                             title="${getFullSubjectName(video.subject)} - ${video.title || 'Lesson'}"
@@ -383,17 +419,17 @@
 
         function getFullSubjectName(short) {
             const names = {
-                'GK': 'General Knowledge (GK)',
-                'English': 'English',
-                'Kannada': 'Kannada',
-                'Maths': 'Maths'
+                'gk': 'General Knowledge (GK)',
+                'english': 'English',
+                'kannada': 'Kannada',
+                'maths': 'Maths'
             };
-            return names[short] || short;
+            return names[short.toLowerCase()] || short.toUpperCase();
         }
 
-        function filterVideos(subject) {
+        function filterVideos(displaySubject) {
             closeMenu();
-            renderVideos(subject);
+            renderVideos(displaySubject);
         }
 
         // Load all videos on page open
