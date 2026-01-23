@@ -33,20 +33,8 @@
             <option value="maths">Maths</option>
         </select>
 
-        <label>Class</label>
-        <select id="classNum">
-            <option value="">Select Class</option>
-            <option value="1">Class 1</option>
-            <option value="2">Class 2</option>
-            <option value="3">Class 3</option>
-            <option value="4">Class 4</option>
-            <option value="5">Class 5</option>
-            <option value="6">Class 6</option>
-            <option value="7">Class 7</option>
-            <option value="8">Class 8</option>
-            <option value="9">Class 9</option>
-            <option value="10">Class 10</option>
-        </select>
+        <label>Class Number (e.g. 1, 5, 10, 11)</label>
+        <input type="number" id="classNum" min="1" max="12" placeholder="Enter class number" step="1">
 
         <label>YouTube URL (full link)</label>
         <input type="text" id="youtubeUrl" placeholder="e.g. https://youtu.be/dQw4w9WgXcQ or https://www.youtube.com/watch?v=dQw4w9WgXcQ">
@@ -77,40 +65,44 @@
         function extractYouTubeId(url) {
             if (!url) return null;
             url = url.trim();
-
-            // Common YouTube URL patterns
             const patterns = [
                 /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/i,
                 /[?&]v=([^"&?\/\s]{11})/i,
                 /\/(?:v|e(?:mbed)?)\/([^"&?\/\s]{11})/i
             ];
-
             for (const pattern of patterns) {
                 const match = url.match(pattern);
                 if (match && match[1]) return match[1];
             }
-
-            // Fallback: look for any 11-char alphanumeric string that looks like ID
             const idMatch = url.match(/([a-zA-Z0-9_-]{11})/);
             return idMatch ? idMatch[1] : null;
         }
 
         async function uploadVideo() {
             const subject = document.getElementById('subject').value;
-            const classNum = document.getElementById('classNum').value;
+            const classInput = document.getElementById('classNum').value.trim();
             const youtubeInput = document.getElementById('youtubeUrl').value.trim();
             const title = document.getElementById('title').value.trim();
             const status = document.getElementById('status');
 
             status.innerHTML = '';
 
-            if (!subject || !classNum || !youtubeInput) {
-                status.innerHTML = '<div class="status error">Please fill Subject, Class, and YouTube URL</div>';
+            if (!subject) {
+                status.innerHTML = '<div class="status error">Please select a Subject</div>';
+                return;
+            }
+
+            if (!classInput || isNaN(classInput) || Number(classInput) < 1 || Number(classInput) > 12) {
+                status.innerHTML = '<div class="status error">Please enter a valid class number (1 to 12)</div>';
+                return;
+            }
+
+            if (!youtubeInput) {
+                status.innerHTML = '<div class="status error">Please enter YouTube URL</div>';
                 return;
             }
 
             const videoId = extractYouTubeId(youtubeInput);
-
             if (!videoId) {
                 status.innerHTML = '<div class="status error">Could not find valid YouTube video ID.<br>Try a link like:<br>https://youtu.be/dQw4w9WgXcQ<br>or<br>https://www.youtube.com/watch?v=dQw4w9WgXcQ</div>';
                 console.log('Input URL:', youtubeInput);
@@ -118,17 +110,17 @@
                 return;
             }
 
-            console.log('Sending video ID:', videoId);
+            console.log('Sending:', { subject, class: classInput, videoId, title });
 
             try {
                 const res = await fetch(`${API}/videos`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         subject: subject,
-                        class: Number(classNum),   // backend expects number
-                        videoId: videoId,          // correct field
-                        title: title || undefined  // optional
+                        class: Number(classInput),   // sent as number
+                        videoId: videoId,
+                        title: title || undefined
                     })
                 });
 
@@ -143,7 +135,7 @@
                     document.getElementById('classNum').value = '';
                     loadVideos();
                 } else {
-                    status.innerHTML = `<div class="status error">${data.error || 'Upload failed (check console for details)'}</div>`;
+                    status.innerHTML = `<div class="status error">${data.error || 'Upload failed (check console)'}</div>`;
                     console.error('Backend response:', data);
                 }
             } catch (err) {
@@ -157,7 +149,6 @@
                 const res = await fetch(`${API}/videos`);
                 if (!res.ok) throw new Error('Fetch failed');
                 const videos = await res.json();
-
                 const tbody = document.getElementById('videoList');
                 tbody.innerHTML = videos.map(v => `
                     <tr>
