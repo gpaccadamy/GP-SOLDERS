@@ -42,10 +42,14 @@
             <option value="4">Class 4</option>
             <option value="5">Class 5</option>
             <option value="6">Class 6</option>
+            <option value="7">Class 7</option>
+            <option value="8">Class 8</option>
+            <option value="9">Class 9</option>
+            <option value="10">Class 10</option>
         </select>
 
-        <label>YouTube URL</label>
-        <input type="text" id="youtubeUrl" placeholder="e.g. https://youtu.be/abc123">
+        <label>YouTube URL (full link)</label>
+        <input type="text" id="youtubeUrl" placeholder="e.g. https://youtu.be/dQw4w9WgXcQ or https://www.youtube.com/watch?v=dQw4w9WgXcQ">
 
         <label>Title (Optional)</label>
         <input type="text" id="title" placeholder="e.g. Introduction to Algebra">
@@ -69,61 +73,107 @@
     <script>
         const API = 'https://academy-backend-e02j.onrender.com';
 
+        // Robust YouTube video ID extractor
+        function extractYouTubeId(url) {
+            if (!url) return null;
+            url = url.trim();
+
+            // Common YouTube URL patterns
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/i,
+                /[?&]v=([^"&?\/\s]{11})/i,
+                /\/(?:v|e(?:mbed)?)\/([^"&?\/\s]{11})/i
+            ];
+
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match && match[1]) return match[1];
+            }
+
+            // Fallback: look for any 11-char alphanumeric string that looks like ID
+            const idMatch = url.match(/([a-zA-Z0-9_-]{11})/);
+            return idMatch ? idMatch[1] : null;
+        }
+
         async function uploadVideo() {
             const subject = document.getElementById('subject').value;
             const classNum = document.getElementById('classNum').value;
-            const youtubeUrl = document.getElementById('youtubeUrl').value.trim();
+            const youtubeInput = document.getElementById('youtubeUrl').value.trim();
             const title = document.getElementById('title').value.trim();
-
             const status = document.getElementById('status');
+
             status.innerHTML = '';
 
-            if (!subject || !classNum || !youtubeUrl) {
-                status.innerHTML = '<div class="status error">Please fill all required fields</div>';
+            if (!subject || !classNum || !youtubeInput) {
+                status.innerHTML = '<div class="status error">Please fill Subject, Class, and YouTube URL</div>';
                 return;
             }
+
+            const videoId = extractYouTubeId(youtubeInput);
+
+            if (!videoId) {
+                status.innerHTML = '<div class="status error">Could not find valid YouTube video ID.<br>Try a link like:<br>https://youtu.be/dQw4w9WgXcQ<br>or<br>https://www.youtube.com/watch?v=dQw4w9WgXcQ</div>';
+                console.log('Input URL:', youtubeInput);
+                console.log('Extracted ID:', videoId);
+                return;
+            }
+
+            console.log('Sending video ID:', videoId);
 
             try {
                 const res = await fetch(`${API}/videos`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ subject, classNum, youtubeUrl, title })
+                    body: JSON.stringify({ 
+                        subject: subject,
+                        class: Number(classNum),   // backend expects number
+                        videoId: videoId,          // correct field
+                        title: title || undefined  // optional
+                    })
                 });
 
                 const data = await res.json();
 
                 if (res.ok) {
-                    status.innerHTML = `<div class="status success">${data.message}</div>`;
+                    status.innerHTML = `<div class="status success">${data.message || 'Video uploaded successfully!'}</div>`;
+                    // Clear form
                     document.getElementById('youtubeUrl').value = '';
                     document.getElementById('title').value = '';
+                    document.getElementById('subject').value = '';
+                    document.getElementById('classNum').value = '';
                     loadVideos();
                 } else {
-                    status.innerHTML = `<div class="status error">${data.error || 'Upload failed'}</div>`;
+                    status.innerHTML = `<div class="status error">${data.error || 'Upload failed (check console for details)'}</div>`;
+                    console.error('Backend response:', data);
                 }
             } catch (err) {
-                status.innerHTML = '<div class="status error">Network error. Check connection or backend.</div>';
+                status.innerHTML = '<div class="status error">Network error - check internet or backend status</div>';
+                console.error('Fetch error:', err);
             }
         }
 
         async function loadVideos() {
             try {
                 const res = await fetch(`${API}/videos`);
+                if (!res.ok) throw new Error('Fetch failed');
                 const videos = await res.json();
 
                 const tbody = document.getElementById('videoList');
                 tbody.innerHTML = videos.map(v => `
                     <tr>
-                        <td>${v.subject.toUpperCase()}</td>
-                        <td>${v.class}</td>
+                        <td>${(v.subject || '').toUpperCase()}</td>
+                        <td>${v.class || 'N/A'}</td>
                         <td>${v.title || 'No title'}</td>
-                        <td><a href="https://youtube.com/watch?v=${v.videoId}" target="_blank">Watch</a></td>
+                        <td><a href="https://www.youtube.com/watch?v=${v.videoId}" target="_blank">Watch</a></td>
                     </tr>
                 `).join('');
             } catch (err) {
-                document.getElementById('videoList').innerHTML = '<tr><td colspan="4">Failed to load videos</td></tr>';
+                document.getElementById('videoList').innerHTML = '<tr><td colspan="4" style="text-align:center;color:red;">Failed to load videos</td></tr>';
+                console.error('Load videos error:', err);
             }
         }
 
+        // Load videos when page opens
         loadVideos();
     </script>
 </body>
