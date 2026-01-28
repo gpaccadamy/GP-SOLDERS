@@ -109,7 +109,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 600px;
+      min-width: 400px;
     }
     th {
       background: #667eea;
@@ -179,14 +179,12 @@
           <th>Rank</th>
           <th>Name</th>
           <th>Roll</th>
-          <th>Mobile</th>
           <th>Score</th>
-          <th>Time</th>
         </tr>
       </thead>
       <tbody id="resultsBody">
         <tr>
-          <td colspan="6" style="text-align:center; padding:20px; color:#555;">
+          <td colspan="4" style="text-align:center; padding:20px; color:#555;">
             Please select subject & test number
           </td>
         </tr>
@@ -229,23 +227,18 @@
         r.examTestNumber == parseInt(testNumber)
       );
 
-      results.sort((a, b) => {
-        if (b.correct !== a.correct) return b.correct - a.correct;
-        return new Date(b.submittedAt) - new Date(a.submittedAt);
-      });
+      results.sort((a, b) => b.correct - a.correct);
 
       document.getElementById("resultsBody").innerHTML =
         results.length === 0
-          ? `<tr><td colspan="6" style="text-align:center;color:#d32f2f;">No results found</td></tr>`
+          ? `<tr><td colspan="4" style="text-align:center;color:#d32f2f;">No results found</td></tr>`
           : results
               .map((r, i) => `
                 <tr>
                   <td>#${i + 1}</td>
                   <td>${r.studentName || 'Guest'}</td>
                   <td>${r.studentRoll || 'N/A'}</td>
-                  <td>${r.studentMobile || 'N/A'}</td>
                   <td><b>${r.correct}</b>/${r.total}</td>
-                  <td>${new Date(r.submittedAt).toLocaleString()}</td>
                 </tr>
               `).join("");
 
@@ -264,8 +257,8 @@
     }
   }
 
-  async function shareResults() {
-    alert("WhatsApp sharing will be added soon");
+  function shareResults() {
+    alert("WhatsApp sharing will be improved soon!");
   }
 </script>
 
