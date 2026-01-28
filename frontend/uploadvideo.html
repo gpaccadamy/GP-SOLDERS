@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Upload Videos</title>
+    <title>Admin - Upload & Manage Videos</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f0f9ff; padding: 20px; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .container { max-width: 650px; margin: auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #2563eb; }
         input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
         button { background: #2563eb; color: white; border: none; cursor: pointer; font-weight: bold; }
@@ -14,158 +14,210 @@
         .status { padding: 15px; margin: 20px 0; border-radius: 8px; text-align: center; font-weight: bold; }
         .success { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 15px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: center; }
         th { background: #2563eb; color: white; }
+        a.btn { padding: 6px 10px; border-radius: 6px; text-decoration: none; color: white; }
+        .edit-btn { background: #10b981; }
+        .delete-btn { background: #ef4444; }
+        .save-btn { background: #2563eb; margin-top: 5px; }
+        .cancel-btn { background: #6b7280; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Upload Pre-Recorded Video</h2>
-        <div id="status"></div>
 
-        <label>Subject</label>
-        <select id="subject">
-            <option value="">Select Subject</option>
-            <option value="gk">General Knowledge (GK)</option>
-            <option value="english">English</option>
-            <option value="kannada">Kannada</option>
-            <option value="maths">Maths</option>
-        </select>
+<div class="container">
+    <h2>Upload Pre-Recorded Video</h2>
+    <div id="status"></div>
 
-        <label>Class Number (e.g. 1, 5, 10, 11)</label>
-        <input type="number" id="classNum" min="1" max="12" placeholder="Enter class number" step="1">
+    <!-- Upload Section -->
+    <label>Subject</label>
+    <select id="subject">
+        <option value="">Select Subject</option>
+        <option value="gk">General Knowledge (GK)</option>
+        <option value="english">English</option>
+        <option value="kannada">Kannada</option>
+        <option value="maths">Maths</option>
+    </select>
 
-        <label>YouTube URL (full link)</label>
-        <input type="text" id="youtubeUrl" placeholder="e.g. https://youtu.be/dQw4w9WgXcQ or https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+    <label>Class Number (1 - 12)</label>
+    <input type="number" id="classNum" min="1" max="12" placeholder="Enter class number">
 
-        <label>Title (Optional)</label>
-        <input type="text" id="title" placeholder="e.g. Introduction to Algebra">
+    <label>YouTube URL (full link)</label>
+    <input type="text" id="youtubeUrl" placeholder="e.g. https://youtu.be/XYZabc123">
 
-        <button onclick="uploadVideo()">Upload Video</button>
+    <label>Title (Optional)</label>
+    <input type="text" id="title" placeholder="Video title">
 
-        <h2 style="margin-top:40px;">Uploaded Videos</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Subject</th>
-                    <th>Class</th>
-                    <th>Title</th>
-                    <th>Video</th>
-                </tr>
-            </thead>
-            <tbody id="videoList"></tbody>
-        </table>
-    </div>
+    <button onclick="uploadVideo()">Upload Video</button>
 
-    <script>
-        const API = 'https://academy-backend-e02j.onrender.com';
+    <h2 style="margin-top:40px;">Uploaded Videos</h2>
 
-        // Robust YouTube video ID extractor
-        function extractYouTubeId(url) {
-            if (!url) return null;
-            url = url.trim();
-            const patterns = [
-                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/i,
-                /[?&]v=([^"&?\/\s]{11})/i,
-                /\/(?:v|e(?:mbed)?)\/([^"&?\/\s]{11})/i
-            ];
-            for (const pattern of patterns) {
-                const match = url.match(pattern);
-                if (match && match[1]) return match[1];
-            }
-            const idMatch = url.match(/([a-zA-Z0-9_-]{11})/);
-            return idMatch ? idMatch[1] : null;
+    <table>
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Class</th>
+                <th>Title</th>
+                <th>Video</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="videoList"></tbody>
+    </table>
+</div>
+
+<script>
+const API = 'https://academy-backend-e02j.onrender.com';
+
+function extractYouTubeId(url) {
+    if (!url) return null;
+    url = url.trim();
+    const match = url.match(/(?:youtube\.com.*v=|youtu\.be\/)([^"&?\/\s]{11})/);
+    return match ? match[1] : null;
+}
+
+// Upload Video
+async function uploadVideo() {
+    const subject = subjectSelect.value;
+    const classNum = classNumInput.value;
+    const youtubeUrl = youtubeUrlInput.value;
+    const title = titleInput.value;
+    const status = document.getElementById('status');
+
+    if (!subject || !classNum || !youtubeUrl) {
+        status.innerHTML = '<div class="status error">All fields except Title are required!</div>';
+        return;
+    }
+
+    const videoId = extractYouTubeId(youtubeUrl);
+    if (!videoId) {
+        status.innerHTML = '<div class="status error">Invalid YouTube URL</div>';
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/videos`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subject, class: Number(classNum), videoId, title })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            status.innerHTML = '<div class="status success">Uploaded Successfully!</div>';
+            loadVideos();
+        } else {
+            status.innerHTML = `<div class="status error">${data.error}</div>`;
+        }
+    } catch {
+        status.innerHTML = '<div class="status error">Network Error!</div>';
+    }
+}
+
+// Load Videos
+async function loadVideos() {
+    try {
+        const res = await fetch(`${API}/videos`);
+        const videos = await res.json();
+
+        document.getElementById('videoList').innerHTML = videos.map(v => `
+            <tr id="row-${v._id}">
+                <td>${v.subject.toUpperCase()}</td>
+                <td>${v.class}</td>
+                <td>${v.title || "Untitled"}</td>
+                <td><a href="https://youtube.com/watch?v=${v.videoId}" target="_blank">Watch</a></td>
+                <td>
+                    <button class="btn edit-btn" onclick="editVideo('${v._id}')">Edit</button>
+                    <button class="btn delete-btn" onclick="deleteVideo('${v._id}')">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch {
+        document.getElementById('videoList').innerHTML =
+            '<tr><td colspan="5" style="color:red;">Failed to load videos</td></tr>';
+    }
+}
+
+// Delete Video
+async function deleteVideo(id) {
+    if (!confirm("Are you sure you want to delete this video?")) return;
+
+    try {
+        const res = await fetch(`${API}/videos/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            document.getElementById(`row-${id}`).remove();
+        } else {
+            alert("Delete failed!");
+        }
+    } catch {
+        alert("Network error!");
+    }
+}
+
+// Edit Video
+function editVideo(id) {
+    const row = document.getElementById(`row-${id}`);
+    const cols = row.children;
+
+    const subject = cols[0].innerText.toLowerCase();
+    const classNum = cols[1].innerText;
+    const title = cols[2].innerText;
+    const videoUrl = cols[3].children[0].href;
+
+    row.innerHTML = `
+        <td>
+            <select id="edit-subject-${id}">
+                <option value="gk" ${subject === "gk" ? "selected" : ""}>GK</option>
+                <option value="english" ${subject === "english" ? "selected" : ""}>English</option>
+                <option value="kannada" ${subject === "kannada" ? "selected" : ""}>Kannada</option>
+                <option value="maths" ${subject === "maths" ? "selected" : ""}>Maths</option>
+            </select>
+        </td>
+
+        <td><input id="edit-class-${id}" type="number" value="${classNum}" min="1" max="12"></td>
+        <td><input id="edit-title-${id}" type="text" value="${title}"></td>
+        <td><input id="edit-url-${id}" type="text" value="${videoUrl}"></td>
+
+        <td>
+            <button class="btn save-btn" onclick="saveVideo('${id}')">Save</button>
+            <button class="btn cancel-btn" onclick="loadVideos()">Cancel</button>
+        </td>
+    `;
+}
+
+// Save Edited Video
+async function saveVideo(id) {
+    const subject = document.getElementById(`edit-subject-${id}`).value;
+    const classNum = document.getElementById(`edit-class-${id}`).value;
+    const title = document.getElementById(`edit-title-${id}`).value;
+    const url = document.getElementById(`edit-url-${id}`).value;
+
+    const videoId = extractYouTubeId(url);
+    if (!videoId) return alert("Invalid YouTube URL");
+
+    try {
+        const res = await fetch(`${API}/videos/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subject, class: Number(classNum), title, videoId })
+        });
+
+        if (res.ok) {
+            alert("Updated Successfully!");
+            loadVideos();
+        } else {
+            alert("Update failed!");
         }
 
-        async function uploadVideo() {
-            const subject = document.getElementById('subject').value;
-            const classInput = document.getElementById('classNum').value.trim();
-            const youtubeInput = document.getElementById('youtubeUrl').value.trim();
-            const title = document.getElementById('title').value.trim();
-            const status = document.getElementById('status');
+    } catch {
+        alert("Network error!");
+    }
+}
 
-            status.innerHTML = '';
+loadVideos();
+</script>
 
-            if (!subject) {
-                status.innerHTML = '<div class="status error">Please select a Subject</div>';
-                return;
-            }
-
-            if (!classInput || isNaN(classInput) || Number(classInput) < 1 || Number(classInput) > 12) {
-                status.innerHTML = '<div class="status error">Please enter a valid class number (1 to 12)</div>';
-                return;
-            }
-
-            if (!youtubeInput) {
-                status.innerHTML = '<div class="status error">Please enter YouTube URL</div>';
-                return;
-            }
-
-            const videoId = extractYouTubeId(youtubeInput);
-            if (!videoId) {
-                status.innerHTML = '<div class="status error">Could not find valid YouTube video ID.<br>Try a link like:<br>https://youtu.be/dQw4w9WgXcQ<br>or<br>https://www.youtube.com/watch?v=dQw4w9WgXcQ</div>';
-                console.log('Input URL:', youtubeInput);
-                console.log('Extracted ID:', videoId);
-                return;
-            }
-
-            console.log('Sending:', { subject, class: classInput, videoId, title });
-
-            try {
-                const res = await fetch(`${API}/videos`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        subject: subject,
-                        class: Number(classInput),   // sent as number
-                        videoId: videoId,
-                        title: title || undefined
-                    })
-                });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    status.innerHTML = `<div class="status success">${data.message || 'Video uploaded successfully!'}</div>`;
-                    // Clear form
-                    document.getElementById('youtubeUrl').value = '';
-                    document.getElementById('title').value = '';
-                    document.getElementById('subject').value = '';
-                    document.getElementById('classNum').value = '';
-                    loadVideos();
-                } else {
-                    status.innerHTML = `<div class="status error">${data.error || 'Upload failed (check console)'}</div>`;
-                    console.error('Backend response:', data);
-                }
-            } catch (err) {
-                status.innerHTML = '<div class="status error">Network error - check internet or backend status</div>';
-                console.error('Fetch error:', err);
-            }
-        }
-
-        async function loadVideos() {
-            try {
-                const res = await fetch(`${API}/videos`);
-                if (!res.ok) throw new Error('Fetch failed');
-                const videos = await res.json();
-                const tbody = document.getElementById('videoList');
-                tbody.innerHTML = videos.map(v => `
-                    <tr>
-                        <td>${(v.subject || '').toUpperCase()}</td>
-                        <td>${v.class || 'N/A'}</td>
-                        <td>${v.title || 'No title'}</td>
-                        <td><a href="https://www.youtube.com/watch?v=${v.videoId}" target="_blank">Watch</a></td>
-                    </tr>
-                `).join('');
-            } catch (err) {
-                document.getElementById('videoList').innerHTML = '<tr><td colspan="4" style="text-align:center;color:red;">Failed to load videos</td></tr>';
-                console.error('Load videos error:', err);
-            }
-        }
-
-        // Load videos when page opens
-        loadVideos();
-    </script>
 </body>
 </html>
