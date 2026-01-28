@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pre-Recorded Classes - GP Soldiers Academy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
             --primary: #2563eb;
@@ -70,9 +71,7 @@
             color: white;
             text-decoration: none;
         }
-        .nav-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
+        .nav-btn:hover { background: rgba(255,255,255,0.3); }
         .menu-btn {
             background: rgba(255,255,255,0.2);
             width: 40px;
@@ -83,11 +82,9 @@
             justify-content: center;
             cursor: pointer;
             font-size: 1.3rem;
-            transition: background 0.3s;
         }
-        .menu-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
+        .menu-btn:hover { background: rgba(255,255,255,0.3); }
+
         .back-btn {
             position: absolute;
             right: 15px;
@@ -103,6 +100,8 @@
             cursor: pointer;
             font-size: 1.2rem;
         }
+
+        /* SIDEBAR MENU */
         .sidebar {
             position: fixed;
             top: 0;
@@ -115,9 +114,7 @@
             z-index: 1000;
             padding-top: 80px;
         }
-        .sidebar.active {
-            left: 0;
-        }
+        .sidebar.active { left: 0; }
         .sidebar-header {
             text-align: center;
             padding: 20px;
@@ -139,29 +136,24 @@
             border-radius: 16px;
             box-shadow: 0 4px 12px var(--shadow);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: 0.3s;
         }
         .subject-btn:hover {
             transform: translateY(-4px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
-        .subject-btn i {
-            margin-right: 10px;
-            font-size: 1.3rem;
-        }
+        .subject-btn i { margin-right: 10px; font-size: 1.3rem; }
+
         .overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.4);
-            opacity: 0;
-            visibility: hidden;
+            opacity: 0; visibility: hidden;
             transition: all 0.4s;
             z-index: 999;
         }
-        .overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        .overlay.active { opacity: 1; visibility: visible; }
+
         .page-title {
             text-align: center;
             font-size: 1.8rem;
@@ -175,6 +167,8 @@
             opacity: 0.8;
             margin-bottom: 30px;
         }
+
+        /* VIDEOS */
         .video-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -186,7 +180,7 @@
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 6px 15px var(--shadow);
-            transition: all 0.3s ease;
+            transition: 0.3s;
         }
         .video-card:hover {
             transform: translateY(-8px);
@@ -200,16 +194,8 @@
             font-size: 1.1rem;
             font-weight: bold;
         }
-        .video-body {
-            padding: 20px;
-            text-align: center;
-        }
-        .subject {
-            font-size: 1.4rem;
-            color: var(--primary);
-            margin: 10px 0;
-            font-weight: 600;
-        }
+        .video-body { padding: 20px; text-align: center; }
+        .subject { font-size: 1.4rem; color: var(--primary); font-weight: 600; }
         .class-tag {
             display: inline-block;
             background: var(--accent);
@@ -217,15 +203,16 @@
             padding: 8px 20px;
             border-radius: 30px;
             font-weight: bold;
-            margin: 10px 0;
+            margin-top: 10px;
         }
         .video-frame {
-            width: 100%;
-            height: 220px;
+            width: 100%; height: 220px;
             border: none;
             border-radius: 12px;
             box-shadow: 0 4px 15px var(--shadow);
+            margin-top: 15px;
         }
+
         .no-video {
             text-align: center;
             padding: 60px 20px;
@@ -234,122 +221,103 @@
             margin: 40px 20px;
             box-shadow: 0 6px 15px var(--shadow);
         }
-        .no-video h2 {
-            font-size: 1.5rem;
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
+        .no-video h2 { color: var(--primary); }
+
         .jaihind {
             font-size: 1.8rem;
             color: var(--primary);
             margin-top: 20px;
             font-weight: bold;
         }
+
+        /* Bottom Nav */
         .bottom-nav {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            bottom: 0; left: 0; right: 0;
             background: white;
             border-top: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-around;
-            align-items: center;
             padding: 12px 0;
             max-width: 480px;
             margin: 0 auto;
             box-shadow: 0 -4px 15px var(--shadow);
         }
-        .nav-item {
-            text-align: center;
-            color: var(--primary);
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-        .nav-item i {
-            font-size: 1.8rem;
-            display: block;
-            margin-bottom: 4px;
-        }
-        @media (max-width: 480px) {
-            .app-container { box-shadow: none; }
-            .header { padding: 18px 55px; }
-            .title { font-size: 1.2rem; }
-        }
+        .nav-item { text-align: center; color: var(--primary); cursor: pointer; }
+        .nav-item i { font-size: 1.8rem; }
     </style>
 </head>
+
 <body>
-    <!-- Sliding Sidebar -->
+
+    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">Choose Subject</div>
+
         <div class="subject-btn" onclick="loadVideos()">
             <i class="fas fa-th-large"></i> All Videos
         </div>
-        <div class="subject-btn" onclick="filterVideos('GK')">
-            <i class="fas fa-globe"></i> General Knowledge (GK)
+
+        <div class="subject-btn" onclick="filterVideos('gk')">
+            <i class="fas fa-globe"></i> GK
         </div>
-        <div class="subject-btn" onclick="filterVideos('English')">
+
+        <div class="subject-btn" onclick="filterVideos('english')">
             <i class="fas fa-language"></i> English
         </div>
-        <div class="subject-btn" onclick="filterVideos('Kannada')">
+
+        <div class="subject-btn" onclick="filterVideos('kannada')">
             <i class="fas fa-book"></i> Kannada
         </div>
-        <div class="subject-btn" onclick="filterVideos('Maths')">
+
+        <div class="subject-btn" onclick="filterVideos('maths')">
             <i class="fas fa-calculator"></i> Maths
         </div>
     </div>
+
     <div class="overlay" id="overlay" onclick="closeMenu()"></div>
 
+    <!-- HEADER -->
     <div class="app-container">
         <div class="header">
             <div class="nav-left">
-                <div class="menu-btn" onclick="toggleMenu()">
-                    <i class="fas fa-bars"></i>
-                </div>
-                <a href="cart.jsx" class="nav-btn" title="Edit Items">
-                    <i class="fas fa-edit"></i>
-                </a>
-                <a href="OrderStock.jsx" class="nav-btn" title="Order Tablets">
-                    <i class="fas fa-tablet-alt"></i>
-                </a>
+                <div class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
             </div>
+
             <div class="title">GP SOLDIERS ACADEMY</div>
-            <div class="back-btn" onclick="history.back()">
-                <i class="fas fa-arrow-left"></i>
-            </div>
+
+            <div class="back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></div>
         </div>
 
         <h1 class="page-title">PRE-RECORDED CLASSES</h1>
-        <p class="subtitle">Watch Anytime • कधीही पाहा • Anytime Study</p>
+        <p class="subtitle">Watch Anytime • Study Anytime</p>
 
-        <div id="videoContainer" class="video-grid">
-            <!-- Videos will load here -->
-        </div>
+        <!-- VIDEOS -->
+        <div id="videoContainer" class="video-grid"></div>
 
-        <div style="text-align: center; padding: 40px 20px;">
+        <div style="text-align:center; padding:40px 20px;">
             <div class="jaihind">भारत माता की जय</div>
             <div class="jaihind">JAI HIND</div>
-            <p style="margin-top:15px; opacity:0.8;">Train Hard • Fight Easy</p>
         </div>
     </div>
 
+    <!-- BOTTOM NAV -->
     <div class="bottom-nav">
         <div class="nav-item" onclick="window.location.href='index.html'">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
+            <i class="fas fa-home"></i><span>Home</span>
         </div>
         <div class="nav-item" onclick="window.location.href='notes.html'">
-            <i class="fas fa-pen"></i>
-            <span>Write Notes</span>
+            <i class="fas fa-pen"></i><span>Write Notes</span>
         </div>
         <div class="nav-item">
-            <i class="fas fa-user"></i>
-            <span>Profile</span>
+            <i class="fas fa-user"></i><span>Profile</span>
         </div>
     </div>
 
+    <!-- SCRIPT -->
     <script>
-        // Menu Toggle
+
+        /* MENU */
         function toggleMenu() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
@@ -362,78 +330,83 @@
         const API = 'https://academy-backend-e02j.onrender.com';
         let allVideos = [];
 
+        // LOAD ALL VIDEOS
         async function loadVideos(subject = null) {
             try {
                 const res = await fetch(`${API}/videos`);
-                if (!res.ok) throw new Error('Fetch failed');
                 const videos = await res.json();
                 allVideos = videos;
                 renderVideos(subject);
             } catch (err) {
                 document.getElementById('videoContainer').innerHTML = `
                     <div class="no-video">
-                        <h2>Connection Failed</h2>
-                        <p>Please check internet or try later.</p>
+                        <h2>Failed to Load Videos</h2>
+                        <p>Please try again later.</p>
                     </div>`;
-                console.error('Load error:', err);
             }
         }
 
+        // RENDER VIDEOS WITH SERIAL NUMBERS
         function renderVideos(subject = null) {
             const container = document.getElementById('videoContainer');
-            
-            let normalizedSubject = subject ? subject.toLowerCase() : null;
 
-            let displayVideos = normalizedSubject 
-                ? allVideos.filter(v => v.subject.toLowerCase() === normalizedSubject)
-                : allVideos;
+            let filtered =
+                subject
+                    ? allVideos.filter(v => v.subject.toLowerCase() === subject.toLowerCase())
+                    : allVideos;
 
-            if (displayVideos.length === 0) {
+            // SERIAL NUMBERS PER SUBJECT
+            let mapSerial = {};
+            filtered = filtered.map(video => {
+                const sub = video.subject.toLowerCase();
+                mapSerial[sub] = (mapSerial[sub] || 0) + 1;
+                return { ...video, serial: mapSerial[sub] };
+            });
+
+            if (filtered.length === 0) {
                 container.innerHTML = `
                     <div class="no-video">
-                        <h2>No Videos in ${getFullSubjectName(subject) || 'This Category'} Yet</h2>
-                        <p>Admin will upload classes soon.<br>Stay ready, Soldier!</p>
-                        <div class="jaihind">भारत माता की जय</div>
+                        <h2>No Videos Available</h2>
+                        <p>Soon the academy will upload new classes.</p>
                     </div>`;
                 return;
             }
 
-            container.innerHTML = displayVideos.map(video => `
+            container.innerHTML = filtered.map(video => `
                 <div class="video-card">
-                    <div class="video-header">
-                        PRE-RECORDED TRAINING
-                    </div>
+                    <div class="video-header">PRE-RECORDED TRAINING</div>
                     <div class="video-body">
-                        <div class="subject">${getFullSubjectName(video.subject)}</div>
-                        <div class="class-tag">CLASS / VIDEO ${video.class}</div>
-                        <iframe class="video-frame"
+                        <div class="subject">${getFullName(video.subject)}</div>
+                        <div class="class-tag">VIDEO ${video.serial}</div>
+
+                        <iframe 
+                            class="video-frame"
                             src="https://www.youtube.com/embed/${video.videoId}"
-                            title="${getFullSubjectName(video.subject)} - ${video.title || 'Lesson'}"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen>
-                        </iframe>
+                            allowfullscreen
+                        ></iframe>
                     </div>
                 </div>
             `).join('');
         }
 
-        function getFullSubjectName(short) {
+        function getFullName(short) {
             const names = {
-                'gk': 'General Knowledge (GK)',
-                'english': 'English',
-                'kannada': 'Kannada',
-                'maths': 'Maths'
+                gk: "General Knowledge (GK)",
+                english: "English",
+                kannada: "Kannada",
+                maths: "Maths"
             };
-            return names[short.toLowerCase()] || short.toUpperCase();
+            return names[short.toLowerCase()] || short;
         }
 
-        function filterVideos(displaySubject) {
+        // SUBJECT FILTER
+        function filterVideos(sub) {
             closeMenu();
-            renderVideos(displaySubject);
+            renderVideos(sub);
         }
 
-        // Load all videos on page open
         loadVideos();
     </script>
+
 </body>
 </html>
