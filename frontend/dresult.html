@@ -248,29 +248,45 @@
       results.length > 0 ? "block" : "none";
   }
 
-  /* PDF Generator – Shows GP SOLDIERS ACADEMY */
+  /* PDF with Pre-Attached Text */
   async function downloadPDF() {
     const { jsPDF } = window.jspdf;
 
     const element = document.getElementById("resultBox");
-    const infoText = document.getElementById("examInfo").innerText;
+    const infoText = document.getElementById("examInfo").innerText;  // English — Test 5
 
     const tempDiv = document.createElement("div");
-    tempDiv.style.padding = "20px";
+    tempDiv.style.padding = "25px";
     tempDiv.style.background = "white";
     tempDiv.style.width = "100%";
     tempDiv.style.textAlign = "center";
+    tempDiv.style.fontFamily = "Segoe UI, Arial";
 
     tempDiv.innerHTML = `
-      <h1 style="margin-bottom:5px; font-size:26px; color:#111827;">
+      <h1 style="font-size:28px; margin:0; color:#111827;">
         GP SOLDIERS ACADEMY
       </h1>
 
-      <h2 style="margin-top:0; font-size:20px; color:#2563eb;">
-        ${infoText}
+      <h2 style="margin:15px 0 5px; font-size:22px; color:#2563eb;">
+        EXAM RESULTS
       </h2>
-      <br>
-    ` + element.innerHTML;
+
+      <h3 style="margin:0 0 15px; font-size:18px;">
+        ${infoText}
+      </h3>
+
+      <div style="margin:10px auto; font-size:16px;">
+        ------------------------------------<br>
+        Rank | Name | Roll | Score<br>
+        ------------------------------------
+      </div>
+
+      ${element.innerHTML}
+
+      <p style="margin-top:35px; font-size:16px; font-weight:bold; color:#111827;">
+        Verified by GP SOLDIERS ACADEMY
+      </p>
+    `;
 
     document.body.appendChild(tempDiv);
 
