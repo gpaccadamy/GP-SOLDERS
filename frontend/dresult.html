@@ -18,9 +18,20 @@
       color: #333;
     }
 
+    /* 🔵 TOP ACADEMY HEADER */
+    .top-header {
+      background: #111827;
+      padding: 12px;
+      text-align: center;
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
     header {
       background: linear-gradient(135deg, #2563eb, #3b82f6);
-      padding: 20px;
+      padding: 18px;
       text-align: center;
       color: white;
       font-size: 22px;
@@ -138,21 +149,13 @@
     .download-btn:hover {
       background: #0B7A52;
     }
-
-    /* FIX MOBILE VIEW FULL WIDTH */
-    @media (max-width: 480px) {
-      table {
-        font-size: 14px;
-      }
-
-      th, td {
-        padding: 10px 6px;
-      }
-    }
   </style>
 </head>
 
 <body>
+
+<!-- 🔵 TOP HEADING ADDED -->
+<div class="top-header">GP SOLDIERS ACADEMY</div>
 
 <header>Exam Results</header>
 
@@ -273,7 +276,7 @@
     document.body.appendChild(tempDiv);
 
     const canvas = await html2canvas(tempDiv, {
-      scale: 3,   // HIGHER QUALITY
+      scale: 3,
       useCORS: true,
       scrollY: -window.scrollY
     });
