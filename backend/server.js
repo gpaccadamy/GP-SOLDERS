@@ -302,6 +302,39 @@ app.post('/drafts', async (req, res) => {
   await draft.save();
   res.json({ message: "Draft saved" });
 });
+// ✔ NEW — UPDATE DRAFT (Required for Edit Draft feature)
+app.put('/drafts/:id', async (req, res) => {
+  try {
+    const { title, subject, testNumber, questions } = req.body;
+
+    if (!title || !subject || !testNumber || !questions || questions.length === 0) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const updatedDraft = await DraftExam.findByIdAndUpdate(
+      req.params.id,
+      {
+        title,
+        subject,
+        testNumber,
+        totalQuestions: questions.length,
+        questions
+      },
+      { new: true }
+    );
+
+    if (!updatedDraft) {
+      return res.status(404).json({ error: "Draft not found" });
+    }
+
+    res.json({ message: "Draft updated successfully!", draft: updatedDraft });
+
+  } catch (err) {
+    console.error("Draft update error:", err);
+    res.status(500).json({ error: "Server error while updating draft" });
+  }
+});
+
 
 app.post('/conduct/:draftId', async (req, res) => {
   const draft = await DraftExam.findById(req.params.draftId);
@@ -467,4 +500,5 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
 
