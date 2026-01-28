@@ -18,7 +18,7 @@
       color: #333;
     }
 
-    /* 🔵 TOP ACADEMY HEADER */
+    /* TOP ACADEMY HEADER */
     .top-header {
       background: #111827;
       padding: 12px;
@@ -82,8 +82,6 @@
       cursor: pointer;
     }
 
-    .btn:hover { background: #1d4ed8; }
-
     .exam-info {
       text-align: center;
       font-size: 18px;
@@ -119,16 +117,13 @@
       padding: 12px 8px;
       border-bottom: 1px solid #ddd;
       word-break: break-word;
+      font-size: 15px;
     }
 
     th {
       background: #667eea;
       color: white;
       text-align: left;
-      font-size: 15px;
-    }
-
-    td {
       font-size: 15px;
     }
 
@@ -145,16 +140,12 @@
       cursor: pointer;
       display: none;
     }
-
-    .download-btn:hover {
-      background: #0B7A52;
-    }
   </style>
 </head>
 
 <body>
 
-<!-- 🔵 TOP HEADING ADDED -->
+<!-- Top Academy Heading -->
 <div class="top-header">GP SOLDIERS ACADEMY</div>
 
 <header>Exam Results</header>
@@ -201,7 +192,6 @@
   <button class="download-btn" id="downloadBtn" onclick="downloadPDF()">
     Download the Result
   </button>
-
 </div>
 
 <script>
@@ -215,7 +205,6 @@
       select.innerHTML += `<option value="${i}">Test ${i}</option>`;
     }
   })();
-
 
   async function loadResults() {
     const subject = document.getElementById('subjectSelect').value;
@@ -259,8 +248,7 @@
       results.length > 0 ? "block" : "none";
   }
 
-
-  /* FIXED PDF FULL WIDTH */
+  /* PDF Generator – Shows GP SOLDIERS ACADEMY */
   async function downloadPDF() {
     const { jsPDF } = window.jspdf;
 
@@ -271,7 +259,18 @@
     tempDiv.style.padding = "20px";
     tempDiv.style.background = "white";
     tempDiv.style.width = "100%";
-    tempDiv.innerHTML = `<h2 style='text-align:center;'>${infoText}</h2>` + element.innerHTML;
+    tempDiv.style.textAlign = "center";
+
+    tempDiv.innerHTML = `
+      <h1 style="margin-bottom:5px; font-size:26px; color:#111827;">
+        GP SOLDIERS ACADEMY
+      </h1>
+
+      <h2 style="margin-top:0; font-size:20px; color:#2563eb;">
+        ${infoText}
+      </h2>
+      <br>
+    ` + element.innerHTML;
 
     document.body.appendChild(tempDiv);
 
