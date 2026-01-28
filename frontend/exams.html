@@ -29,8 +29,7 @@
 
     .back-btn {
       position: absolute;
-      left: 15px;
-      top: 50%;
+      left: 15px; top: 50%;
       transform: translateY(-50%);
       background: rgba(255,255,255,0.2);
       width: 40px; height: 40px;
@@ -41,7 +40,7 @@
     .back-btn i { color: white; font-size: 1.2rem; }
 
     .main {
-      margin-top: 80px;
+      margin-top: 90px;
       padding: 20px;
       max-width: 480px;
       margin-left: auto; margin-right: auto;
@@ -55,13 +54,25 @@
       margin-bottom: 25px;
     }
 
-    /* Book Loader (Option C) */
+    /* Book Loader */
     .book-loader {
       width: 70px;
       height: 70px;
       margin: 40px auto;
       background-image: url('https://i.imgur.com/1a5YgcW.gif');
       background-size: cover;
+    }
+
+    /* SUBJECT BOX */
+    .subject-box {
+      background: #e8f0ff;
+      padding: 10px 12px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: bold;
+      color: #2563eb;
+      margin-bottom: 15px;
+      border: 1px solid #cfdcff;
     }
 
     /* QUESTIONS */
@@ -105,7 +116,7 @@
       cursor: pointer;
     }
 
-    /* Popup */
+    /* POPUPS */
     .popup {
       position: fixed;
       inset: 0;
@@ -145,7 +156,7 @@
 <body>
 
 <header>
-  <div class="back-btn" onclick="location.href='index.html'">
+  <div class="back-btn" onclick="handleExit()">
     <i class="fas fa-arrow-left"></i>
   </div>
   Student Exam Portal
@@ -164,10 +175,30 @@
   <div id="examTaking" class="card hidden">
     <h2 id="examTitleDisplay" style="text-align:center; color:#2563eb;"></h2>
 
+    <div id="subjectBox" class="subject-box"></div>
+
     <form id="examForm">
       <div id="questionsContainer"></div>
       <button class="submit-btn" type="submit">Submit Exam</button>
     </form>
+  </div>
+</div>
+
+<!-- START WARNING POPUP -->
+<div id="startPopup" class="popup">
+  <div class="popup-card">
+    <h2>Exam Starting</h2>
+    <p>Are you ready? Do not exit the exam after starting.</p>
+    <button onclick="beginExam()">Start Now</button>
+  </div>
+</div>
+
+<!-- EXIT WARNING POPUP -->
+<div id="exitPopup" class="popup">
+  <div class="popup-card">
+    <h2>Exit Exam?</h2>
+    <p>Your answers are saved. Are you sure you want to leave?</p>
+    <button onclick="confirmExit()">Yes, Exit</button>
   </div>
 </div>
 
@@ -185,9 +216,16 @@ const API_URL = "https://academy-backend-e02j.onrender.com";
 
 let currentExam;
 let studentAnswers = [];
+let selectedExamId = null;
+let examStarted = false;
 const STORAGE_KEY = "saved_exam_answers";
 
-// LOAD EXAMS
+/* EXIT WARNING */
+window.onbeforeunload = function () {
+  if (examStarted) return "Are you sure you want to exit the exam?";
+};
+
+/* LOAD EXAMS */
 window.onload = loadExams;
 
 async function loadExams() {
@@ -207,7 +245,7 @@ async function loadExams() {
     }
 
     container.innerHTML = exams.map(ex =>
-      `<div onclick="startExam('${ex._id}')"
+      `<div onclick="showStartPopup('${ex._id}')"
          style="background:#e8f0ff;padding:18px;border-radius:14px;margin:10px 0;cursor:pointer;">
          <h3 style="color:#2563eb;">${ex.title}</h3>
          <p>${ex.subject?.toUpperCase()} - Test ${ex.testNumber}</p>
@@ -220,6 +258,19 @@ async function loadExams() {
   }
 }
 
+/* START WARNING POPUP */
+function showStartPopup(id) {
+  selectedExamId = id;
+  document.getElementById("startPopup").style.display = "flex";
+}
+
+async function beginExam() {
+  document.getElementById("startPopup").style.display = "none";
+  examStarted = true;
+  startExam(selectedExamId);
+}
+
+/* START EXAM */
 async function startExam(id) {
   try {
     const res = await fetch(`${API_URL}/exam/${id}`);
@@ -229,6 +280,9 @@ async function startExam(id) {
     document.getElementById("examTaking").classList.remove("hidden");
 
     document.getElementById("examTitleDisplay").textContent = currentExam.title;
+
+    document.getElementById("subjectBox").textContent =
+      `${currentExam.subject.toUpperCase()} • Test ${currentExam.testNumber}`;
 
     studentAnswers = new Array(currentExam.totalQuestions).fill(null);
 
@@ -249,7 +303,7 @@ async function startExam(id) {
   }
 }
 
-// Render MCQ options
+/* OPTIONS RENDER */
 function renderOptions(i) {
   return `
     ${["a","b","c","d"].map(o => `
@@ -261,7 +315,7 @@ function renderOptions(i) {
   `;
 }
 
-// SAVE answer locally
+/* SAVE ANSWER TO LOCAL STORAGE */
 function saveAnswer(i, val) {
   studentAnswers[i] = val;
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -270,12 +324,10 @@ function saveAnswer(i, val) {
   }));
 }
 
-// LOAD previous answers
+/* RESTORE SAVED ANSWERS */
 function loadSavedAnswers(examId) {
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-  if (saved && saved.examId === examId) {
-    studentAnswers = saved.answers;
-  }
+  if (saved && saved.examId === examId) studentAnswers = saved.answers;
 }
 
 function restoreSelectedOptions() {
@@ -286,7 +338,7 @@ function restoreSelectedOptions() {
   });
 }
 
-// SUBMIT
+/* SUBMIT */
 document.getElementById("examForm").addEventListener("submit", async e => {
   e.preventDefault();
 
@@ -305,8 +357,10 @@ document.getElementById("examForm").addEventListener("submit", async e => {
 
     if (!res.ok) throw new Error();
 
+    examStarted = false;
     localStorage.removeItem(STORAGE_KEY);
-    showPopup("SUCCESSFUL", "Your exam has been submitted successfully!");
+
+    showPopup("SUCCESSFUL", "Your exam has been submitted!");
 
     loadExams();
     document.getElementById("examTaking").classList.add("hidden");
@@ -317,7 +371,20 @@ document.getElementById("examForm").addEventListener("submit", async e => {
   }
 });
 
-// Popup
+/* EXIT WARNING MANUALLY */
+function handleExit() {
+  if (!examStarted) location.href = "index.html";
+  else {
+    document.getElementById("exitPopup").style.display = "flex";
+  }
+}
+
+function confirmExit() {
+  examStarted = false;
+  location.href = "index.html";
+}
+
+/* POPUP */
 function showPopup(title, msg) {
   document.getElementById("popupTitle").textContent = title;
   document.getElementById("popupMessage").textContent = msg;
