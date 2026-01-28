@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Download Exam Result - GP Soldiers</title>
+  <title>GP Soldiers – Exam Results</title>
+  <link rel="icon" href="data:,">
 
+  <!-- Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -12,8 +14,7 @@
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
       background: #f2f4f8;
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       color: #333;
     }
 
@@ -29,8 +30,90 @@
 
     .container {
       padding: 20px;
-      max-width: 600px;
+      max-width: 500px;
       margin: auto;
+    }
+
+    .settings-card {
+      background: white;
+      padding: 18px 20px;
+      border-radius: 16px;
+      margin-bottom: 18px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+    }
+
+    .settings-title {
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    select {
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      background: #f9fafb;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      background: #2563eb;
+      color: white;
+      border-radius: 14px;
+      font-size: 18px;
+      border: none;
+      margin-top: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(37,99,235,0.4);
+    }
+
+    .btn:hover { background: #1d4ed8; }
+
+    .exam-info {
+      text-align: center;
+      font-size: 19px;
+      font-weight: 600;
+      color: #2563eb;
+      margin-top: 20px;
+    }
+
+    .total-students {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 10px 0;
+    }
+
+    .table-container {
+      background: white;
+      padding: 15px;
+      border-radius: 16px;
+      margin-top: 20px;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.15);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 400px;
+    }
+
+    th {
+      background: #667eea;
+      color: white;
+      padding: 10px;
+      text-align: left;
+    }
+
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
     }
 
     .download-btn {
@@ -41,66 +124,47 @@
       border: none;
       border-radius: 14px;
       font-size: 18px;
-      margin: 15px 0;
+      margin-top: 20px;
       font-weight: 700;
       cursor: pointer;
+      display: none;
       box-shadow: 0 6px 20px rgba(14,159,110,0.3);
     }
-    .download-btn:hover { background: #0B7A52; }
 
-    .result-box {
-      background: white;
-      padding: 20px;
-      border-radius: 16px;
-      margin-top: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .title {
-      text-align: center;
-      font-size: 20px;
-      font-weight: 700;
-      color: #2563eb;
-      margin-bottom: 10px;
-    }
-
-    .total {
-      text-align: center;
-      font-size: 16px;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 10px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    th {
-      background: #667eea;
-      color: white;
-      padding: 12px;
-      text-align: left;
-    }
-    td {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
+    .download-btn:hover {
+      background: #0B7A52;
     }
   </style>
 </head>
+
 <body>
 
-<header>Download Exam Result</header>
+<header>Exam Results</header>
 
 <div class="container">
 
-  <button class="download-btn" onclick="downloadPDF()">Download PDF</button>
+  <div class="settings-card">
+    <div class="settings-title">Select Subject</div>
+    <select id="subjectSelect">
+      <option value="">Choose subject</option>
+      <option value="english">English</option>
+      <option value="kannada">Kannada</option>
+      <option value="gk">GK</option>
+      <option value="maths">Maths</option>
+    </select>
+  </div>
 
-  <div id="resultContainer" class="result-box">
-    <div id="examTitle" class="title">Loading...</div>
-    <div id="totalStudents" class="total"></div>
+  <div class="settings-card">
+    <div class="settings-title">Select Test Number</div>
+    <select id="testNumberSelect"></select>
+  </div>
 
+  <button class="btn" onclick="loadResults()">Show Results</button>
+
+  <div id="examInfo" class="exam-info" style="display:none;"></div>
+  <div id="totalStudents" class="total-students"></div>
+
+  <div class="table-container" id="resultBox">
     <table>
       <thead>
         <tr>
@@ -111,75 +175,96 @@
         </tr>
       </thead>
       <tbody id="resultsBody">
-        <tr><td colspan="4" style="text-align:center;">Loading...</td></tr>
+        <tr><td colspan="4" style="text-align:center;">Select exam</td></tr>
       </tbody>
     </table>
   </div>
+
+  <button class="download-btn" id="downloadBtn" onclick="downloadPDF()">
+    Download the Result
+  </button>
 
 </div>
 
 <script>
   const API_URL = "https://academy-backend-e02j.onrender.com";
 
-  // Get URL parameters (subject & test)
-  const urlParams = new URLSearchParams(window.location.search);
-  const subject = urlParams.get("subject");
-  const testNumber = urlParams.get("test");
+  // Populate test numbers
+  (function() {
+    const select = document.getElementById('testNumberSelect');
+    for (let i = 1; i <= 50; i++) {
+      select.innerHTML += `<option value="${i}">Test ${i}</option>`;
+    }
+  })();
 
   async function loadResults() {
+    const subject = document.getElementById('subjectSelect').value;
+    const testNumber = document.getElementById('testNumberSelect').value;
+
     if (!subject || !testNumber) {
-      document.getElementById("examTitle").textContent = "Invalid exam details!";
+      alert("Please choose subject & test number");
       return;
     }
-
-    document.getElementById("examTitle").textContent =
-      subject.toUpperCase() + " - Test " + testNumber;
 
     const res = await fetch(`${API_URL}/results`);
     let results = await res.json();
 
     results = results.filter(r =>
-      r.examSubject?.toLowerCase() === subject.toLowerCase() &&
-      r.examTestNumber == parseInt(testNumber)
+      r.examSubject?.toLowerCase() === subject &&
+      r.examTestNumber == testNumber
     );
 
     results.sort((a, b) => b.correct - a.correct);
 
-    document.getElementById("totalStudents").textContent =
+    document.getElementById("examInfo").innerText =
+      `${subject.toUpperCase()} — Test ${testNumber}`;
+    document.getElementById("examInfo").style.display = "block";
+
+    document.getElementById("totalStudents").innerText =
       `Total Students: ${results.length}`;
 
     document.getElementById("resultsBody").innerHTML =
       results.length === 0
-        ? `<tr><td colspan="4" style="text-align:center;color:#d32f2f;">No results found</td></tr>`
-        : results
-            .map((r, i) => `
-              <tr>
-                <td>#${i + 1}</td>
-                <td>${r.studentName || "Guest"}</td>
-                <td>${r.studentRoll || "N/A"}</td>
-                <td><b>${r.correct}</b>/${r.total}</td>
-              </tr>
-            `)
-            .join("");
+        ? `<tr><td colspan="4" style="text-align:center;color:red;">No results found</td></tr>`
+        : results.map((r, i) => `
+            <tr>
+              <td>#${i+1}</td>
+              <td>${r.studentName || "Guest"}</td>
+              <td>${r.studentRoll || "N/A"}</td>
+              <td><b>${r.correct}</b>/${r.total}</td>
+            </tr>
+          `).join("");
+
+    document.getElementById("downloadBtn").style.display =
+      results.length > 0 ? "block" : "none";
   }
 
-  loadResults();
-
-  /* 🔥 Convert RESULT to PDF */
+  // PDF Download
   async function downloadPDF() {
     const { jsPDF } = window.jspdf;
 
-    const container = document.getElementById("resultContainer");
+    const box = document.getElementById("resultBox");
+    const info = document.getElementById("examInfo");
+
+    const container = document.createElement("div");
+    container.style.padding = "20px";
+    container.style.background = "white";
+    container.append(info.cloneNode(true));
+    container.append(box.cloneNode(true));
+
+    document.body.append(container);
 
     const canvas = await html2canvas(container, { scale: 2 });
+    document.body.removeChild(container);
+
     const imgData = canvas.toDataURL("image/png");
 
     const pdf = new jsPDF("p", "mm", "a4");
     const width = pdf.internal.pageSize.getWidth();
     const height = (canvas.height * width) / canvas.width;
 
-    pdf.addImage(imgData, "PNG", 0, 10, width, height);
-    pdf.save(`GP-Soldiers-Result-Test-${testNumber}.pdf`);
+    pdf.addImage(imgData, "PNG", 0, 5, width, height);
+    pdf.save("GP-Soldiers-Exam-Result.pdf");
   }
 </script>
 
