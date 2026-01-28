@@ -29,29 +29,29 @@
     }
 
     .container {
-      padding: 20px;
+      padding: 15px;
       max-width: 500px;
       margin: auto;
     }
 
     .settings-card {
       background: white;
-      padding: 18px 20px;
-      border-radius: 16px;
-      margin-bottom: 18px;
+      padding: 16px;
+      border-radius: 14px;
+      margin-bottom: 15px;
       box-shadow: 0 3px 12px rgba(0,0,0,0.1);
     }
 
     .settings-title {
-      font-size: 16px;
+      font-size: 15px;
       color: #555;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
       font-weight: 600;
     }
 
     select {
       width: 100%;
-      padding: 15px;
+      padding: 14px;
       font-size: 16px;
       border-radius: 12px;
       border: 1px solid #ccc;
@@ -69,17 +69,17 @@
       margin-top: 10px;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 5px 15px rgba(37,99,235,0.4);
     }
 
     .btn:hover { background: #1d4ed8; }
 
     .exam-info {
       text-align: center;
-      font-size: 19px;
+      font-size: 18px;
       font-weight: 600;
       color: #2563eb;
-      margin-top: 20px;
+      margin-top: 18px;
+      word-wrap: break-word;
     }
 
     .total-students {
@@ -91,29 +91,34 @@
 
     .table-container {
       background: white;
-      padding: 15px;
-      border-radius: 16px;
-      margin-top: 20px;
+      padding: 10px;
+      border-radius: 14px;
+      margin-top: 15px;
       box-shadow: 0 5px 18px rgba(0,0,0,0.15);
-      overflow-x: auto;
+      width: 100%;
+      overflow-x: hidden !important;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 400px;
+    }
+
+    th, td {
+      padding: 12px 8px;
+      border-bottom: 1px solid #ddd;
+      word-break: break-word;
     }
 
     th {
       background: #667eea;
       color: white;
-      padding: 10px;
       text-align: left;
+      font-size: 15px;
     }
 
     td {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
+      font-size: 15px;
     }
 
     .download-btn {
@@ -128,11 +133,21 @@
       font-weight: 700;
       cursor: pointer;
       display: none;
-      box-shadow: 0 6px 20px rgba(14,159,110,0.3);
     }
 
     .download-btn:hover {
       background: #0B7A52;
+    }
+
+    /* FIX MOBILE VIEW FULL WIDTH */
+    @media (max-width: 480px) {
+      table {
+        font-size: 14px;
+      }
+
+      th, td {
+        padding: 10px 6px;
+      }
     }
   </style>
 </head>
@@ -168,10 +183,10 @@
     <table>
       <thead>
         <tr>
-          <th>Rank</th>
-          <th>Name</th>
-          <th>Roll</th>
-          <th>Score</th>
+          <th style="width:50px;">Rank</th>
+          <th style="width:40%;">Name</th>
+          <th style="width:25%;">Roll</th>
+          <th style="width:20%;">Score</th>
         </tr>
       </thead>
       <tbody id="resultsBody">
@@ -192,10 +207,12 @@
   // Populate test numbers
   (function() {
     const select = document.getElementById('testNumberSelect');
+    select.innerHTML = `<option value="">Select test</option>`;
     for (let i = 1; i <= 50; i++) {
       select.innerHTML += `<option value="${i}">Test ${i}</option>`;
     }
   })();
+
 
   async function loadResults() {
     const subject = document.getElementById('subjectSelect').value;
@@ -229,7 +246,7 @@
         : results.map((r, i) => `
             <tr>
               <td>#${i+1}</td>
-              <td>${r.studentName || "Guest"}</td>
+              <td>${r.studentName || "N/A"}</td>
               <td>${r.studentRoll || "N/A"}</td>
               <td><b>${r.correct}</b>/${r.total}</td>
             </tr>
@@ -239,31 +256,37 @@
       results.length > 0 ? "block" : "none";
   }
 
-  // PDF Download
+
+  /* FIXED PDF FULL WIDTH */
   async function downloadPDF() {
     const { jsPDF } = window.jspdf;
 
-    const box = document.getElementById("resultBox");
-    const info = document.getElementById("examInfo");
+    const element = document.getElementById("resultBox");
+    const infoText = document.getElementById("examInfo").innerText;
 
-    const container = document.createElement("div");
-    container.style.padding = "20px";
-    container.style.background = "white";
-    container.append(info.cloneNode(true));
-    container.append(box.cloneNode(true));
+    const tempDiv = document.createElement("div");
+    tempDiv.style.padding = "20px";
+    tempDiv.style.background = "white";
+    tempDiv.style.width = "100%";
+    tempDiv.innerHTML = `<h2 style='text-align:center;'>${infoText}</h2>` + element.innerHTML;
 
-    document.body.append(container);
+    document.body.appendChild(tempDiv);
 
-    const canvas = await html2canvas(container, { scale: 2 });
-    document.body.removeChild(container);
+    const canvas = await html2canvas(tempDiv, {
+      scale: 3,   // HIGHER QUALITY
+      useCORS: true,
+      scrollY: -window.scrollY
+    });
+
+    document.body.removeChild(tempDiv);
 
     const imgData = canvas.toDataURL("image/png");
-
     const pdf = new jsPDF("p", "mm", "a4");
+
     const width = pdf.internal.pageSize.getWidth();
     const height = (canvas.height * width) / canvas.width;
 
-    pdf.addImage(imgData, "PNG", 0, 5, width, height);
+    pdf.addImage(imgData, "PNG", 0, 0, width, height);
     pdf.save("GP-Soldiers-Exam-Result.pdf");
   }
 </script>
