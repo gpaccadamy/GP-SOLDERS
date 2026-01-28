@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Notes – GP Soldiers Academy</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f1f5f9;
+      --accent: #f59e0b;
+      --primary: #3b82f6;
+      --gray: #64748b;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 16px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 12px 0;
+      border-bottom: 1px solid #334155;
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .status {
+      font-size: 0.95rem;
+      color: var(--gray);
+    }
+    .status.success { color: #10b981; }
+    textarea {
+      width: 100%;
+      min-height: 60vh;
+      padding: 20px;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid #334155;
+      border-radius: 16px;
+      resize: vertical;
+      outline: none;
+    }
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+    }
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: all 0.3s;
+    }
+    .btn:hover { background: #2563eb; transform: translateY(-2px); }
+    .btn.clear { background: #ef4444; }
+    .btn.clear:hover { background: #dc2626; }
+    .footer-info {
+      text-align: center;
+      margin-top: 40px;
+      color: var(--gray);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1><i class="fas fa-pen-nib"></i> My Notes</h1>
+    <div class="status" id="saveStatus">Ready to write...</div>
+  </header>
+
+  <main>
+    <textarea id="noteArea" placeholder="Write your notes here...\nEverything saves automatically.\nNotes stay for 12 hours even if you close the app/browser."></textarea>
+
+    <div style="display:flex; gap:16px; margin-top:20px; flex-wrap:wrap;">
+      <button class="btn" onclick="clearNotes()">Clear All Notes</button>
+    </div>
+
+    <p class="footer-info">
+      Notes are saved only in your browser (localStorage)<br>
+      Automatically deleted after 12 hours from last edit
+    </p>
+  </main>
+
+  <script>
+    const noteArea = document.getElementById('noteArea');
+    const saveStatus = document.getElementById('saveStatus');
+
+    const STORAGE_KEY = 'gpsoldiers_notes_content';
+    const TIMESTAMP_KEY = 'gpsoldiers_notes_timestamp';
+    const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+
+    // Load saved note on page open
+    function loadSavedNote() {
+      const content = localStorage.getItem(STORAGE_KEY);
+      const timestamp = localStorage.getItem(TIMESTAMP_KEY);
+
+      if (content && timestamp) {
+        const savedTime = parseInt(timestamp);
+        const age = Date.now() - savedTime;
+
+        if (age < TWELVE_HOURS_MS) {
+          noteArea.value = content;
+          const date = new Date(savedTime);
+          updateStatus(`Last saved: ${date.toLocaleString()}`);
+        } else {
+          // Expired → clear automatically
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(TIMESTAMP_KEY);
+          updateStatus("Previous notes expired (older than 12 hours)");
+        }
+      }
+    }
+
+    // Save note
+    function saveNote() {
+      const text = noteArea.value.trim();
+      if (text) {
+        localStorage.setItem(STORAGE_KEY, text);
+        const now = Date.now();
+        localStorage.setItem(TIMESTAMP_KEY, now.toString());
+        updateStatus(`Saved at ${new Date(now).toLocaleTimeString()}`);
+      }
+    }
+
+    function updateStatus(msg) {
+      saveStatus.textContent = msg;
+      saveStatus.classList.add('success');
+      setTimeout(() => saveStatus.classList.remove('success'), 4000);
+    }
+
+    // Auto-save every 3 seconds if changed
+    let lastContent = '';
+    setInterval(() => {
+      const current = noteArea.value.trim();
+      if (current !== lastContent) {
+        saveNote();
+        lastContent = current;
+      }
+    }, 3000);
+
+    // Also save on blur / tab close (extra safety)
+    window.addEventListener('beforeunload', saveNote);
+
+    // Clear button
+    function clearNotes() {
+      if (confirm("Delete all notes permanently?")) {
+        noteArea.value = '';
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(TIMESTAMP_KEY);
+        updateStatus("Notes cleared");
+      }
+    }
+
+    // Load when page opens
+    window.onload = loadSavedNote;
+  </script>
+
+</body>
+</html>
