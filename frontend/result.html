@@ -122,10 +122,10 @@
       border-bottom: 1px solid #ddd;
     }
 
-    .share-btn {
+    .download-btn {
       width: 100%;
       padding: 15px;
-      background: #25D366;
+      background: #0E9F6E;
       color: white;
       border: none;
       border-radius: 14px;
@@ -134,10 +134,10 @@
       font-weight: 700;
       cursor: pointer;
       display: none;
-      box-shadow: 0 6px 20px rgba(37,211,102,0.3);
+      box-shadow: 0 6px 20px rgba(14,159,110,0.3);
     }
-    .share-btn:hover {
-      background: #128C7E;
+    .download-btn:hover {
+      background: #0B7A52;
     }
 
     .hidden { display: none !important; }
@@ -192,7 +192,10 @@
     </table>
   </div>
 
-  <button class="share-btn" id="shareBtn" onclick="shareResults()">Share Results on WhatsApp</button>
+  <!-- Download Button -->
+  <button class="download-btn" id="downloadBtn" onclick="openExternal()">
+    Download the Result
+  </button>
 
 </div>
 
@@ -206,7 +209,6 @@
       select.innerHTML += `<option value="${i}">Test ${i}</option>`;
     }
   }
-
   populateTestNumbers();
 
   async function loadResults() {
@@ -249,7 +251,7 @@
       document.getElementById("totalStudents").textContent =
         `Total Students: ${results.length}`;
 
-      document.getElementById("shareBtn").style.display =
+      document.getElementById("downloadBtn").style.display =
         results.length > 0 ? "block" : "none";
 
     } catch (err) {
@@ -257,8 +259,27 @@
     }
   }
 
-  function shareResults() {
-    alert("WhatsApp sharing will be improved soon!");
+  /* 🔥 FORCE OPEN EXTERNAL BROWSER (Chrome/Safari) */
+  function openExternal() {
+    const url = "https://academy-student-portal.onrender.com/dresult.html";
+
+    // ANDROID → Force Chrome
+    if (/Android/i.test(navigator.userAgent)) {
+      window.location.href =
+        "intent://" +
+        url.replace("https://", "") +
+        "#Intent;scheme=https;package=com.android.chrome;end";
+      return;
+    }
+
+    // iOS → Safari new tab
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      window.open(url, "_blank");
+      return;
+    }
+
+    // Desktop
+    window.open(url, "_blank");
   }
 </script>
 
