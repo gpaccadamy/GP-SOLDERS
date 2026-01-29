@@ -13,13 +13,12 @@
     }
 
     body {
-      background: #0f172a;           /* Original deep navy */
-      color: #f1f5f9;                /* Light text */
+      background: #0f172a;           
+      color: #f1f5f9;                
       padding-top: 80px;
       line-height: 1.6;
     }
 
-    /* FIXED HEADER */
     .fixed-header {
       position: fixed;
       top: 0;
@@ -53,7 +52,6 @@
       padding: 4px;
     }
 
-    /* HERO */
     .hero {
       min-height: 90vh;
       background: url("https://images.unsplash.com/photo-1678558563173-e4c279c4ea82") center/cover no-repeat;
@@ -109,7 +107,7 @@
     .hero-buttons {
       display: flex;
       flex-direction: column;
-      gap: 16px;                    /* Good spacing for 3 buttons */
+      gap: 16px;
       margin-top: 32px;
     }
 
@@ -147,7 +145,6 @@
       transform: translateY(-3px);
     }
 
-    /* STATS */
     .stats {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -176,7 +173,6 @@
       margin-top: 6px;
     }
 
-    /* RESULTS */
     .section {
       padding: 50px 20px;
     }
@@ -233,7 +229,6 @@
       font-size: 1.1rem;
     }
 
-    /* FOOTER */
     footer {
       padding: 50px 20px;
       text-align: center;
@@ -242,18 +237,12 @@
       border-top: 1px solid #334155;
     }
 
-    footer p {
-      margin: 10px 0;
-      font-size: 1.05rem;
-    }
-
     .copy {
       margin-top: 20px;
       color: #64748b;
       font-size: 0.95rem;
     }
 
-    /* CONTACT MODAL */
     .modal {
       display: none;
       position: fixed;
@@ -322,7 +311,6 @@
 </head>
 <body>
 
-  <!-- HEADER -->
   <header class="fixed-header">
     <div class="logo">
       <img src="frontend/gplogo.jpg" alt="GP Soldier Academy" class="logo-img" />
@@ -330,7 +318,6 @@
     </div>
   </header>
 
-  <!-- HERO -->
   <section class="hero">
     <div class="hero-text">
       <p class="tag">India's Most Trusted Defence Academy</p>
@@ -343,13 +330,19 @@
 
       <div class="hero-buttons">
         <button class="btn btn-gold" onclick="openContactModal()">Contact Us Now</button>
-        <a href="_GP_SOLDIER_ACADEMY.apk" download class="btn btn-outline">Download GP Soldier App</a>
+
+        <!-- UPDATED BUTTON LINK -->
+        <a href="https://appsgeyser.io/19488770/GP SOLDIER ACADEMY"
+           class="btn btn-outline"
+           target="_blank">
+           Download GP Soldier App
+        </a>
+
         <a href="video.html" class="btn btn-outline">Academy Videos</a>
       </div>
     </div>
   </section>
 
-  <!-- STATS -->
   <section class="stats">
     <div><h2>5000+</h2><p>Successful Students</p></div>
     <div><h2>95%</h2><p>Selection Rate</p></div>
@@ -357,7 +350,6 @@
     <div><h2>100%</h2><p>Free Physical Training</p></div>
   </section>
 
-  <!-- RESULTS -->
   <section class="section">
     <h2>Our Proud Achievers</h2>
     <div class="results-container">
@@ -374,7 +366,6 @@
     </div>
   </section>
 
-  <!-- FOOTER -->
   <footer>
     <p>📞 +91 9419575333 | +91 9483069504 | +91 9449622733</p>
     <p>📧 gpaccadamy@gmail.com</p>
@@ -382,7 +373,6 @@
     <p class="copy">© 2026 GP Soldier Academy – All Rights Reserved</p>
   </footer>
 
-  <!-- CONTACT MODAL -->
   <div id="contactModal" class="modal">
     <div class="modal-content">
       <h2>Get in Touch</h2>
