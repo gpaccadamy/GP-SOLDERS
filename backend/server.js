@@ -10,7 +10,7 @@ const cloudinary = require('cloudinary').v2;
 const app = express();
 
 // ────────────────────────────────────────────────
-// CORS CONFIG (SAFE + BEST OPTION)
+// CORS CONFIG
 // ────────────────────────────────────────────────
 const allowedOrigins = [
   'https://academy-student-portal.onrender.com',
@@ -34,13 +34,12 @@ app.use(cors({
 app.use(express.json());
 
 // ────────────────────────────────────────────────
-// STATIC FRONTEND
+// STATIC FILES
 // ────────────────────────────────────────────────
 const frontendPath = path.join(__dirname, '../frontend');
 console.log("Serving frontend from:", frontendPath);
 app.use(express.static(frontendPath));
 
-// UPLOADS DIRECTORY
 const uploadDir = './uploads';
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
@@ -140,37 +139,29 @@ const ArmyVideo = mongoose.model('ArmyVideo', new mongoose.Schema({
 }, { timestamps: true }));
 
 // ────────────────────────────────────────────────
-// STUDENT LOGIN & MANAGEMENT
+// STUDENT ROUTES
 // ────────────────────────────────────────────────
 app.post('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
-    if (!mobile || !password)
-      return res.status(400).json({ error: "Mobile & password required" });
+    if (!mobile || !password) return res.status(400).json({ error: "Mobile & password required" });
     const student = await Student.findOne({ mobile });
-    if (!student) return res.status(404).json({ error: "Invalid credentials" });
-    if (student.password !== password)
-      return res.status(401).json({ error: "Invalid credentials" });
+    if (!student || student.password !== password) return res.status(401).json({ error: "Invalid credentials" });
     res.json({ name: student.name, mobile: student.mobile });
-  } catch {
+  } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
 });
 
-app.get('/students', async (req, res) => {
-  res.json(await Student.find());
-});
-
+app.get('/students', async (req, res) => res.json(await Student.find()));
 app.post('/students', async (req, res) => {
   try {
     const { name, roll, mobile, password } = req.body;
-    if (!name || !mobile || !password)
-      return res.status(400).json({ error: "Missing fields" });
-    const exists = await Student.findOne({ mobile });
-    if (exists) return res.status(409).json({ error: "Mobile already registered" });
+    if (!name || !mobile || !password) return res.status(400).json({ error: "Missing fields" });
+    if (await Student.findOne({ mobile })) return res.status(409).json({ error: "Mobile already registered" });
     await new Student({ name, roll, mobile, password }).save();
     res.json({ message: "Student added" });
-  } catch {
+  } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -184,129 +175,94 @@ app.delete('/students/:id', async (req, res) => {
 // ────────────────────────────────────────────────
 // VIDEO ROUTES
 // ────────────────────────────────────────────────
-app.get('/videos', async (req, res) => {
-  res.json(await Video.find());
-});
+app.get('/videos', async (req, res) => res.json(await Video.find()));
 
 app.post('/videos', async (req, res) => {
   const { subject, class: classNum, videoId, title } = req.body;
-  if (!videoId || videoId.length !== 11)
-    return res.status(400).json({ error: "Invalid videoId (must be 11 chars)" });
-  if (!subject || !classNum)
-    return res.status(400).json({ error: "Subject and class required" });
-  try {
-    let video = await Video.findOne({ subject, class: classNum });
-    if (video) {
-      video.videoId = videoId;
-      video.title = title || "Lesson";
-      await video.save();
-      return res.json({ message: "Video updated" });
-    }
-    await new Video({
-      subject,
-      class: classNum,
-      videoId,
-      title: title || "Lesson"
-    }).save();
-    res.json({ message: "Video saved" });
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
+  if (!videoId || videoId.length !== 11) return res.status(400).json({ error: "Invalid videoId (must be 11 chars)" });
+  if (!subject || !classNum) return res.status(400).json({ error: "Subject and class required" });
+
+  let video = await Video.findOne({ subject, class: classNum });
+  if (video) {
+    video.videoId = videoId;
+    video.title = title || "Lesson";
+    await video.save();
+    return res.json({ message: "Video updated" });
   }
+
+  await new Video({ subject, class: classNum, videoId, title: title || "Lesson" }).save();
+  res.json({ message: "Video saved" });
 });
 
 app.delete('/videos/:id', async (req, res) => {
-  try {
-    const video = await Video.findByIdAndDelete(req.params.id);
-    if (!video) return res.status(404).json({ error: "Video not found" });
-    res.json({ message: "Video deleted" });
-  } catch {
-    res.status(500).json({ error: "Delete failed" });
-  }
+  const video = await Video.findByIdAndDelete(req.params.id);
+  if (!video) return res.status(404).json({ error: "Video not found" });
+  res.json({ message: "Video deleted" });
 });
 
 app.put('/videos/:id', async (req, res) => {
-  try {
-    const updated = await Video.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    if (!updated) return res.status(404).json({ error: "Video not found" });
-    res.json({ message: "Video updated", video: updated });
-  } catch {
-    res.status(500).json({ error: "Update failed" });
-  }
+  const updated = await Video.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  if (!updated) return res.status(404).json({ error: "Video not found" });
+  res.json({ message: "Video updated", video: updated });
 });
 
 // ────────────────────────────────────────────────
-// DRAFT EXAM ROUTES (FIXED: separate create & update)
+// DRAFT & EXAM ROUTES
 // ────────────────────────────────────────────────
 app.get('/drafts', async (req, res) => {
   res.json(await DraftExam.find().sort({ createdAt: -1 }));
 });
 
-// CREATE new draft
 app.post('/drafts', async (req, res) => {
   const { title, subject, testNumber, questions } = req.body;
-  if (!questions || questions.length === 0)
-    return res.status(400).json({ error: "At least one question required" });
+  if (!questions?.length) return res.status(400).json({ error: "At least one question required" });
 
-  try {
-    const draft = new DraftExam({
-      title,
-      subject,
-      testNumber,
-      questions,
-      totalQuestions: questions.length
-    });
-    await draft.save();
-    res.json({ message: "Draft created" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to create draft" });
-  }
+  const draft = new DraftExam({
+    title,
+    subject,
+    testNumber,
+    questions,
+    totalQuestions: questions.length
+  });
+  await draft.save();
+  res.json({ message: "Draft created" });
 });
 
-// UPDATE existing draft by ID
 app.put('/drafts/:id', async (req, res) => {
   const { title, subject, testNumber, questions } = req.body;
-  if (!questions || questions.length === 0)
-    return res.status(400).json({ error: "At least one question required" });
+  if (!questions?.length) return res.status(400).json({ error: "At least one question required" });
 
-  try {
-    const draft = await DraftExam.findByIdAndUpdate(
-      req.params.id,
-      {
-        title,
-        subject,
-        testNumber,
-        questions,
-        totalQuestions: questions.length
-      },
-      { new: true, runValidators: true }
-    );
+  const draft = await DraftExam.findByIdAndUpdate(
+    req.params.id,
+    { title, subject, testNumber, questions, totalQuestions: questions.length },
+    { new: true, runValidators: true }
+  );
 
-    if (!draft) return res.status(404).json({ error: "Draft not found" });
-    res.json({ message: "Draft updated", draft });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to update draft" });
-  }
+  if (!draft) return res.status(404).json({ error: "Draft not found" });
+  res.json({ message: "Draft updated", draft });
 });
 
-// Conduct exam (delete draft after moving to Exam)
 app.post('/conduct/:draftId', async (req, res) => {
   try {
     const draft = await DraftExam.findById(req.params.draftId);
     if (!draft) return res.status(404).json({ error: "Draft not found" });
 
-    const exists = await Exam.findOne({ title: draft.title });
-    if (exists) return res.status(400).json({ error: "Already conducted" });
+    // Improved check: same title + same test number = already conducted
+    const exists = await Exam.findOne({
+      title: draft.title,
+      testNumber: draft.testNumber
+    });
+
+    if (exists) {
+      return res.status(400).json({
+        error: `Exam "${draft.title}" Test ${draft.testNumber} has already been conducted`
+      });
+    }
 
     const exam = new Exam({
       title: draft.title,
       subject: draft.subject,
-      classNum: draft.classNum || null, // if you add class later
+      classNum: draft.classNum || null,
       testNumber: draft.testNumber,
       totalQuestions: draft.totalQuestions,
       questions: draft.questions
@@ -317,14 +273,11 @@ app.post('/conduct/:draftId', async (req, res) => {
 
     res.json({ message: "Exam conducted successfully!" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Conduct failed" });
+    console.error("Conduct error:", err);
+    res.status(500).json({ error: "Failed to conduct exam" });
   }
 });
 
-// ────────────────────────────────────────────────
-// ACTIVE / EXAM ROUTES
-// ────────────────────────────────────────────────
 app.get('/active-exams', async (req, res) => {
   res.json(await Exam.find().sort({ conductedAt: -1 }));
 });
@@ -365,12 +318,11 @@ app.post('/submit-exam', async (req, res) => {
 });
 
 // ────────────────────────────────────────────────
-// NOTES ROUTES
+// NOTES & ARMY VIDEOS (unchanged)
 // ────────────────────────────────────────────────
 app.post('/api/save-note', async (req, res) => {
   const { title, content } = req.body;
-  if (!title || !content)
-    return res.status(400).json({ success: false, message: "Missing fields" });
+  if (!title || !content) return res.status(400).json({ success: false, message: "Missing fields" });
   await new Note({ title, content }).save();
   res.json({ success: true, message: "Note saved!" });
 });
@@ -379,23 +331,17 @@ app.get('/api/notes', async (req, res) => {
   res.json(await Note.find().sort({ createdAt: -1 }));
 });
 
-// ────────────────────────────────────────────────
-// ARMY VIDEO ROUTES
-// ────────────────────────────────────────────────
 app.get('/api/army-videos', async (req, res) => {
   res.json(await ArmyVideo.find().sort({ uploadedAt: -1 }));
 });
 
 app.post('/save-army-video', async (req, res) => {
   const { title, url } = req.body;
-  if (!title || !url)
-    return res.status(400).json({ error: "Missing data" });
-  const video = new ArmyVideo({ title, url });
-  await video.save();
+  if (!title || !url) return res.status(400).json({ error: "Missing data" });
+  await new ArmyVideo({ title, url }).save();
   res.json({ success: true, message: "Army video saved" });
 });
 
-// Local disk upload for army videos
 const armyStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(__dirname, "uploads/army-videos");
@@ -425,14 +371,14 @@ app.post('/upload-army-video', uploadArmyVideo.single("video"), async (req, res)
 });
 
 // ────────────────────────────────────────────────
-// CATCH-ALL ROUTE (SPA support)
+// CATCH-ALL (SPA)
 // ────────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 // ────────────────────────────────────────────────
-// SERVER START
+// START SERVER
 // ────────────────────────────────────────────────
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
