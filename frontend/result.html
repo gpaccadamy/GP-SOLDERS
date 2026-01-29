@@ -156,8 +156,8 @@
     <table>
       <thead>
         <tr>
-          <th style="width:50px;">Rank</th>
-          <th style="width:40%;">Name</th>
+          <th style="width:60px;">Rank</th>
+          <th style="width:45%;">Name</th>
           <th style="width:25%;">Roll</th>
           <th style="width:20%;">Score</th>
         </tr>
@@ -207,7 +207,6 @@
     body.innerHTML = '<tr><td colspan="4" style="text-align:center;">Loading...</td></tr>';
 
     try {
-      // Use optimized filtered endpoint
       const url = `${API_URL}/results/exam?subject=${encodeURIComponent(subject)}&testNumber=${testNumber}`;
       const res = await fetch(url);
 
@@ -236,7 +235,7 @@
         <tr>
           <td>#${index + 1}</td>
           <td>${r.studentName || "N/A"}</td>
-          <td>${r.studentRoll || r.studentMobile.slice(-4) || "N/A"}</td>
+          <td>${r.roll || r.studentRoll || "N/A"}</td>
           <td><b>${r.correct}</b> / ${r.total}</td>
         </tr>
       `).join("");
@@ -245,11 +244,13 @@
 
     } catch (err) {
       console.error("Results error:", err);
-      body.innerHTML = `<tr><td colspan="4" class="error-msg">${err.message || "Failed to load results. Try again."}</td></tr>`;
+      body.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#dc2626;">
+        Failed to load results<br><br>${err.message || "Please try again"}
+      </td></tr>`;
     }
   }
 
-  // PDF Download (your original logic + better styling)
+  // PDF Download
   async function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const element = document.getElementById("resultBox");
@@ -284,12 +285,7 @@
     document.body.appendChild(tempDiv);
 
     try {
-      const canvas = await html2canvas(tempDiv, {
-        scale: 2,
-        useCORS: true,
-        logging: false
-      });
-
+      const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true, logging: false });
       document.body.removeChild(tempDiv);
 
       const imgData = canvas.toDataURL("image/png");
