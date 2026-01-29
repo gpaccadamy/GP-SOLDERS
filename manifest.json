@@ -1,8 +1,8 @@
 {
   "name": "GP Soldiers Academy",
   "short_name": "GP Soldiers",
-  "description": "Student Exam Portal & Results - GP Soldiers Academy Vijayapur",
-  "start_url": "/",
+  "description": "Student Exam & Results Portal - Vijayapur",
+  "start_url": "/indexx.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#2563eb",
