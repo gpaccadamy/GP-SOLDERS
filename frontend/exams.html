@@ -6,15 +6,12 @@
   <title>Student Exam Portal - GP Soldiers Academy</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
       background: #f0f9ff;
       margin: 0; padding: 0;
     }
-
-    /* HEADER */
     header {
       background: linear-gradient(135deg, #2563eb, #3b82f6);
       color: white;
@@ -26,7 +23,6 @@
       top: 0; width: 100%;
       z-index: 100;
     }
-
     .back-btn {
       position: absolute;
       left: 15px; top: 50%;
@@ -38,14 +34,12 @@
       cursor: pointer;
     }
     .back-btn i { color: white; font-size: 1.2rem; }
-
     .main {
       margin-top: 90px;
       padding: 20px;
       max-width: 480px;
       margin-left: auto; margin-right: auto;
     }
-
     .card {
       background: white;
       padding: 22px;
@@ -53,8 +47,6 @@
       box-shadow: 0 8px 25px rgba(0,0,0,0.1);
       margin-bottom: 25px;
     }
-
-    /* Book Loader */
     .book-loader {
       width: 70px;
       height: 70px;
@@ -62,8 +54,6 @@
       background-image: url('https://i.imgur.com/1a5YgcW.gif');
       background-size: cover;
     }
-
-    /* SUBJECT BOX */
     .subject-box {
       background: #e8f0ff;
       padding: 10px 12px;
@@ -74,22 +64,18 @@
       margin-bottom: 15px;
       border: 1px solid #cfdcff;
     }
-
-    /* QUESTIONS */
     .question-container {
       background: #f8fafc;
       padding: 18px;
       border-radius: 12px;
       margin-bottom: 18px;
     }
-
     .question-img {
       width: 100%;
       border-radius: 12px;
       margin-bottom: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
-
     .option {
       display: flex;
       align-items: center;
@@ -101,9 +87,7 @@
       cursor: pointer;
     }
     .option:hover { border-color: #2563eb; }
-
     .option input { margin-right: 12px; transform: scale(1.4); }
-
     .submit-btn {
       background: #10b981;
       color: white;
@@ -115,12 +99,10 @@
       margin-top: 15px;
       cursor: pointer;
     }
-
-    /* POPUPS */
     .popup {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.6);
       display: none;
       justify-content: center;
       align-items: center;
@@ -131,30 +113,43 @@
       padding: 28px;
       border-radius: 16px;
       text-align: center;
-      width: 85%;
-      max-width: 380px;
+      width: 90%;
+      max-width: 420px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
     .popup-card h2 {
       color: #2563eb;
       margin-bottom: 15px;
     }
+    .popup-card input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
     .popup-card button {
       margin-top: 15px;
-      padding: 12px 20px;
+      padding: 12px 24px;
       border: none;
       border-radius: 10px;
       background: #2563eb;
       color: white;
+      font-size: 16px;
       cursor: pointer;
     }
-
+    .error-text {
+      color: #dc2626;
+      font-size: 14px;
+      margin-top: -8px;
+      margin-bottom: 10px;
+      display: none;
+    }
     .hidden { display: none !important; }
   </style>
 </head>
-
 <body>
-
 <header>
   <div class="back-btn" onclick="handleExit()">
     <i class="fas fa-arrow-left"></i>
@@ -163,7 +158,6 @@
 </header>
 
 <div class="main">
-
   <!-- EXAM LIST -->
   <div id="examList" class="card">
     <h2 style="text-align:center; color:#2563eb;">Available Exams</h2>
@@ -174,9 +168,7 @@
   <!-- EXAM TAKING -->
   <div id="examTaking" class="card hidden">
     <h2 id="examTitleDisplay" style="text-align:center; color:#2563eb;"></h2>
-
     <div id="subjectBox" class="subject-box"></div>
-
     <form id="examForm">
       <div id="questionsContainer"></div>
       <button class="submit-btn" type="submit">Submit Exam</button>
@@ -184,25 +176,45 @@
   </div>
 </div>
 
-<!-- START WARNING POPUP -->
+<!-- START CONFIRMATION POPUP -->
 <div id="startPopup" class="popup">
   <div class="popup-card">
-    <h2>Exam Starting</h2>
-    <p>Are you ready? Do not exit the exam after starting.</p>
-    <button onclick="beginExam()">Start Now</button>
+    <h2>Ready to Start?</h2>
+    <p>Do not exit the exam once started. All the best!</p>
+    <button onclick="beginExam()">Start Exam</button>
   </div>
 </div>
 
-<!-- EXIT WARNING POPUP -->
+<!-- EXIT CONFIRMATION POPUP -->
 <div id="exitPopup" class="popup">
   <div class="popup-card">
     <h2>Exit Exam?</h2>
-    <p>Your answers are saved. Are you sure you want to leave?</p>
+    <p>Your answers are saved. Are you sure?</p>
     <button onclick="confirmExit()">Yes, Exit</button>
+    <button onclick="document.getElementById('exitPopup').style.display='none'" style="background:#6b7280;">No, Stay</button>
   </div>
 </div>
 
-<!-- SUBMISSION POPUP -->
+<!-- STUDENT INFO POPUP (Name, Mobile, Roll) -->
+<div id="studentInfoPopup" class="popup">
+  <div class="popup-card">
+    <h2>Enter Your Details</h2>
+    <p style="color:#666; margin-bottom:20px;">These are required to submit your exam</p>
+
+    <input type="text" id="studentNameInput" placeholder="Full Name" required>
+    <div id="nameError" class="error-text">Please enter your full name</div>
+
+    <input type="tel" id="studentMobileInput" placeholder="Mobile Number (10 digits)" maxlength="10" required>
+    <div id="mobileError" class="error-text">Enter valid 10-digit mobile number</div>
+
+    <input type="text" id="studentRollInput" placeholder="Roll Number" required>
+    <div id="rollError" class="error-text">Please enter your roll number</div>
+
+    <button onclick="validateAndSubmit()">Submit Exam</button>
+  </div>
+</div>
+
+<!-- RESULT POPUP -->
 <div id="resultPopup" class="popup">
   <div class="popup-card">
     <h2 id="popupTitle"></h2>
@@ -213,7 +225,6 @@
 
 <script>
 const API_URL = "https://academy-backend-e02j.onrender.com";
-
 let currentExam;
 let studentAnswers = [];
 let selectedExamId = null;
@@ -222,100 +233,91 @@ const STORAGE_KEY = "saved_exam_answers";
 
 /* EXIT WARNING */
 window.onbeforeunload = function () {
-  if (examStarted) return "Are you sure you want to exit the exam?";
+  if (examStarted) return "Are you sure you want to exit the exam? Your progress is saved.";
 };
 
-/* LOAD EXAMS */
+/* LOAD AVAILABLE EXAMS */
 window.onload = loadExams;
 
 async function loadExams() {
   const loader = document.getElementById("examLoader");
   const container = document.getElementById("examsContainer");
-
   try {
     const res = await fetch(`${API_URL}/active-exams`);
+    if (!res.ok) throw new Error();
     const exams = await res.json();
-
     loader.classList.add("hidden");
     container.classList.remove("hidden");
-
     if (!exams.length) {
-      container.innerHTML = "<p style='text-align:center;color:#888;'>No exams now</p>";
+      container.innerHTML = "<p style='text-align:center;color:#888;'>No active exams right now</p>";
       return;
     }
-
-    container.innerHTML = exams.map(ex =>
-      `<div onclick="showStartPopup('${ex._id}')"
-         style="background:#e8f0ff;padding:18px;border-radius:14px;margin:10px 0;cursor:pointer;">
-         <h3 style="color:#2563eb;">${ex.title}</h3>
-         <p>${ex.subject?.toUpperCase()} - Test ${ex.testNumber}</p>
-       </div>`
-    ).join("");
-
+    container.innerHTML = exams.map(ex => `
+      <div onclick="showStartPopup('${ex._id}')"
+           style="background:#e8f0ff;padding:18px;border-radius:14px;margin:10px 0;cursor:pointer;">
+        <h3 style="color:#2563eb;">${ex.title}</h3>
+        <p>${ex.subject?.toUpperCase()} - Test ${ex.testNumber}</p>
+      </div>
+    `).join("");
   } catch {
     loader.classList.add("hidden");
-    container.innerHTML = "<p style='color:red;text-align:center;'>Failed to load exams</p>";
+    container.innerHTML = "<p style='color:red;text-align:center;'>Failed to load exams. Check your connection.</p>";
   }
 }
 
-/* START WARNING POPUP */
+/* SHOW START CONFIRMATION */
 function showStartPopup(id) {
   selectedExamId = id;
   document.getElementById("startPopup").style.display = "flex";
 }
 
-async function beginExam() {
+function beginExam() {
   document.getElementById("startPopup").style.display = "none";
   examStarted = true;
   startExam(selectedExamId);
 }
 
-/* START EXAM */
+/* LOAD EXAM QUESTIONS */
 async function startExam(id) {
   try {
     const res = await fetch(`${API_URL}/exam/${id}`);
+    if (!res.ok) throw new Error();
     currentExam = await res.json();
 
     document.getElementById("examList").classList.add("hidden");
     document.getElementById("examTaking").classList.remove("hidden");
 
     document.getElementById("examTitleDisplay").textContent = currentExam.title;
-
-    document.getElementById("subjectBox").textContent =
+    document.getElementById("subjectBox").textContent = 
       `${currentExam.subject.toUpperCase()} • Test ${currentExam.testNumber}`;
 
     studentAnswers = new Array(currentExam.totalQuestions).fill(null);
-
     loadSavedAnswers(id);
 
     const container = document.getElementById("questionsContainer");
     container.innerHTML = currentExam.questions.map((q, i) => `
       <div class="question-container">
-        <img src="${q.imageUrl}" class="question-img">
+        <img src="${q.imageUrl}" class="question-img" alt="Question ${i+1}">
         ${renderOptions(i)}
       </div>
     `).join("");
 
     restoreSelectedOptions();
-
-  } catch {
-    alert("Error loading exam");
+  } catch (err) {
+    alert("Error loading exam. Please try again.");
+    console.error(err);
   }
 }
 
-/* OPTIONS RENDER */
 function renderOptions(i) {
-  return `
-    ${["a","b","c","d"].map(o => `
-      <label class="option">
-        <input type="radio" name="q${i}" value="${o}" onchange="saveAnswer(${i},'${o}')">
-        <span>${o.toUpperCase()}</span>
-      </label>
-    `).join("")}
-  `;
+  return ["a","b","c","d"].map(o => `
+    <label class="option">
+      <input type="radio" name="q${i}" value="${o}" onchange="saveAnswer(${i},'${o}')">
+      <span>${o.toUpperCase()}</span>
+    </label>
+  `).join("");
 }
 
-/* SAVE ANSWER TO LOCAL STORAGE */
 function saveAnswer(i, val) {
   studentAnswers[i] = val;
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -324,23 +326,62 @@ function saveAnswer(i, val) {
   }));
 }
 
-/* RESTORE SAVED ANSWERS */
 function loadSavedAnswers(examId) {
-  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-  if (saved && saved.examId === examId) studentAnswers = saved.answers;
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    const data = JSON.parse(saved);
+    if (data.examId === examId) {
+      studentAnswers = data.answers;
+    }
+  }
 }
 
 function restoreSelectedOptions() {
   studentAnswers.forEach((ans, i) => {
     if (ans) {
-      document.querySelector(`input[name='q${i}'][value='${ans}']`).checked = true;
+      const radio = document.querySelector(`input[name='q${i}'][value='${ans}']`);
+      if (radio) radio.checked = true;
     }
   });
 }
 
-/* SUBMIT */
-document.getElementById("examForm").addEventListener("submit", async e => {
+/* SHOW STUDENT INFO POPUP BEFORE FINAL SUBMIT */
+document.getElementById("examForm").addEventListener("submit", e => {
   e.preventDefault();
+  document.getElementById("studentInfoPopup").style.display = "flex";
+});
+
+/* VALIDATE & SUBMIT */
+async function validateAndSubmit() {
+  const name = document.getElementById("studentNameInput").value.trim();
+  const mobile = document.getElementById("studentMobileInput").value.trim();
+  const roll = document.getElementById("studentRollInput").value.trim();
+
+  const nameErr = document.getElementById("nameError");
+  const mobileErr = document.getElementById("mobileError");
+  const rollErr = document.getElementById("rollError");
+
+  let valid = true;
+
+  if (!name) {
+    nameErr.style.display = "block";
+    valid = false;
+  } else nameErr.style.display = "none";
+
+  if (!/^\d{10}$/.test(mobile)) {
+    mobileErr.style.display = "block";
+    valid = false;
+  } else mobileErr.style.display = "none";
+
+  if (!roll) {
+    rollErr.style.display = "block";
+    valid = false;
+  } else rollErr.style.display = "none";
+
+  if (!valid) return;
+
+  // All good → submit
+  document.getElementById("studentInfoPopup").style.display = "none";
 
   try {
     const res = await fetch(`${API_URL}/submit-exam`, {
@@ -349,9 +390,9 @@ document.getElementById("examForm").addEventListener("submit", async e => {
       body: JSON.stringify({
         examId: currentExam._id,
         answers: studentAnswers,
-        studentName: "Student",
-        studentMobile: "0000000000",
-        studentRoll: "N/A"
+        studentName: name,
+        studentMobile: mobile,
+        studentRoll: roll   // added roll if you want to save it (you can remove if not needed)
       })
     });
 
@@ -359,32 +400,36 @@ document.getElementById("examForm").addEventListener("submit", async e => {
 
     examStarted = false;
     localStorage.removeItem(STORAGE_KEY);
-
-    showPopup("SUCCESSFUL", "Your exam has been submitted!");
-
-    loadExams();
-    document.getElementById("examTaking").classList.add("hidden");
-    document.getElementById("examList").classList.remove("hidden");
+    showPopup("SUCCESS", "Exam submitted successfully!");
+    
+    // Reset & go back to list
+    setTimeout(() => {
+      document.getElementById("examTaking").classList.add("hidden");
+      document.getElementById("examList").classList.remove("hidden");
+      loadExams();
+    }, 2000);
 
   } catch {
-    showPopup("FAILED", "Submission failed. Try again.");
+    showPopup("FAILED", "Submission failed. Please check your connection and try again.");
   }
-});
+}
 
-/* EXIT WARNING MANUALLY */
+/* EXIT HANDLING */
 function handleExit() {
-  if (!examStarted) location.href = "index.html";
-  else {
+  if (!examStarted) {
+    location.href = "index.html";
+  } else {
     document.getElementById("exitPopup").style.display = "flex";
   }
 }
 
 function confirmExit() {
   examStarted = false;
+  localStorage.removeItem(STORAGE_KEY);
   location.href = "index.html";
 }
 
-/* POPUP */
+/* POPUP HELPERS */
 function showPopup(title, msg) {
   document.getElementById("popupTitle").textContent = title;
   document.getElementById("popupMessage").textContent = msg;
@@ -395,6 +440,5 @@ function closePopup() {
   document.getElementById("resultPopup").style.display = "none";
 }
 </script>
-
 </body>
 </html>
