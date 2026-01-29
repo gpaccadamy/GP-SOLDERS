@@ -1,286 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GP Soldiers – Exam Results</title>
-  <link rel="icon" href="data:,">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-  <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f2f4f8;
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
-
-    /* HEADER */
-    header {
-      background: linear-gradient(135deg, #2563eb, #3b82f6);
-      padding: 20px;
-      text-align: center;
-      color: white;
-      font-size: 22px;
-      font-weight: 600;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-    }
-
-    /* MAIN CONTAINER */
-    .container {
-      padding: 20px;
-      max-width: 500px;
-      margin: auto;
-    }
-
-    /* PHONE SETTINGS STYLE CARDS */
-    .settings-card {
-      background: white;
-      padding: 18px 20px;
-      border-radius: 16px;
-      margin-bottom: 18px;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.1);
-      cursor: pointer;
-    }
-
-    .settings-title {
-      font-size: 16px;
-      color: #555;
-      margin-bottom: 6px;
-      font-weight: 600;
-    }
-
-    select {
-      width: 100%;
-      padding: 15px;
-      font-size: 16px;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      margin-top: 8px;
-      background: #f9fafb;
-    }
-
-    /* BUTTON */
-    .btn {
-      width: 100%;
-      padding: 15px;
-      background: #2563eb;
-      color: white;
-      font-size: 18px;
-      border: none;
-      border-radius: 14px;
-      margin-top: 5px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 5px 15px rgba(37,99,235,0.4);
-    }
-    .btn:hover { background: #1d4ed8; }
-
-    .exam-info {
-      text-align: center;
-      font-size: 19px;
-      font-weight: 600;
-      margin-top: 25px;
-      color: #2563eb;
-    }
-
-    .total-students {
-      text-align: center;
-      font-size: 16px;
-      margin: 10px 0;
-      font-weight: 600;
-      color: #111;
-    }
-
-    /* TABLE */
-    .table-container {
-      margin-top: 20px;
-      overflow-x: auto;
-      background: white;
-      padding: 15px;
-      border-radius: 16px;
-      box-shadow: 0 5px 18px rgba(0,0,0,0.15);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 400px;
-    }
-    th {
-      background: #667eea;
-      color: white;
-      padding: 12px;
-      text-align: left;
-    }
-    td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .download-btn {
-      width: 100%;
-      padding: 15px;
-      background: #0E9F6E;
-      color: white;
-      border: none;
-      border-radius: 14px;
-      font-size: 18px;
-      margin-top: 18px;
-      font-weight: 700;
-      cursor: pointer;
-      display: none;
-      box-shadow: 0 6px 20px rgba(14,159,110,0.3);
-    }
-    .download-btn:hover {
-      background: #0B7A52;
-    }
-
-    .hidden { display: none !important; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Results | GP Soldiers Academy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --accent: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --light-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --gray: #64748b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--light-bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .container { padding: 20px; }
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 16px 0;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+        .result-item {
+            background: linear-gradient(135deg, #f0f9ff, #fefce8);
+            border-radius: 14px;
+            padding: 18px;
+            margin: 16px 0;
+            border-left: 6px solid var(--primary);
+        }
+        .exam-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        .score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        .details {
+            margin-top: 10px;
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        .back-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(37,99,235,0.4);
+            z-index: 1000;
+            cursor: pointer;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+    </style>
 </head>
 <body>
 
-<header>Exam Results</header>
+    <div class="header">
+        <i class="fas fa-trophy"></i> My Exam Results
+    </div>
 
-<div class="container">
+    <div class="container">
+        <div class="card">
+            <div id="resultsList" class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading your results...
+            </div>
+        </div>
+    </div>
 
-  <!-- Phone Settings Style Card 1 -->
-  <div class="settings-card">
-    <div class="settings-title">Select Subject</div>
-    <select id="subjectSelect">
-      <option value="">Choose subject</option>
-      <option value="english">English</option>
-      <option value="kannada">Kannada</option>
-      <option value="gk">GK</option>
-      <option value="maths">Maths</option>
-    </select>
-  </div>
-
-  <!-- Phone Settings Style Card 2 -->
-  <div class="settings-card">
-    <div class="settings-title">Select Test Number</div>
-    <select id="testNumberSelect"></select>
-  </div>
-
-  <button class="btn" onclick="loadResults()">Show Results</button>
-
-  <div id="examInfo" class="exam-info hidden"></div>
-  <div id="totalStudents" class="total-students"></div>
-
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Name</th>
-          <th>Roll</th>
-          <th>Score</th>
-        </tr>
-      </thead>
-      <tbody id="resultsBody">
-        <tr>
-          <td colspan="4" style="text-align:center; padding:20px; color:#555;">
-            Please select subject & test number
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Download Button -->
-  <button class="download-btn" id="downloadBtn" onclick="openExternal()">
-    Download the Result
-  </button>
-
-</div>
+    <div class="back-btn" onclick="window.location.href='index.html'">
+        <i class="fas fa-home"></i>
+    </div>
 
 <script>
-  const API_URL = "https://academy-backend-e02j.onrender.com";
+    const API_URL = "https://academy-backend-e02j.onrender.com"; // ← Change if your backend URL is different
 
-  function populateTestNumbers() {
-    const select = document.getElementById('testNumberSelect');
-    select.innerHTML = '<option value="">Choose test number</option>';
-    for (let i = 1; i <= 50; i++) {
-      select.innerHTML += `<option value="${i}">Test ${i}</option>`;
-    }
-  }
-  populateTestNumbers();
+    // Get mobile from localStorage (set after login)
+    const studentData = JSON.parse(localStorage.getItem('studentLogin'));
+    const studentMobile = studentData?.mobile;
 
-  async function loadResults() {
-    const subject = document.getElementById('subjectSelect').value;
-    const testNumber = document.getElementById('testNumberSelect').value;
+    async function loadResults() {
+        const list = document.getElementById('resultsList');
 
-    if (!subject || !testNumber) {
-      alert("Please choose both subject and test number");
-      return;
-    }
+        if (!studentMobile) {
+            list.innerHTML = `<div class="no-results">Please login first from home page</div>`;
+            return;
+        }
 
-    try {
-      const res = await fetch(`${API_URL}/results`);
-      let results = await res.json();
+        try {
+            const res = await fetch(`${API_URL}/results/student/${studentMobile}`);
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || "Failed to load results");
+            }
 
-      results = results.filter(r =>
-        r.examSubject?.toLowerCase() === subject.toLowerCase() &&
-        r.examTestNumber == parseInt(testNumber)
-      );
+            const results = await res.json();
 
-      results.sort((a, b) => b.correct - a.correct);
+            if (results.length === 0) {
+                list.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-book-open" style="font-size:3rem; color:#94a3b8; margin-bottom:20px;"></i><br><br>
+                        <b>No results yet</b><br><br>
+                        Complete your first exam to see scores here!
+                    </div>`;
+                return;
+            }
 
-      document.getElementById("resultsBody").innerHTML =
-        results.length === 0
-          ? `<tr><td colspan="4" style="text-align:center;color:#d32f2f;">No results found</td></tr>`
-          : results
-              .map((r, i) => `
-                <tr>
-                  <td>#${i + 1}</td>
-                  <td>${r.studentName || 'Guest'}</td>
-                  <td>${r.studentRoll || 'N/A'}</td>
-                  <td><b>${r.correct}</b>/${r.total}</td>
-                </tr>
-              `).join("");
+            let html = '';
+            results.forEach(r => {
+                const percentage = Math.round((r.correct / r.total) * 100);
+                const date = new Date(r.submittedAt).toLocaleDateString('en-IN');
+                const time = new Date(r.submittedAt).toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'});
 
-      document.getElementById("examInfo").textContent =
-        `${subject.toUpperCase()} — Test ${testNumber}`;
-      document.getElementById("examInfo").classList.remove("hidden");
+                html += `
+                    <div class="result-item">
+                        <div class="exam-title">${r.examTitle} - Test ${r.examTestNumber}</div>
+                        <div style="font-size:1.1rem; margin:10px 0;">
+                            ${r.examSubject.toUpperCase()}
+                        </div>
+                        <div class="score">${r.correct} / ${r.total}</div>
+                        <div style="font-size:1rem; color:${percentage >= 70 ? '#10b981' : percentage >= 50 ? '#f59e0b' : '#ef4444'}; font-weight:bold;">
+                            ${percentage}% ${percentage >= 70 ? '★ Excellent!' : percentage >= 50 ? '→ Good' : '↓ Needs Improvement'}
+                        </div>
+                        <div class="details">
+                            Correct: ${r.correct} | Wrong: ${r.wrong} | Submitted on ${date} at ${time}
+                        </div>
+                    </div>
+                `;
+            });
 
-      document.getElementById("totalStudents").textContent =
-        `Total Students: ${results.length}`;
+            list.innerHTML = html;
 
-      document.getElementById("downloadBtn").style.display =
-        results.length > 0 ? "block" : "none";
-
-    } catch (err) {
-      alert("Failed to load results");
-    }
-  }
-
-  /* 🔥 FORCE OPEN EXTERNAL BROWSER (Chrome/Safari) */
-  function openExternal() {
-    const url = "https://academy-student-portal.onrender.com/dresult.html";
-
-    // ANDROID → Force Chrome
-    if (/Android/i.test(navigator.userAgent)) {
-      window.location.href =
-        "intent://" +
-        url.replace("https://", "") +
-        "#Intent;scheme=https;package=com.android.chrome;end";
-      return;
+        } catch (err) {
+            console.error(err);
+            list.innerHTML = `<div class="no-results" style="color:red;">
+                <i class="fas fa-exclamation-triangle"></i><br><br>
+                Failed to load results<br><br>
+                ${err.message}
+            </div>`;
+        }
     }
 
-    // iOS → Safari new tab
-    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      window.open(url, "_blank");
-      return;
-    }
-
-    // Desktop
-    window.open(url, "_blank");
-  }
+    // Load results when page opens
+    loadResults();
 </script>
 
 </body>
