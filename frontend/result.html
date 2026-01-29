@@ -33,13 +33,36 @@
             font-weight: bold;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
-        .container { padding: 20px; }
+        .container { padding: 20px; max-width: 700px; margin: 0 auto; }
         .card {
             background: var(--card-bg);
             border-radius: 16px;
-            padding: 20px;
+            padding: 24px;
             margin: 16px 0;
             box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.1rem;
+            border: 2px solid #d1d5db;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
         }
         .result-item {
             background: linear-gradient(135deg, #f0f9ff, #fefce8);
@@ -55,7 +78,7 @@
             margin-bottom: 8px;
         }
         .score {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: bold;
             color: var(--accent);
         }
@@ -64,12 +87,13 @@
             color: var(--gray);
             font-size: 0.95rem;
         }
-        .no-results {
+        .no-results, .error-msg {
             text-align: center;
-            padding: 40px;
+            padding: 50px 20px;
             color: var(--gray);
             font-size: 1.1rem;
         }
+        .error-msg { color: var(--danger); }
         .back-btn {
             position: fixed;
             bottom: 20px;
@@ -89,7 +113,7 @@
         }
         .loading {
             text-align: center;
-            padding: 40px;
+            padding: 60px 20px;
             color: var(--primary);
             font-size: 1.2rem;
         }
@@ -103,8 +127,14 @@
 
     <div class="container">
         <div class="card">
+            <div class="input-group">
+                <label for="mobileInput"><strong>Enter Your Mobile Number</strong></label>
+                <input type="text" id="mobileInput" placeholder="e.g. 9876543210" maxlength="10">
+                <button class="btn" onclick="loadResults()">Show My Results</button>
+            </div>
+
             <div id="resultsList" class="loading">
-                <i class="fas fa-spinner fa-spin"></i> Loading your results...
+                <i class="fas fa-spinner fa-spin"></i> Waiting for mobile number...
             </div>
         </div>
     </div>
@@ -114,25 +144,47 @@
     </div>
 
 <script>
-    const API_URL = "https://academy-backend-e02j.onrender.com"; // ← Change if your backend URL is different
+    const API_URL = "https://academy-backend-e02j.onrender.com";
 
-    // Get mobile from localStorage (set after login)
-    const studentData = JSON.parse(localStorage.getItem('studentLogin'));
-    const studentMobile = studentData?.mobile;
+    function getMobile() {
+        // Try from localStorage first (if logged in)
+        const saved = localStorage.getItem('studentLogin');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                if (data.mobile) return data.mobile;
+            } catch {}
+        }
+        // Otherwise from input
+        return document.getElementById('mobileInput').value.trim();
+    }
 
     async function loadResults() {
         const list = document.getElementById('resultsList');
+        const mobile = getMobile();
 
-        if (!studentMobile) {
-            list.innerHTML = `<div class="no-results">Please login first from home page</div>`;
+        if (!mobile || mobile.length < 10) {
+            list.innerHTML = `<div class="error-msg">
+                <i class="fas fa-exclamation-circle"></i><br><br>
+                Please enter valid 10-digit mobile number
+            </div>`;
             return;
         }
 
+        list.innerHTML = `<div class="loading">
+            <i class="fas fa-spinner fa-spin"></i><br><br>
+            Loading your results...
+        </div>`;
+
         try {
-            const res = await fetch(`${API_URL}/results/student/${studentMobile}`);
+            const res = await fetch(`${API_URL}/results/student/${mobile}`);
+            
             if (!res.ok) {
+                if (res.status === 404) {
+                    throw new Error("No results found for this number");
+                }
                 const err = await res.json();
-                throw new Error(err.error || "Failed to load results");
+                throw new Error(err.error || "Server error");
             }
 
             const results = await res.json();
@@ -140,9 +192,10 @@
             if (results.length === 0) {
                 list.innerHTML = `
                     <div class="no-results">
-                        <i class="fas fa-book-open" style="font-size:3rem; color:#94a3b8; margin-bottom:20px;"></i><br><br>
-                        <b>No results yet</b><br><br>
-                        Complete your first exam to see scores here!
+                        <i class="fas fa-book-open" style="font-size:4rem; color:#94a3b8; margin-bottom:20px;"></i><br><br>
+                        <strong>No results found</strong><br><br>
+                        You haven't attempted any exam yet with this mobile number.<br>
+                        Take an exam and come back!
                     </div>`;
                 return;
             }
@@ -150,21 +203,22 @@
             let html = '';
             results.forEach(r => {
                 const percentage = Math.round((r.correct / r.total) * 100);
-                const date = new Date(r.submittedAt).toLocaleDateString('en-IN');
-                const time = new Date(r.submittedAt).toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'});
+                const date = new Date(r.submittedAt).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+                const time = new Date(r.submittedAt).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
 
                 html += `
                     <div class="result-item">
                         <div class="exam-title">${r.examTitle} - Test ${r.examTestNumber}</div>
-                        <div style="font-size:1.1rem; margin:10px 0;">
+                        <div style="font-size:1.1rem; margin:8px 0; color:#475569;">
                             ${r.examSubject.toUpperCase()}
                         </div>
                         <div class="score">${r.correct} / ${r.total}</div>
-                        <div style="font-size:1rem; color:${percentage >= 70 ? '#10b981' : percentage >= 50 ? '#f59e0b' : '#ef4444'}; font-weight:bold;">
-                            ${percentage}% ${percentage >= 70 ? '★ Excellent!' : percentage >= 50 ? '→ Good' : '↓ Needs Improvement'}
+                        <div style="font-size:1.1rem; font-weight:600; color:${percentage >= 70 ? '#10b981' : percentage >= 50 ? '#f59e0b' : '#ef4444'};">
+                            ${percentage}% ${percentage >= 70 ? '★ Great Job!' : percentage >= 50 ? 'Good Effort' : 'Keep Practicing'}
                         </div>
                         <div class="details">
-                            Correct: ${r.correct} | Wrong: ${r.wrong} | Submitted on ${date} at ${time}
+                            Correct: ${r.correct} | Wrong: ${r.wrong}<br>
+                            Submitted: ${date} at ${time}
                         </div>
                     </div>
                 `;
@@ -174,16 +228,19 @@
 
         } catch (err) {
             console.error(err);
-            list.innerHTML = `<div class="no-results" style="color:red;">
+            list.innerHTML = `<div class="error-msg">
                 <i class="fas fa-exclamation-triangle"></i><br><br>
-                Failed to load results<br><br>
-                ${err.message}
+                ${err.message || 'Failed to load results. Check your internet or try again.'}
             </div>`;
         }
     }
 
-    // Load results when page opens
-    loadResults();
+    // Optional: Auto-load if mobile already in localStorage
+    window.onload = () => {
+        if (getMobile()) {
+            loadResults();
+        }
+    };
 </script>
 
 </body>
