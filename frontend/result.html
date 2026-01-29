@@ -1,271 +1,310 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Exam Results Viewer | GP Soldiers Academy</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #2563eb;
-            --accent: #10b981;
-            --light-bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --gray: #64748b;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--light-bg);
-            color: var(--text);
-            min-height: 100vh;
-        }
-        .header {
-            background: linear-gradient(135deg, var(--primary), #3b82f6);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 1.6rem;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .container { padding: 20px; max-width: 900px; margin: 0 auto; }
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 24px;
-            margin: 16px 0;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-        }
-        .filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        select, input {
-            flex: 1;
-            min-width: 180px;
-            padding: 14px;
-            font-size: 1rem;
-            border: 2px solid #d1d5db;
-            border-radius: 10px;
-            background: #f9fafb;
-        }
-        .btn {
-            padding: 14px 28px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .result-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        .result-table th, .result-table td {
-            padding: 14px 16px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .result-table th {
-            background: #f1f5f9;
-            font-weight: 600;
-            color: #475569;
-        }
-        .result-table tr:hover {
-            background: #f8fafc;
-        }
-        .score-cell {
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        .no-results, .loading, .error {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--gray);
-            font-size: 1.2rem;
-        }
-        .error { color: var(--danger); }
-        .back-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--primary);
-            color: white;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            box-shadow: 0 4px 15px rgba(37,99,235,0.4);
-            cursor: pointer;
-            z-index: 1000;
-        }
-        @media (max-width: 600px) {
-            .filters { flex-direction: column; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GP Soldiers – Exam Results</title>
+  <link rel="icon" href="data:,">
+  <!-- Libraries for PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f2f4f8;
+      margin: 0; padding: 0;
+      color: #333;
+    }
+    .top-header {
+      background: #111827;
+      padding: 12px;
+      text-align: center;
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    header {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      padding: 18px;
+      text-align: center;
+      color: white;
+      font-size: 22px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    }
+    .container {
+      padding: 15px;
+      max-width: 600px;
+      margin: auto;
+    }
+    .settings-card {
+      background: white;
+      padding: 16px;
+      border-radius: 14px;
+      margin-bottom: 15px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+    }
+    .settings-title {
+      font-size: 15px;
+      color: #555;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    select, button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      background: #f9fafb;
+    }
+    .btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .exam-info {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      color: #2563eb;
+      margin: 18px 0;
+    }
+    .total-students {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 10px 0;
+      color: #444;
+    }
+    .table-container {
+      background: white;
+      padding: 10px;
+      border-radius: 14px;
+      margin-top: 15px;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.15);
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 320px;
+    }
+    th, td {
+      padding: 12px 8px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+      font-size: 15px;
+    }
+    th {
+      background: #667eea;
+      color: white;
+    }
+    .download-btn {
+      width: 100%;
+      padding: 15px;
+      background: #0E9F6E;
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 18px;
+      margin-top: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+    }
+    .error-msg {
+      color: #dc2626;
+      text-align: center;
+      padding: 20px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="header">
-        <i class="fas fa-chart-bar"></i> Exam Results Viewer
-    </div>
+<div class="top-header">GP SOLDIERS ACADEMY</div>
+<header>Exam Results</header>
 
-    <div class="container">
-        <div class="card">
-            <h3 style="margin-bottom: 16px; color: var(--primary);">Select Exam</h3>
-            
-            <div class="filters">
-                <select id="subjectSelect">
-                    <option value="">Select Subject</option>
-                    <option value="english">English</option>
-                    <option value="kannada">Kannada</option>
-                    <option value="gk">GK</option>
-                    <option value="maths">Maths</option>
-                </select>
+<div class="container">
+  <div class="settings-card">
+    <div class="settings-title">Select Subject</div>
+    <select id="subjectSelect">
+      <option value="">Choose subject</option>
+      <option value="english">English</option>
+      <option value="kannada">Kannada</option>
+      <option value="gk">GK</option>
+      <option value="maths">Maths</option>
+    </select>
+  </div>
 
-                <select id="testNumberSelect">
-                    <option value="">Select Test Number</option>
-                    <!-- Filled dynamically or you can hardcode 1-50 -->
-                </select>
+  <div class="settings-card">
+    <div class="settings-title">Select Test Number</div>
+    <select id="testNumberSelect"></select>
+  </div>
 
-                <button class="btn" onclick="loadResults()">
-                    <i class="fas fa-search"></i> Show Results
-                </button>
-            </div>
+  <button class="btn" onclick="loadResults()">Show Results</button>
 
-            <div id="resultsContainer" class="loading">
-                <i class="fas fa-spinner fa-spin"></i> Select subject and test number to view results...
-            </div>
-        </div>
-    </div>
+  <div id="examInfo" class="exam-info" style="display:none;"></div>
+  <div id="totalStudents" class="total-students"></div>
 
-    <div class="back-btn" onclick="window.location.href='index.html'">
-        <i class="fas fa-home"></i>
-    </div>
+  <div class="table-container" id="resultBox">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:50px;">Rank</th>
+          <th style="width:40%;">Name</th>
+          <th style="width:25%;">Roll</th>
+          <th style="width:20%;">Score</th>
+        </tr>
+      </thead>
+      <tbody id="resultsBody">
+        <tr><td colspan="4" style="text-align:center;">Select subject and test</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <button class="download-btn" id="downloadBtn" onclick="downloadPDF()">
+    Download the Result
+  </button>
+</div>
 
 <script>
-    const API_URL = "https://academy-backend-e02j.onrender.com";
+  const API_URL = "https://academy-backend-e02j.onrender.com";
 
-    // Populate test numbers 1–50
-    function populateTestNumbers() {
-        const select = document.getElementById('testNumberSelect');
-        select.innerHTML = '<option value="">Select Test Number</option>';
-        for (let i = 1; i <= 50; i++) {
-            const option = document.createElement('option');
-            option.value = i;
-            option.textContent = `Test ${i}`;
-            select.appendChild(option);
-        }
+  // Populate test numbers
+  (function populateTests() {
+    const select = document.getElementById('testNumberSelect');
+    select.innerHTML = `<option value="">Select test</option>`;
+    for (let i = 1; i <= 50; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `Test ${i}`;
+      select.appendChild(opt);
     }
-    populateTestNumbers();
+  })();
 
-    async function loadResults() {
-        const subject = document.getElementById('subjectSelect').value;
-        const testNumber = document.getElementById('testNumberSelect').value;
-        const container = document.getElementById('resultsContainer');
+  async function loadResults() {
+    const subject = document.getElementById('subjectSelect').value.trim();
+    const testNumber = document.getElementById('testNumberSelect').value.trim();
 
-        if (!subject || !testNumber) {
-            container.innerHTML = `<div class="error">
-                Please select both Subject and Test Number
-            </div>`;
-            return;
-        }
-
-        container.innerHTML = `<div class="loading">
-            <i class="fas fa-spinner fa-spin"></i><br><br>
-            Loading results for ${subject.toUpperCase()} - Test ${testNumber}...
-        </div>`;
-
-        try {
-            // We'll need a backend route that can filter results by subject + testNumber
-            // For now we fetch all and filter client-side (simple but works if not too many results)
-            const res = await fetch(`${API_URL}/results`);
-
-            if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.error || "Failed to load results");
-            }
-
-            const allResults = await res.json();
-
-            // Filter client-side by subject and testNumber
-            const filtered = allResults.filter(r => 
-                r.examSubject.toLowerCase() === subject.toLowerCase() &&
-                r.examTestNumber === Number(testNumber)
-            );
-
-            if (filtered.length === 0) {
-                container.innerHTML = `<div class="no-results">
-                    <i class="fas fa-search" style="font-size:3rem; color:#94a3b8; margin-bottom:20px;"></i><br><br>
-                    No results found for <b>${subject.toUpperCase()} - Test ${testNumber}</b><br><br>
-                    This exam might not have been attempted yet or results are not available.
-                </div>`;
-                return;
-            }
-
-            // Build table
-            let html = `
-                <table class="result-table">
-                    <thead>
-                        <tr>
-                            <th>Student Name</th>
-                            <th>Mobile</th>
-                            <th>Score</th>
-                            <th>Correct / Wrong</th>
-                            <th>Submitted</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            filtered.forEach(r => {
-                const date = new Date(r.submittedAt).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
-                const time = new Date(r.submittedAt).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
-                const percentage = Math.round((r.correct / r.total) * 100);
-
-                html += `
-                    <tr>
-                        <td>${r.studentName || 'Anonymous'}</td>
-                        <td>${r.studentMobile}</td>
-                        <td class="score-cell" style="color: ${percentage >= 70 ? 'var(--success)' : percentage >= 50 ? 'var(--warning)' : 'var(--danger)'}">
-                            ${r.score} / ${r.total} (${percentage}%)
-                        </td>
-                        <td>${r.correct} correct • ${r.wrong} wrong</td>
-                        <td>${date} ${time}</td>
-                    </tr>
-                `;
-            });
-
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-
-        } catch (err) {
-            console.error(err);
-            container.innerHTML = `<div class="error">
-                <i class="fas fa-exclamation-triangle"></i><br><br>
-                ${err.message || 'Something went wrong. Please try again.'}
-            </div>`;
-        }
+    if (!subject || !testNumber) {
+      alert("Please select both subject and test number");
+      return;
     }
+
+    const infoDiv = document.getElementById("examInfo");
+    const totalDiv = document.getElementById("totalStudents");
+    const body = document.getElementById("resultsBody");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    infoDiv.style.display = "none";
+    downloadBtn.style.display = "none";
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center;">Loading...</td></tr>';
+
+    try {
+      // Use optimized filtered endpoint
+      const url = `${API_URL}/results/exam?subject=${encodeURIComponent(subject)}&testNumber=${testNumber}`;
+      const res = await fetch(url);
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Server error (${res.status})`);
+      }
+
+      const results = await res.json();
+
+      if (results.length === 0) {
+        body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#dc2626;">No results found for this exam</td></tr>';
+        totalDiv.innerText = "";
+        return;
+      }
+
+      // Sort by score descending
+      results.sort((a, b) => b.correct - a.correct);
+
+      infoDiv.innerText = `${subject.toUpperCase()} — Test ${testNumber}`;
+      infoDiv.style.display = "block";
+
+      totalDiv.innerText = `Total Students Appeared: ${results.length}`;
+
+      body.innerHTML = results.map((r, index) => `
+        <tr>
+          <td>#${index + 1}</td>
+          <td>${r.studentName || "N/A"}</td>
+          <td>${r.studentRoll || r.studentMobile.slice(-4) || "N/A"}</td>
+          <td><b>${r.correct}</b> / ${r.total}</td>
+        </tr>
+      `).join("");
+
+      downloadBtn.style.display = "block";
+
+    } catch (err) {
+      console.error("Results error:", err);
+      body.innerHTML = `<tr><td colspan="4" class="error-msg">${err.message || "Failed to load results. Try again."}</td></tr>`;
+    }
+  }
+
+  // PDF Download (your original logic + better styling)
+  async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const element = document.getElementById("resultBox");
+    const infoText = document.getElementById("examInfo").innerText;
+
+    const tempDiv = document.createElement("div");
+    tempDiv.style.padding = "30px";
+    tempDiv.style.background = "white";
+    tempDiv.style.width = "100%";
+    tempDiv.style.fontFamily = "Segoe UI, Arial, sans-serif";
+    tempDiv.innerHTML = `
+      <h1 style="text-align:center; font-size:28px; color:#111827; margin:0;">
+        GP SOLDIERS ACADEMY
+      </h1>
+      <h2 style="text-align:center; font-size:22px; color:#2563eb; margin:15px 0 5px;">
+        EXAM RESULTS
+      </h2>
+      <h3 style="text-align:center; font-size:18px; margin:0 0 20px;">
+        ${infoText}
+      </h3>
+      <div style="text-align:center; font-size:16px; color:#666; margin-bottom:15px;">
+        -----------------------------------------------<br>
+        Rank  |  Name  |  Roll  |  Score<br>
+        -----------------------------------------------
+      </div>
+      ${element.innerHTML}
+      <p style="text-align:center; margin-top:40px; font-size:16px; font-weight:bold; color:#111827;">
+        Official Result • Generated on ${new Date().toLocaleDateString('en-IN')}
+      </p>
+    `;
+
+    document.body.appendChild(tempDiv);
+
+    try {
+      const canvas = await html2canvas(tempDiv, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+
+      document.body.removeChild(tempDiv);
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`GP-Soldiers-${infoText.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`);
+    } catch (err) {
+      console.error("PDF error:", err);
+      alert("Failed to generate PDF. Try again or take screenshot.");
+    }
+  }
 </script>
-
 </body>
 </html>
