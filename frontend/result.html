@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GP Soldiers – Exam Results</title>
   <link rel="icon" href="data:,">
-  <!-- Libraries for PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
@@ -67,6 +64,19 @@
       cursor: pointer;
       margin-top: 10px;
     }
+    .download-btn {
+      width: 100%;
+      padding: 15px;
+      background: #0E9F6E;
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 18px;
+      margin-top: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+    }
     .exam-info {
       text-align: center;
       font-size: 18px;
@@ -103,19 +113,6 @@
     th {
       background: #667eea;
       color: white;
-    }
-    .download-btn {
-      width: 100%;
-      padding: 15px;
-      background: #0E9F6E;
-      color: white;
-      border: none;
-      border-radius: 14px;
-      font-size: 18px;
-      margin-top: 20px;
-      font-weight: 700;
-      cursor: pointer;
-      display: none;
     }
     .error-msg {
       color: #dc2626;
@@ -168,13 +165,15 @@
     </table>
   </div>
 
-  <button class="download-btn" id="downloadBtn" onclick="downloadPDF()">
-    Download the Result
+  <!-- New button: Download Result (opens external link) -->
+  <button class="download-btn" id="downloadBtn" onclick="openDownloadPage()">
+    Download Result
   </button>
 </div>
 
 <script>
   const API_URL = "https://academy-backend-e02j.onrender.com";
+  const DOWNLOAD_URL = "https://academy-student-portal.onrender.com/dresult.html";
 
   // Populate test numbers
   (function populateTests() {
@@ -223,7 +222,6 @@
         return;
       }
 
-      // Sort by score descending
       results.sort((a, b) => b.correct - a.correct);
 
       infoDiv.innerText = `${subject.toUpperCase()} — Test ${testNumber}`;
@@ -250,55 +248,23 @@
     }
   }
 
-  // PDF Download
-  async function downloadPDF() {
-    const { jsPDF } = window.jspdf;
-    const element = document.getElementById("resultBox");
-    const infoText = document.getElementById("examInfo").innerText;
+  // Open download page in new tab (browser) or prompt for external browser (web app/PWA)
+  function openDownloadPage() {
+    // Try to open in new tab (works in normal browsers)
+    const newWindow = window.open(DOWNLOAD_URL, '_blank');
 
-    const tempDiv = document.createElement("div");
-    tempDiv.style.padding = "30px";
-    tempDiv.style.background = "white";
-    tempDiv.style.width = "100%";
-    tempDiv.style.fontFamily = "Segoe UI, Arial, sans-serif";
-    tempDiv.innerHTML = `
-      <h1 style="text-align:center; font-size:28px; color:#111827; margin:0;">
-        GP SOLDIERS ACADEMY
-      </h1>
-      <h2 style="text-align:center; font-size:22px; color:#2563eb; margin:15px 0 5px;">
-        EXAM RESULTS
-      </h2>
-      <h3 style="text-align:center; font-size:18px; margin:0 0 20px;">
-        ${infoText}
-      </h3>
-      <div style="text-align:center; font-size:16px; color:#666; margin-bottom:15px;">
-        -----------------------------------------------<br>
-        Rank  |  Name  |  Roll  |  Score<br>
-        -----------------------------------------------
-      </div>
-      ${element.innerHTML}
-      <p style="text-align:center; margin-top:40px; font-size:16px; font-weight:bold; color:#111827;">
-        Official Result • Generated on ${new Date().toLocaleDateString('en-IN')}
-      </p>
-    `;
+    // If blocked or in webview/PWA/in-app browser, show message
+    if (!newWindow || newWindow.closed || typeof newWindow === 'undefined') {
+      const confirmed = confirm(
+        "This link will open in your browser.\n\n" +
+        "Do you want to open https://academy-student-portal.onrender.com/dresult.html now?\n\n" +
+        "Press OK to continue (recommended in external browser)."
+      );
 
-    document.body.appendChild(tempDiv);
-
-    try {
-      const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true, logging: false });
-      document.body.removeChild(tempDiv);
-
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`GP-Soldiers-${infoText.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`);
-    } catch (err) {
-      console.error("PDF error:", err);
-      alert("Failed to generate PDF. Try again or take screenshot.");
+      if (confirmed) {
+        // Fallback for webview / Cordova / Capacitor / PWA
+        window.open(DOWNLOAD_URL, '_system') || window.open(DOWNLOAD_URL, '_blank');
+      }
     }
   }
 </script>
