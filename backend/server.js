@@ -34,7 +34,7 @@ app.use(cors({
 app.use(express.json());
 
 // ────────────────────────────────────────────────
-// STATIC FILES
+// STATIC FILES & UPLOADS
 // ────────────────────────────────────────────────
 const frontendPath = path.join(__dirname, '../frontend');
 console.log("Serving frontend from:", frontendPath);
@@ -154,6 +154,7 @@ app.post('/student-login', async (req, res) => {
 });
 
 app.get('/students', async (req, res) => res.json(await Student.find()));
+
 app.post('/students', async (req, res) => {
   try {
     const { name, roll, mobile, password } = req.body;
@@ -247,7 +248,6 @@ app.post('/conduct/:draftId', async (req, res) => {
     const draft = await DraftExam.findById(req.params.draftId);
     if (!draft) return res.status(404).json({ error: "Draft not found" });
 
-    // Improved check: same title + same test number = already conducted
     const exists = await Exam.findOne({
       title: draft.title,
       testNumber: draft.testNumber
@@ -288,37 +288,47 @@ app.get('/exam/:id', async (req, res) => {
   res.json(exam);
 });
 
+// ────────────────────────────────────────────────
+// SUBMIT EXAM & SAVE RESULT (FULL ORIGINAL LOGIC RESTORED)
+// ────────────────────────────────────────────────
 app.post('/submit-exam', async (req, res) => {
   const { examId, answers, studentMobile, studentName } = req.body;
-  const exam = await Exam.findById(examId);
-  if (!exam) return res.status(404).json({ error: "Exam not found" });
 
-  let correct = 0;
-  exam.questions.forEach((q, i) => {
-    if (q.correctAnswer.toLowerCase() === answers[i]?.toLowerCase()) correct++;
-  });
+  try {
+    const exam = await Exam.findById(examId);
+    if (!exam) return res.status(404).json({ error: "Exam not found" });
 
-  const wrong = exam.totalQuestions - correct;
+    let correct = 0;
+    exam.questions.forEach((q, i) => {
+      if (q.correctAnswer.toLowerCase() === answers[i]?.toLowerCase()) correct++;
+    });
 
-  await new Result({
-    studentMobile,
-    studentName,
-    examId,
-    examTitle: exam.title,
-    examSubject: exam.subject,
-    examTestNumber: exam.testNumber,
-    correct,
-    wrong,
-    score: correct,
-    total: exam.totalQuestions,
-    answers
-  }).save();
+    const wrong = exam.totalQuestions - correct;
 
-  res.json({ message: "Exam submitted successfully!" });
+    await new Result({
+      studentMobile,
+      studentName,
+      examId,
+      examTitle: exam.title,
+      examSubject: exam.subject,
+      examTestNumber: exam.testNumber,
+      correct,
+      wrong,
+      score: correct,          // or you can do (correct / total) * 100 if you want percentage
+      total: exam.totalQuestions,
+      answers,
+      submittedAt: new Date()
+    }).save();
+
+    res.json({ message: "Exam submitted successfully!" });
+  } catch (err) {
+    console.error("Submit exam error:", err);
+    res.status(500).json({ error: "Failed to submit exam" });
+  }
 });
 
 // ────────────────────────────────────────────────
-// NOTES & ARMY VIDEOS (unchanged)
+// NOTES & ARMY VIDEOS
 // ────────────────────────────────────────────────
 app.post('/api/save-note', async (req, res) => {
   const { title, content } = req.body;
@@ -371,7 +381,7 @@ app.post('/upload-army-video', uploadArmyVideo.single("video"), async (req, res)
 });
 
 // ────────────────────────────────────────────────
-// CATCH-ALL (SPA)
+// CATCH-ALL ROUTE
 // ────────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
