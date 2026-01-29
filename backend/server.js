@@ -76,14 +76,12 @@ const Student = mongoose.model('Student', new mongoose.Schema({
   mobile: { type: String, unique: true },
   password: String
 }));
-
 const Video = mongoose.model('Video', new mongoose.Schema({
   subject: String,
   class: Number,
   videoId: String,
   title: String
 }));
-
 const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   title: String,
   subject: String,
@@ -95,7 +93,6 @@ const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   }],
   createdAt: { type: Date, default: Date.now }
 }));
-
 const Exam = mongoose.model('Exam', new mongoose.Schema({
   title: String,
   subject: String,
@@ -108,7 +105,6 @@ const Exam = mongoose.model('Exam', new mongoose.Schema({
   }],
   conductedAt: { type: Date, default: Date.now }
 }));
-
 const Result = mongoose.model('Result', new mongoose.Schema({
   studentMobile: String,
   studentName: String,
@@ -123,13 +119,11 @@ const Result = mongoose.model('Result', new mongoose.Schema({
   answers: [String],
   submittedAt: { type: Date, default: Date.now }
 }));
-
 const Note = mongoose.model('Note', new mongoose.Schema({
   title: String,
   content: String,
   createdAt: { type: Date, default: Date.now }
 }));
-
 const ArmyVideo = mongoose.model('ArmyVideo', new mongoose.Schema({
   title: String,
   url: String,
@@ -154,11 +148,9 @@ app.post('/student-login', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
 app.get('/students', async (req, res) => {
   res.json(await Student.find());
 });
-
 app.post('/students', async (req, res) => {
   try {
     const { name, roll, mobile, password } = req.body;
@@ -173,7 +165,6 @@ app.post('/students', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
 app.delete('/students/:id', async (req, res) => {
   const deleted = await Student.findByIdAndDelete(req.params.id);
   if (!deleted) return res.status(404).json({ error: "Student not found" });
@@ -186,7 +177,6 @@ app.delete('/students/:id', async (req, res) => {
 app.get('/videos', async (req, res) => {
   res.json(await Video.find());
 });
-
 app.post('/videos', async (req, res) => {
   const { subject, class: classNum, videoId, title } = req.body;
   if (!videoId || videoId.length !== 11)
@@ -213,7 +203,6 @@ app.post('/videos', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
 app.delete('/videos/:id', async (req, res) => {
   try {
     const video = await Video.findByIdAndDelete(req.params.id);
@@ -224,7 +213,6 @@ app.delete('/videos/:id', async (req, res) => {
     res.status(500).json({ error: "Delete failed" });
   }
 });
-
 app.put('/videos/:id', async (req, res) => {
   try {
     const updated = await Video.findByIdAndUpdate(
@@ -246,12 +234,10 @@ app.put('/videos/:id', async (req, res) => {
 app.get('/drafts', async (req, res) => {
   res.json(await DraftExam.find().sort({ createdAt: -1 }));
 });
-
 app.post('/drafts', async (req, res) => {
   const { title, subject, testNumber, questions } = req.body;
   if (!questions || questions.length === 0)
     return res.status(400).json({ error: "At least one question required" });
-
   try {
     const draft = new DraftExam({
       title,
@@ -267,12 +253,10 @@ app.post('/drafts', async (req, res) => {
     res.status(500).json({ error: "Failed to create draft" });
   }
 });
-
 app.put('/drafts/:id', async (req, res) => {
   const { title, subject, testNumber, questions } = req.body;
   if (!questions || questions.length === 0)
     return res.status(400).json({ error: "At least one question required" });
-
   try {
     const draft = await DraftExam.findByIdAndUpdate(
       req.params.id,
@@ -285,7 +269,6 @@ app.put('/drafts/:id', async (req, res) => {
       },
       { new: true, runValidators: true }
     );
-
     if (!draft) return res.status(404).json({ error: "Draft not found" });
     res.json({ message: "Draft updated", draft });
   } catch (err) {
@@ -301,18 +284,15 @@ app.post('/conduct/:draftId', async (req, res) => {
   try {
     const draft = await DraftExam.findById(req.params.draftId);
     if (!draft) return res.status(404).json({ error: "Draft not found" });
-
     const exists = await Exam.findOne({
       title: draft.title,
       testNumber: draft.testNumber
     });
-
     if (exists) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: `Exam "${draft.title}" Test ${draft.testNumber} has already been conducted`
       });
     }
-
     const exam = new Exam({
       title: draft.title,
       subject: draft.subject,
@@ -321,10 +301,8 @@ app.post('/conduct/:draftId', async (req, res) => {
       totalQuestions: draft.totalQuestions,
       questions: draft.questions
     });
-
     await exam.save();
     await DraftExam.findByIdAndDelete(req.params.draftId);
-
     res.json({ message: "Exam conducted successfully!" });
   } catch (err) {
     console.error("Conduct error:", err);
@@ -338,7 +316,6 @@ app.post('/conduct/:draftId', async (req, res) => {
 app.get('/active-exams', async (req, res) => {
   res.json(await Exam.find().sort({ conductedAt: -1 }));
 });
-
 app.get('/exam/:id', async (req, res) => {
   const exam = await Exam.findById(req.params.id);
   if (!exam) return res.status(404).json({ error: "Exam not found" });
@@ -350,18 +327,14 @@ app.get('/exam/:id', async (req, res) => {
 // ────────────────────────────────────────────────
 app.post('/submit-exam', async (req, res) => {
   const { examId, answers, studentMobile, studentName } = req.body;
-
   try {
     const exam = await Exam.findById(examId);
     if (!exam) return res.status(404).json({ error: "Exam not found" });
-
     let correct = 0;
     exam.questions.forEach((q, i) => {
       if (q.correctAnswer.toLowerCase() === answers[i]?.toLowerCase()) correct++;
     });
-
     const wrong = exam.totalQuestions - correct;
-
     await new Result({
       studentMobile,
       studentName,
@@ -376,11 +349,56 @@ app.post('/submit-exam', async (req, res) => {
       answers,
       submittedAt: new Date()
     }).save();
-
     res.json({ message: "Exam submitted successfully!" });
   } catch (err) {
     console.error("Submit exam error:", err);
     res.status(500).json({ error: "Failed to submit exam" });
+  }
+});
+
+// ────────────────────────────────────────────────
+// RESULTS ROUTES (ADDED - THIS FIXES YOUR ERROR)
+// ────────────────────────────────────────────────
+
+// 1. Get ALL results (admin view)
+app.get('/results', async (req, res) => {
+  try {
+    const results = await Result.find().sort({ submittedAt: -1 });
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to get results" });
+  }
+});
+
+// 2. Get results for one student (by mobile)
+app.get('/results/student/:mobile', async (req, res) => {
+  try {
+    const results = await Result.find({ studentMobile: req.params.mobile })
+      .sort({ submittedAt: -1 });
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to get student results" });
+  }
+});
+
+// 3. Get results filtered by subject + test number (for your public results page)
+app.get('/results/exam', async (req, res) => {
+  const { subject, testNumber } = req.query;
+  if (!subject || !testNumber) {
+    return res.status(400).json({ error: "subject and testNumber query params required" });
+  }
+  try {
+    const results = await Result.find({
+      examSubject: { $regex: new RegExp(`^${subject}$`, 'i') },
+      examTestNumber: Number(testNumber)
+    }).sort({ correct: -1 }); // highest score first
+
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to get exam results" });
   }
 });
 
@@ -394,7 +412,6 @@ app.post('/api/save-note', async (req, res) => {
   await new Note({ title, content }).save();
   res.json({ success: true, message: "Note saved!" });
 });
-
 app.get('/api/notes', async (req, res) => {
   res.json(await Note.find().sort({ createdAt: -1 }));
 });
@@ -405,7 +422,6 @@ app.get('/api/notes', async (req, res) => {
 app.get('/api/army-videos', async (req, res) => {
   res.json(await ArmyVideo.find().sort({ uploadedAt: -1 }));
 });
-
 app.post('/save-army-video', async (req, res) => {
   const { title, url } = req.body;
   if (!title || !url)
@@ -426,9 +442,7 @@ const armyStorage = multer.diskStorage({
     cb(null, `${Date.now()}-${Math.random() * 100000}${path.extname(file.originalname)}`);
   }
 });
-
 const uploadArmyVideo = multer({ storage: armyStorage });
-
 app.post('/upload-army-video', uploadArmyVideo.single("video"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No video file" });
   const title = req.body.title;
