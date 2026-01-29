@@ -158,14 +158,12 @@
 </header>
 
 <div class="main">
-  <!-- EXAM LIST -->
   <div id="examList" class="card">
     <h2 style="text-align:center; color:#2563eb;">Available Exams</h2>
     <div id="examLoader" class="book-loader"></div>
     <div id="examsContainer" class="hidden"></div>
   </div>
 
-  <!-- EXAM TAKING -->
   <div id="examTaking" class="card hidden">
     <h2 id="examTitleDisplay" style="text-align:center; color:#2563eb;"></h2>
     <div id="subjectBox" class="subject-box"></div>
@@ -176,39 +174,39 @@
   </div>
 </div>
 
-<!-- START CONFIRMATION POPUP -->
+<!-- START CONFIRMATION -->
 <div id="startPopup" class="popup">
   <div class="popup-card">
     <h2>Ready to Start?</h2>
-    <p>Do not exit the exam once started. All the best!</p>
+    <p>Do not exit once started. All the best!</p>
     <button onclick="beginExam()">Start Exam</button>
   </div>
 </div>
 
-<!-- EXIT CONFIRMATION POPUP -->
+<!-- EXIT CONFIRMATION -->
 <div id="exitPopup" class="popup">
   <div class="popup-card">
     <h2>Exit Exam?</h2>
-    <p>Your answers are saved. Are you sure?</p>
+    <p>Your answers are saved. Sure to leave?</p>
     <button onclick="confirmExit()">Yes, Exit</button>
     <button onclick="document.getElementById('exitPopup').style.display='none'" style="background:#6b7280;">No, Stay</button>
   </div>
 </div>
 
-<!-- STUDENT INFO POPUP (Name, Mobile, Roll) -->
+<!-- STUDENT INFO POPUP -->
 <div id="studentInfoPopup" class="popup">
   <div class="popup-card">
     <h2>Enter Your Details</h2>
-    <p style="color:#666; margin-bottom:20px;">These are required to submit your exam</p>
+    <p style="color:#666; margin-bottom:20px;">Required to submit</p>
 
     <input type="text" id="studentNameInput" placeholder="Full Name" required>
-    <div id="nameError" class="error-text">Please enter your full name</div>
+    <div id="nameError" class="error-text">Enter your name</div>
 
     <input type="tel" id="studentMobileInput" placeholder="Mobile Number (10 digits)" maxlength="10" required>
-    <div id="mobileError" class="error-text">Enter valid 10-digit mobile number</div>
+    <div id="mobileError" class="error-text">Enter valid 10-digit number</div>
 
     <input type="text" id="studentRollInput" placeholder="Roll Number" required>
-    <div id="rollError" class="error-text">Please enter your roll number</div>
+    <div id="rollError" class="error-text">Enter your roll number</div>
 
     <button onclick="validateAndSubmit()">Submit Exam</button>
   </div>
@@ -230,13 +228,14 @@ let studentAnswers = [];
 let selectedExamId = null;
 let examStarted = false;
 const STORAGE_KEY = "saved_exam_answers";
+const COMPLETED_EXAMS_KEY = "completed_exam_ids"; // New key for completed exams
 
-/* EXIT WARNING */
+/* Prevent accidental exit during exam */
 window.onbeforeunload = function () {
-  if (examStarted) return "Are you sure you want to exit the exam? Your progress is saved.";
+  if (examStarted) return "Are you sure? Your exam progress will be lost.";
 };
 
-/* LOAD AVAILABLE EXAMS */
+/* Load exams & filter out completed ones */
 window.onload = loadExams;
 
 async function loadExams() {
@@ -245,13 +244,22 @@ async function loadExams() {
   try {
     const res = await fetch(`${API_URL}/active-exams`);
     if (!res.ok) throw new Error();
-    const exams = await res.json();
+    let exams = await res.json();
+
+    // Get completed exam IDs from localStorage
+    const completed = new Set(JSON.parse(localStorage.getItem(COMPLETED_EXAMS_KEY) || '[]'));
+
+    // Filter out exams already taken by this student
+    exams = exams.filter(ex => !completed.has(ex._id));
+
     loader.classList.add("hidden");
     container.classList.remove("hidden");
+
     if (!exams.length) {
-      container.innerHTML = "<p style='text-align:center;color:#888;'>No active exams right now</p>";
+      container.innerHTML = "<p style='text-align:center;color:#888;'>No available exams right now</p>";
       return;
     }
+
     container.innerHTML = exams.map(ex => `
       <div onclick="showStartPopup('${ex._id}')"
            style="background:#e8f0ff;padding:18px;border-radius:14px;margin:10px 0;cursor:pointer;">
@@ -259,13 +267,23 @@ async function loadExams() {
         <p>${ex.subject?.toUpperCase()} - Test ${ex.testNumber}</p>
       </div>
     `).join("");
-  } catch {
+
+  } catch (err) {
     loader.classList.add("hidden");
-    container.innerHTML = "<p style='color:red;text-align:center;'>Failed to load exams. Check your connection.</p>";
+    container.innerHTML = "<p style='color:red;text-align:center;'>Failed to load exams</p>";
   }
 }
 
-/* SHOW START CONFIRMATION */
+/* Mark exam as completed after successful submit */
+function markExamCompleted(examId) {
+  let completed = JSON.parse(localStorage.getItem(COMPLETED_EXAMS_KEY) || '[]');
+  if (!completed.includes(examId)) {
+    completed.push(examId);
+    localStorage.setItem(COMPLETED_EXAMS_KEY, JSON.stringify(completed));
+  }
+}
+
+/* START POPUP */
 function showStartPopup(id) {
   selectedExamId = id;
   document.getElementById("startPopup").style.display = "flex";
@@ -277,7 +295,7 @@ function beginExam() {
   startExam(selectedExamId);
 }
 
-/* LOAD EXAM QUESTIONS */
+/* LOAD EXAM */
 async function startExam(id) {
   try {
     const res = await fetch(`${API_URL}/exam/${id}`);
@@ -294,18 +312,16 @@ async function startExam(id) {
     studentAnswers = new Array(currentExam.totalQuestions).fill(null);
     loadSavedAnswers(id);
 
-    const container = document.getElementById("questionsContainer");
-    container.innerHTML = currentExam.questions.map((q, i) => `
+    document.getElementById("questionsContainer").innerHTML = currentExam.questions.map((q, i) => `
       <div class="question-container">
-        <img src="${q.imageUrl}" class="question-img" alt="Question ${i+1}">
+        <img src="${q.imageUrl}" class="question-img" alt="Q${i+1}">
         ${renderOptions(i)}
       </div>
     `).join("");
 
     restoreSelectedOptions();
-  } catch (err) {
+  } catch {
     alert("Error loading exam. Please try again.");
-    console.error(err);
   }
 }
 
@@ -330,9 +346,7 @@ function loadSavedAnswers(examId) {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
     const data = JSON.parse(saved);
-    if (data.examId === examId) {
-      studentAnswers = data.answers;
-    }
+    if (data.examId === examId) studentAnswers = data.answers;
   }
 }
 
@@ -345,42 +359,31 @@ function restoreSelectedOptions() {
   });
 }
 
-/* SHOW STUDENT INFO POPUP BEFORE FINAL SUBMIT */
+/* Show student info popup on submit click */
 document.getElementById("examForm").addEventListener("submit", e => {
   e.preventDefault();
   document.getElementById("studentInfoPopup").style.display = "flex";
 });
 
-/* VALIDATE & SUBMIT */
+/* Validate & submit */
 async function validateAndSubmit() {
   const name = document.getElementById("studentNameInput").value.trim();
   const mobile = document.getElementById("studentMobileInput").value.trim();
   const roll = document.getElementById("studentRollInput").value.trim();
 
-  const nameErr = document.getElementById("nameError");
-  const mobileErr = document.getElementById("mobileError");
-  const rollErr = document.getElementById("rollError");
-
   let valid = true;
 
-  if (!name) {
-    nameErr.style.display = "block";
-    valid = false;
-  } else nameErr.style.display = "none";
+  if (!name) valid = false, document.getElementById("nameError").style.display = "block";
+  else document.getElementById("nameError").style.display = "none";
 
-  if (!/^\d{10}$/.test(mobile)) {
-    mobileErr.style.display = "block";
-    valid = false;
-  } else mobileErr.style.display = "none";
+  if (!/^\d{10}$/.test(mobile)) valid = false, document.getElementById("mobileError").style.display = "block";
+  else document.getElementById("mobileError").style.display = "none";
 
-  if (!roll) {
-    rollErr.style.display = "block";
-    valid = false;
-  } else rollErr.style.display = "none";
+  if (!roll) valid = false, document.getElementById("rollError").style.display = "block";
+  else document.getElementById("rollError").style.display = "none";
 
   if (!valid) return;
 
-  // All good → submit
   document.getElementById("studentInfoPopup").style.display = "none";
 
   try {
@@ -392,35 +395,35 @@ async function validateAndSubmit() {
         answers: studentAnswers,
         studentName: name,
         studentMobile: mobile,
-        studentRoll: roll   // added roll if you want to save it (you can remove if not needed)
+        studentRoll: roll
       })
     });
 
     if (!res.ok) throw new Error();
 
+    // Mark exam as completed
+    markExamCompleted(currentExam._id);
+
     examStarted = false;
     localStorage.removeItem(STORAGE_KEY);
+
     showPopup("SUCCESS", "Exam submitted successfully!");
     
-    // Reset & go back to list
     setTimeout(() => {
       document.getElementById("examTaking").classList.add("hidden");
       document.getElementById("examList").classList.remove("hidden");
-      loadExams();
+      loadExams(); // Reload list → completed exam will be gone
     }, 2000);
 
   } catch {
-    showPopup("FAILED", "Submission failed. Please check your connection and try again.");
+    showPopup("FAILED", "Submission failed. Please try again.");
   }
 }
 
 /* EXIT HANDLING */
 function handleExit() {
-  if (!examStarted) {
-    location.href = "index.html";
-  } else {
-    document.getElementById("exitPopup").style.display = "flex";
-  }
+  if (!examStarted) location.href = "index.html";
+  else document.getElementById("exitPopup").style.display = "flex";
 }
 
 function confirmExit() {
