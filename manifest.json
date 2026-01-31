@@ -1,24 +1,27 @@
 {
-  "name": "GP Academy",
+  "name": "GP Soldiers Academy",
   "short_name": "GP Academy",
   "id": "/GP-SOLDERS/",
-  "start_url": "/GP-SOLDERS/",
+  "start_url": "/GP-SOLDERS/pwabuilder.html",
   "scope": "/GP-SOLDERS/",
   "description": "GP Academy student portal application.",
   "background_color": "#FFFFFF",
   "theme_color": "#0F172A",
   "display": "standalone",
   "orientation": "any",
+
   "icons": [
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
