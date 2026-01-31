@@ -1,25 +1,19 @@
 {
-  "background_color": "#ffffff",
-  "dir": "ltr",
-  "display": "standalone",
-  "name": "gpsoldier",
-  "orientation": "any",
-  "scope": "/",
-  "short_name": "gpsoldier",
+  "name": "GP Academy",
+  "short_name": "GP Academy",
+  "id": "/",
   "start_url": "/",
-  "theme_color": "#0f172a",
+  "scope": "/",
+  "description": "GP Academy student portal application.",
+  "background_color": "#FFFFFF",
+  "theme_color": "#0F172A",
+  "display": "standalone",
+  "orientation": "any",
   "icons": [
     {
-      "src": "data:,",
-      "isSquare": false,
-      "isPng": false,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 0,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": false
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
-  ],
-  "description": "GP Soldiers Academy is a leading defence and police training institute based in Vijayapura, Karnataka. We are dedicated to preparing young aspirants for success in every major armed force and police service across India."
+  ]
 }
