@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <!-- PWA Requirements -->
+  <!-- PWA Setup -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0F172A">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
 
   <title>GP Soldiers Academy Vijayapur</title>
   <link rel="icon" href="/icons/icon-192.png">
 
-  <!-- Auto redirect after 2 seconds -->
+  <!-- Auto Redirect -->
   <meta http-equiv="refresh" content="2;url=https://academy-student-portal.onrender.com">
 
   <style>
@@ -26,7 +26,7 @@
       overflow: hidden;
       background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
       color: white;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
     }
 
     body {
@@ -38,7 +38,9 @@
       padding: 20px;
     }
 
-    .logo-container { margin-bottom: 2.5rem; }
+    .logo-container {
+      margin-bottom: 2.5rem;
+    }
 
     .logo-container img {
       max-width: 65%;
@@ -74,17 +76,18 @@
     }
 
     @keyframes logoEntrance {
-      0%   { opacity: 0; transform: scale(0.55) rotate(-12deg); }
-      60%  { opacity: 1; transform: scale(1.08) rotate(4deg); }
+      0% { opacity: 0; transform: scale(0.55) rotate(-12deg); }
+      60% { opacity: 1; transform: scale(1.08) rotate(4deg); }
       100% { transform: scale(1) rotate(0); }
     }
 
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(35px); }
-      to   { opacity: 1; transform: translateY(0); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
+
 <body>
 
   <div class="logo-container">
@@ -97,14 +100,13 @@
 
   <p class="redirect-text">Redirecting in 2 seconds...</p>
 
-  <!-- JavaScript fallback redirect -->
   <script>
     setTimeout(() => {
       window.location.replace("https://academy-student-portal.onrender.com");
     }, 2000);
   </script>
 
-  <!-- Register Service Worker -->
+  <!-- Service Worker Registration -->
   <script src="/registerServiceWorker.js"></script>
 
 </body>
