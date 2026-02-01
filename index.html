@@ -1,113 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-  <!-- PWA Setup -->
-  <link rel="manifest" href="/GP-SOLDERS/manifest.json">
-  <meta name="theme-color" content="#0F172A">
-  <link rel="apple-touch-icon" href="/GP-SOLDERS/icons/icon-192.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-
-  <title>GP Soldiers Academy Vijayapur</title>
-  <link rel="icon" href="/GP-SOLDERS/icons/icon-192.png">
-
-  <!-- Auto Redirect -->
-  <meta http-equiv="refresh" content="2;url=https://academy-student-portal.onrender.com">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GP Soldier Academy</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    html, body {
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      color: white;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
     body {
+      height: 100vh;
+      background: radial-gradient(circle at 20% 30%, #0f172a 0%, #020817 100%);
+      color: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    .bg-particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .particle {
+      position: absolute;
+      background: rgba(59, 130, 246, 0.4);
+      border-radius: 50%;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+      animation: float 18s infinite ease-in-out;
+      will-change: transform;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+      25% { transform: translateY(-60px) translateX(40px) rotate(15deg); }
+      50% { transform: translateY(-120px) translateX(-30px) rotate(-10deg); }
+      75% { transform: translateY(-40px) translateX(50px) rotate(20deg); }
+    }
+
+    .welcome-screen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(2, 8, 23, 0.97));
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      animation: fadeInBg 0.8s forwards 0.2s;
+    }
+
+    @keyframes fadeInBg {
+      to { opacity: 1; }
+    }
+
+    .welcome-content {
       text-align: center;
-      padding: 20px;
+      transform: translateY(180px);
+      opacity: 0;
+      animation: popupFromBottom 0.9s cubic-bezier(0.23, 1, 0.32, 1) forwards 0.4s;
     }
 
-    .logo-container {
-      margin-bottom: 2.5rem;
-    }
-
-    .logo-container img {
-      max-width: 65%;
-      max-height: 220px;
-      border-radius: 24px;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65);
-      animation: logoEntrance 1.8s ease-out;
+    @keyframes popupFromBottom {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
 
     h1 {
-      font-size: clamp(2rem, 7.5vw, 3.4rem);
-      font-weight: 700;
-      margin-bottom: 0.8rem;
-      line-height: 1.15;
+      font-size: clamp(2.8rem, 9vw, 6.5rem);
+      font-weight: 800;
+      letter-spacing: -2px;
       background: linear-gradient(90deg, #60a5fa, #a5b4fc, #c084fc);
       -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: fadeInUp 1.4s ease-out;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 40px rgba(96, 165, 250, 0.5);
+      margin-bottom: 0.9rem;
+      animation: glow 2.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 20px rgba(96, 165, 250, 0.5); }
+      to   { text-shadow: 0 0 60px rgba(96, 165, 250, 0.9), 0 0 100px rgba(165, 180, 252, 0.6); }
     }
 
     .subtitle {
-      font-size: clamp(1.1rem, 4.8vw, 1.45rem);
-      color: #cbd5e1;
-      margin-bottom: 1.8rem;
-      animation: fadeInUp 1.8s ease-out;
-    }
-
-    .redirect-text {
-      font-size: 1rem;
+      font-size: clamp(1.3rem, 4.5vw, 2rem);
       color: #94a3b8;
-      margin-top: 2rem;
-      animation: fadeIn 2.8s ease-out;
+      margin-bottom: 2rem;
+      opacity: 0.92;
     }
 
-    @keyframes logoEntrance {
-      0% { opacity: 0; transform: scale(0.55) rotate(-12deg); }
-      60% { opacity: 1; transform: scale(1.08) rotate(4deg); }
-      100% { transform: scale(1) rotate(0); }
+    .loading-bar {
+      width: 260px;
+      height: 5px;
+      background: rgba(71, 85, 105, 0.4);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 0 auto;
     }
 
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(35px); }
-      to { opacity: 1; transform: translateY(0); }
+    .bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #60a5fa, #a5b4fc);
+      border-radius: 10px;
+      animation: load 2.2s ease-in-out forwards 0.7s;
+    }
+
+    @keyframes load {
+      to { width: 100%; }
+    }
+
+    .fade-out {
+      animation: fadeOut 0.8s forwards;
+      pointer-events: none;
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: scale(1.02);
+      }
+    }
+
+    /* The real app will appear here */
+    #app-frame {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: none;
+      z-index: 10;
+      background: #020817;
     }
   </style>
 </head>
-
 <body>
 
-  <div class="logo-container">
-    <img src="/GP-SOLDERS/logo.PNG.jpg" alt="GP Soldiers Academy Logo">
+  <div class="bg-particles" id="particles"></div>
+
+  <div class="welcome-screen" id="welcome">
+    <div class="welcome-content">
+      <h1>GP SOLDIER<br>ACADEMY</h1>
+      <div class="subtitle">Discipline • Courage • Victory</div>
+      <div class="loading-bar">
+        <div class="bar"></div>
+      </div>
+    </div>
   </div>
 
-  <h1>Welcome to<br>GP Soldiers Academy Vijayapur</h1>
+  <!-- The embedded student portal -->
+  <iframe 
+    id="app-frame" 
+    src="https://academy-student-portal.onrender.com" 
+    allowfullscreen
+  ></iframe>
 
-  <p class="subtitle">Building Discipline • Knowledge • Patriotism</p>
+<script>
+  // Floating particles for background effect
+  const particlesContainer = document.getElementById('particles');
+  
+  for (let i = 0; i < 16; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 4 + 2;
+    p.style.width = p.style.height = `${size}px`;
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.top  = Math.random() * 120 + 'vh';
+    p.style.animationDuration = (Math.random() * 10 + 12) + 's';
+    p.style.animationDelay    = Math.random() * -12 + 's';
+    particlesContainer.appendChild(p);
+  }
 
-  <p class="redirect-text">Redirecting in 2 seconds...</p>
+  // Timing control: show welcome → after ~4 seconds fade out → show iframe
+  const DISPLAY_DURATION = 4000;   // 4000 ms = 4 seconds (change to 3000 or 5000 if needed)
 
-  <script>
+  setTimeout(() => {
+    const welcome = document.getElementById('welcome');
+    welcome.classList.add('fade-out');
+
     setTimeout(() => {
-      window.location.replace("https://academy-student-portal.onrender.com");
-    }, 2000);
-  </script>
+      welcome.style.display = 'none';
+      
+      // Reveal the embedded portal
+      const frame = document.getElementById('app-frame');
+      frame.style.display = 'block';
+      
+      // Optional: hide particles after transition
+      setTimeout(() => {
+        particlesContainer.style.display = 'none';
+      }, 800);
 
-  <!-- Service Worker -->
-  <script src="/GP-SOLDERS/registerServiceWorker.js"></script>
+    }, 800); // match fade-out duration
 
+  }, DISPLAY_DURATION);
+
+</script>
 </body>
 </html>
