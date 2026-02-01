@@ -1,17 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GP Soldiers Academy - PWA Builder</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GP Soldier Academy</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  <!-- Manifest (important for packaging) -->
-  <link rel="manifest" href="manifest.json">
+    body {
+      height: 100vh;
+      background: radial-gradient(circle at 20% 30%, #0f172a 0%, #020817 100%);
+      color: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    .bg-particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .particle {
+      position: absolute;
+      background: rgba(59, 130, 246, 0.4);
+      border-radius: 50%;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+      animation: float 18s infinite ease-in-out;
+      will-change: transform;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+      25% { transform: translateY(-60px) translateX(40px) rotate(15deg); }
+      50% { transform: translateY(-120px) translateX(-30px) rotate(-10deg); }
+      75% { transform: translateY(-40px) translateX(50px) rotate(20deg); }
+    }
+
+    .welcome-screen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(2, 8, 23, 0.97));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      animation: fadeInBg 0.8s forwards 0.2s;
+    }
+
+    @keyframes fadeInBg {
+      to { opacity: 1; }
+    }
+
+    .welcome-content {
+      text-align: center;
+      transform: translateY(180px);
+      opacity: 0;
+      animation: popupFromBottom 0.9s cubic-bezier(0.23, 1, 0.32, 1) forwards 0.4s;
+    }
+
+    @keyframes popupFromBottom {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    h1 {
+      font-size: clamp(2.8rem, 9vw, 6.5rem);
+      font-weight: 800;
+      letter-spacing: -2px;
+      background: linear-gradient(90deg, #60a5fa, #a5b4fc, #c084fc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 40px rgba(96, 165, 250, 0.5);
+      margin-bottom: 0.9rem;
+      animation: glow 2.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 20px rgba(96, 165, 250, 0.5); }
+      to   { text-shadow: 0 0 60px rgba(96, 165, 250, 0.9), 0 0 100px rgba(165, 180, 252, 0.6); }
+    }
+
+    .subtitle {
+      font-size: clamp(1.3rem, 4.5vw, 2rem);
+      color: #94a3b8;
+      margin-bottom: 2rem;
+      opacity: 0.92;
+    }
+
+    .loading-bar {
+      width: 260px;
+      height: 5px;
+      background: rgba(71, 85, 105, 0.4);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+
+    .bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #60a5fa, #a5b4fc);
+      border-radius: 10px;
+      animation: load 2.2s ease-in-out forwards 0.7s;
+    }
+
+    @keyframes load {
+      to { width: 100%; }
+    }
+
+    .fade-out {
+      animation: fadeOut 0.8s forwards;
+      pointer-events: none;
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: scale(1.02);
+      }
+    }
+
+    /* The real app will appear here */
+    #app-frame {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: none;
+      z-index: 10;
+      background: #020817;
+    }
+  </style>
 </head>
+<body>
 
-<body style="font-family: Arial; padding: 40px;">
-  <h1>GP Soldiers Academy</h1>
-  <p>This is a special page only for PWA packaging.</p>
-  <p>Your real app loads elsewhere, but this page allows PWABuilder to read the manifest correctly.</p>
+  <div class="bg-particles" id="particles"></div>
+
+  <div class="welcome-screen" id="welcome">
+    <div class="welcome-content">
+      <h1>GP SOLDIER<br>ACADEMY</h1>
+      <div class="subtitle">Discipline • Courage • Victory</div>
+      <div class="loading-bar">
+        <div class="bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- The embedded student portal -->
+  <iframe 
+    id="app-frame" 
+    src="https://academy-student-portal.onrender.com" 
+    allowfullscreen
+  ></iframe>
+
+<script>
+  // Floating particles for background effect
+  const particlesContainer = document.getElementById('particles');
+  
+  for (let i = 0; i < 16; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 4 + 2;
+    p.style.width = p.style.height = `${size}px`;
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.top  = Math.random() * 120 + 'vh';
+    p.style.animationDuration = (Math.random() * 10 + 12) + 's';
+    p.style.animationDelay    = Math.random() * -12 + 's';
+    particlesContainer.appendChild(p);
+  }
+
+  // Timing control: show welcome → after ~4 seconds fade out → show iframe
+  const DISPLAY_DURATION = 4000;   // 4000 ms = 4 seconds (change to 3000 or 5000 if needed)
+
+  setTimeout(() => {
+    const welcome = document.getElementById('welcome');
+    welcome.classList.add('fade-out');
+
+    setTimeout(() => {
+      welcome.style.display = 'none';
+      
+      // Reveal the embedded portal
+      const frame = document.getElementById('app-frame');
+      frame.style.display = 'block';
+      
+      // Optional: hide particles after transition
+      setTimeout(() => {
+        particlesContainer.style.display = 'none';
+      }, 800);
+
+    }, 800); // match fade-out duration
+
+  }, DISPLAY_DURATION);
+
+</script>
 </body>
 </html>
