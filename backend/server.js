@@ -33,9 +33,10 @@ app.use(cors({
 app.use(express.json());
 
 // ────────────────────────────────────────────────
-// STATIC FRONTEND + UPLOADS (ONLY ONE DECLARATION)
+// STATIC FRONTEND + UPLOADS
 // ────────────────────────────────────────────────
 const frontendPath = path.join(__dirname, '../frontend');
+');
 console.log("Serving frontend from:", frontendPath);
 app.use(express.static(frontendPath));
 
@@ -150,7 +151,7 @@ const PdfQuestionDraft = mongoose.model('PdfQuestionDraft', new mongoose.Schema(
 }));
 
 // ────────────────────────────────────────────────
-// ALL ORIGINAL ROUTES (UNCHANGED)
+// ALL ORIGINAL ROUTES
 // ────────────────────────────────────────────────
 app.post('/student-login', async (req, res) => {
   try {
@@ -195,7 +196,7 @@ app.post('/videos', async (req, res) => {
   if (!videoId || videoId.length !== 11) return res.status(400).json({ error: "Invalid videoId" });
   if (!subject || !classNum) return res.status(400).json({ error: "Subject and class required" });
   try {
-    let video = await Video.findOne({ subject, class: class  classNum });
+    let video = await Video.findOne({ subject, class: classNum }); // FIXED TYPO
     if (video) {
       video.videoId = videoId;
       video.title = title || "Lesson";
@@ -265,7 +266,7 @@ app.put('/drafts/:id', async (req, res) => {
 app.post('/conduct/:draftId', async (req, res) => {
   try {
     const draft = await DraftExam.findById(req.params.draftId);
-    if (!draft) return res.status(404).json({ error: "Draft not found" });
+    if (!draft) return res res.status(404).json({ error: "Draft not found" });
     const exists = await Exam.findOne({ title: draft.title, testNumber: draft.testNumber });
     if (exists) return res.status(400).json({ error: `Exam "${draft.title}" Test ${draft.testNumber} has already been conducted` });
     const exam = new Exam({
@@ -402,7 +403,7 @@ app.post('/upload-army-video', uploadArmyVideo.single("video"), async (req, res)
 });
 
 // ────────────────────────────────────────────────
-// PDF UPLOAD WITH FULL LOGGING
+// PDF UPLOAD WITH LOGGING
 // ────────────────────────────────────────────────
 const pdfUpload = multer({ 
   storage: multer.memoryStorage(),
