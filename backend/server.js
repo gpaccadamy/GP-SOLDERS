@@ -11,7 +11,7 @@ const cloudinary = require('cloudinary').v2;
 const app = express();
 
 // ────────────────────────────────────────────────
-// CORS CONFIG (SAFE + BEST OPTION)
+//   CORS CONFIG (SAFE + BEST OPTION)
 // ────────────────────────────────────────────────
 const allowedOrigins = [
   'https://academy-student-portal.onrender.com',
@@ -662,3 +662,4 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
