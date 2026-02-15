@@ -69,7 +69,7 @@ cloudinary.config({
 });
 
 // ────────────────────────────────────────────────
-// MODELS (your original + new PDF draft model)
+// MODELS
 // ────────────────────────────────────────────────
 const Student = mongoose.model('Student', new mongoose.Schema({
   name: String,
@@ -137,7 +137,7 @@ const ArmyVideo = mongoose.model('ArmyVideo', new mongoose.Schema({
   uploadedAt: { type: Date, default: Date.now }
 }, { timestamps: true }));
 
-// NEW MODEL for PDF drafts
+// PDF Draft Model
 const PdfQuestionDraft = mongoose.model('PdfQuestionDraft', new mongoose.Schema({
   title: String,
   subject: String,
@@ -151,9 +151,9 @@ const PdfQuestionDraft = mongoose.model('PdfQuestionDraft', new mongoose.Schema(
 }));
 
 // ────────────────────────────────────────────────
-// YOUR ORIGINAL ROUTES (FULLY PRESERVED)
+// ALL YOUR ORIGINAL ROUTES (FULLY PRESERVED)
 // ────────────────────────────────────────────────
-app.post('/student-login', async (req, res) => {
+app.post नेत('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
     if (!mobile || !password)
@@ -339,45 +339,34 @@ app.get('/exam/:id', async (req, res) => {
   res.json(exam);
 });
 
-app.post('/api/exam/pdf-upload', pdfUpload.single('pdf'), async (req, res) => {
-  console.log('PDF UPLOAD STARTED');
+app.post('/submit-exam', async (req, res) => {
+  const { examId, answers, studentMobile, studentName } = req.body;
   try {
-    console.log('File received:', req.file ? req.file.size + ' bytes' : 'NO FILE');
-    console.log('Fields:', req.body);
-
-    if (!req.file) return res.status(400).json({ error: "No file" });
-    if (!req.body.title || !req.body.subject || !req.body.testNumber) return res.status(400).json({ error: "Missing fields" });
-
-    console.log('Parsing PDF...');
-    const pdfData = await pdfParse(req.file.buffer);
-    console.log('PDF text length:', pdfData.text.length);
-
-    console.log('Parsing questions...');
-    const parsedQuestions = parseQuestionsFromText(pdfData.text);
-    console.log('Questions parsed:', parsedQuestions.length);
-
-    if (parsedQuestions.length === 0) return res.status(400).json({ error: "No questions parsed" });
-
-    console.log('Saving draft...');
-    const draft = new PdfQuestionDraft({
-      title: req.body.title,
-      subject: req.body.subject,
-      testNumber: Number(req.body.testNumber),
-      questions: parsedQuestions
+    const exam = await Exam.findById(examId);
+    if (!exam) return res.status(404).json({ error: "Exam not found" });
+    let correct = 0;
+    exam.questions.forEach((q, i) => {
+      if (q.correctAnswer.toLowerCase() === answers[i]?.toLowerCase()) correct++;
     });
-    await draft.save();
-    console.log('Draft saved, ID:', draft._id);
-
-    res.json({
-      message: "PDF processed successfully",
-      draftId: draft._id,
-      questionCount: draft.questions.length
-    });
-    console.log('SUCCESS response sent');
-
+    const wrong = exam.totalQuestions - correct;
+    await new Result({
+      studentMobile,
+      studentName,
+      examId,
+      examTitle: exam.title,
+      examSubject: exam.subject,
+      examTestNumber: exam.testNumber,
+      correct,
+      wrong,
+      score: correct,
+      total: exam.totalQuestions,
+      answers,
+      submittedAt: new Date()
+    }).save();
+    res.json({ message: "Exam submitted successfully!" });
   } catch (err) {
-    console.error('PDF UPLOAD ERROR:', err);
-    res.status(500).json({ error: "Server error: " + err.message });
+    console.error("Submit exam error:", err);
+    res.status(500).json({ error: "Failed to submit exam" });
   }
 });
 
@@ -455,7 +444,7 @@ const armyStorage = multer.diskStorage({
   }
 });
 
-const uploadArmyVideo = multer({ storage: armyStorage });
+const upload873ArmyVideo = multer({ storage: armyStorage });
 
 app.post('/upload-army-video', uploadArmyVideo.single("video"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No video file" });
@@ -473,7 +462,7 @@ app.post('/upload-army-video', uploadArmyVideo.single("video"), async (req, res)
 });
 
 // ────────────────────────────────────────────────
-// PDF UPLOAD & PARSING LOGIC (FULLY UPDATED FOR YOUR PDF)
+// PDF UPLOAD LOGIC - FULLY LOGGED FOR DEBUGGING
 // ────────────────────────────────────────────────
 const pdfUpload = multer({ 
   storage: multer.memoryStorage(),
@@ -481,43 +470,66 @@ const pdfUpload = multer({
 });
 
 app.post('/api/exam/pdf-upload', pdfUpload.single('pdf'), async (req, res) => {
+  console.log('=== PDF UPLOAD ROUTE STARTED ===');
+  console.log('File:', req.file ? `${req.file.size} bytes, ${req.file.mimetype}` : 'NO FILE');
+  console.log('Body:', req.body);
+
+  let responded = false;
+
   try {
-    if (!req.file) return res.status(400).json({ error: "No PDF file uploaded" });
+    if (!req.file) {
+      console.log('No file uploaded');
+      responded = true;
+      return res.status(400).json({ error: "No PDF file uploaded" });
+    }
     if (!req.body.title || !req.body.subject || !req.body.testNumber) {
+      console.log('Missing fields');
+      responded = true;
       return res.status(400).json({ error: "title, subject, testNumber required" });
     }
 
+    console.log('Starting pdf-parse...');
     const pdfData = await pdfParse(req.file.buffer);
-    const text = pdfData.text;
+    console.log('PDF parsed. Text length:', pdfData.text.length);
 
-    const parsedQuestions = parseQuestionsFromText(text);
+    console.log('Starting question parsing...');
+    const parsedQuestions = parseQuestionsFromText(pdfData.text);
+    console.log('Parsed questions count:', parsedQuestions.length);
 
     if (parsedQuestions.length === 0) {
-      return res.status(400).json({ error: "No questions could be parsed from PDF. Check PDF format." });
+      console.log('No questions parsed');
+      responded = true;
+      return res.status(400).json({ error: "No questions could be parsed from PDF" });
     }
 
+    console.log('Saving draft to MongoDB...');
     const draft = new PdfQuestionDraft({
       title: req.body.title,
       subject: req.body.subject,
       testNumber: Number(req.body.testNumber),
       questions: parsedQuestions
     });
-
     await draft.save();
+    console.log('Draft saved successfully. ID:', draft._id);
 
+    responded = true;
     res.json({
       message: "PDF processed successfully",
       draftId: draft._id,
       questionCount: draft.questions.length
     });
+    console.log('SUCCESS response sent');
 
   } catch (err) {
-    console.error("PDF upload error:", err);
-    res.status(500).json({ error: "Failed to process PDF" });
+    console.error('PDF UPLOAD CRASHED:', err);
+    if (!responded) {
+      responded = true;
+      res.status(500).json({ error: "Server error: " + (err.message || "Unknown error") });
+    }
   }
 });
 
-// BEST PARSER FOR YOUR PDF (handles Kannada ಎ) ಬಿ) ಸಿ) ಡಿ) and Latin A) B) C) D))
+// PARSER - BEST FOR YOUR KANNADA + ENGLISH PDF
 function parseQuestionsFromText(rawText) {
   const lines = rawText
     .split('\n')
@@ -527,10 +539,9 @@ function parseQuestionsFromText(rawText) {
   const questions = [];
   let currentQuestion = null;
 
-  const kannadaOptionRegex = /^[ಎಬಿಸಿಡಿ]\)/;  // Matches ಎ) ಬಿ) ಸಿ) ಡಿ)
+  const kannadaOptionRegex = /^[ಎಬಿಸಿಡಿ]\)/;  // ಎ) ಬಿ) ಸಿ) ಡಿ)
 
   for (const line of lines) {
-    // New question: starts with number + dot
     if (/^\d+\./.test(line)) {
       if (currentQuestion) questions.push(currentQuestion);
       currentQuestion = {
@@ -540,28 +551,29 @@ function parseQuestionsFromText(rawText) {
       continue;
     }
 
-    // Options: Latin A) B) C) D) OR Kannada ಎ) ಬಿ) ಸಿ) ಡಿ)
     if ((/^[A-D]\)/i.test(line)) || kannadaOptionRegex.test(line)) {
       if (currentQuestion) {
         currentQuestion.options.push(line.trim());
       }
-    } 
-    // If line doesn't match option but question is active and no options yet → part of question text
-    else if (currentQuestion && currentQuestion.options.length === 0) {
+    } else if (currentQuestion && currentQuestion.options.length === 0) {
       currentQuestion.questionText += ' ' + line.trim();
     }
   }
 
   if (currentQuestion) questions.push(currentQuestion);
 
-  // Safety: only keep questions with at least 3 options
   return questions.filter(q => q.options.length >= 3);
 }
 
-// PDF draft routes
+// PDF DRAFT ROUTES
 app.get('/api/pdf-drafts', async (req, res) => {
-  const drafts = await PdfQuestionDraft.find().sort({ createdAt: -1 });
-  res.json(drafts);
+  try {
+    const drafts = await PdfQuestionDraft.find().sort({ createdAt: -1 });
+    res.json(drafts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch drafts" });
+  }
 });
 
 app.get('/api/pdf-draft/:id', async (req, res) => {
@@ -570,6 +582,7 @@ app.get('/api/pdf-draft/:id', async (req, res) => {
     if (!draft) return res.status(404).json({ error: "Draft not found" });
     res.json(draft);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -589,6 +602,7 @@ app.patch('/api/pdf-draft/:id/set-answer', async (req, res) => {
     await draft.save();
     res.json({ message: "Answer updated" });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Failed to update answer" });
   }
 });
@@ -623,7 +637,7 @@ app.post('/api/pdf-draft/:id/finalize', async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("Finalize error:", err);
     res.status(500).json({ error: "Failed to finalize draft" });
   }
 });
@@ -639,4 +653,3 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
-
