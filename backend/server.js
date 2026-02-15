@@ -36,7 +36,6 @@ app.use(express.json());
 // STATIC FRONTEND + UPLOADS
 // ────────────────────────────────────────────────
 const frontendPath = path.join(__dirname, '../frontend');
-');
 console.log("Serving frontend from:", frontendPath);
 app.use(express.static(frontendPath));
 
@@ -151,8 +150,10 @@ const PdfQuestionDraft = mongoose.model('PdfQuestionDraft', new mongoose.Schema(
 }));
 
 // ────────────────────────────────────────────────
-// ALL ORIGINAL ROUTES
+// ALL ROUTES - ORIGINAL + PDF
 // ────────────────────────────────────────────────
+
+// Student login & management
 app.post('/student-login', async (req, res) => {
   try {
     const { mobile, password } = req.body;
@@ -189,14 +190,15 @@ app.delete('/students/:id', async (req, res) => {
   res.json({ message: "Deleted" });
 });
 
+// Videos
 app.get('/videos', async (req, res) => res.json(await Video.find()));
 
 app.post('/videos', async (req, res) => {
   const { subject, class: classNum, videoId, title } = req.body;
-  if (!videoId || videoId.length !== 11) return res.status(400).json({ error: "Invalid videoId" });
+  if (!videoId || videoId.length !== 11) return res.status(400).json({ error: "Invalid videoId (must be 11 chars)" });
   if (!subject || !classNum) return res.status(400).json({ error: "Subject and class required" });
   try {
-    let video = await Video.findOne({ subject, class: classNum }); // FIXED TYPO
+    let video = await Video.findOne({ subject, class: classNum });
     if (video) {
       video.videoId = videoId;
       video.title = title || "Lesson";
@@ -233,6 +235,7 @@ app.put('/videos/:id', async (req, res) => {
   }
 });
 
+// Drafts
 app.get('/drafts', async (req, res) => res.json(await DraftExam.find().sort({ createdAt: -1 })));
 
 app.post('/drafts', async (req, res) => {
@@ -263,12 +266,13 @@ app.put('/drafts/:id', async (req, res) => {
   }
 });
 
+// Conduct exam
 app.post('/conduct/:draftId', async (req, res) => {
   try {
     const draft = await DraftExam.findById(req.params.draftId);
-    if (!draft) return res res.status(404).json({ error: "Draft not found" });
+    if (!draft) return res.status(404).json({ error: "Draft not found" });
     const exists = await Exam.findOne({ title: draft.title, testNumber: draft.testNumber });
-    if (exists) return res.status(400).json({ error: `Exam "${draft.title}" Test ${draft.testNumber} has already been conducted` });
+    if (exists) return res.status(400).json({ error: `Exam "${draft.title}" Test ${draft.testNumber} already conducted` });
     const exam = new Exam({
       title: draft.title,
       subject: draft.subject,
@@ -286,6 +290,7 @@ app.post('/conduct/:draftId', async (req, res) => {
   }
 });
 
+// Active exams & details
 app.get('/active-exams', async (req, res) => res.json(await Exam.find().sort({ conductedAt: -1 })));
 
 app.get('/exam/:id', async (req, res) => {
@@ -294,6 +299,7 @@ app.get('/exam/:id', async (req, res) => {
   res.json(exam);
 });
 
+// Submit exam
 app.post('/submit-exam', async (req, res) => {
   const { examId, answers, studentMobile, studentName } = req.body;
   try {
@@ -325,6 +331,7 @@ app.post('/submit-exam', async (req, res) => {
   }
 });
 
+// Results
 app.get('/results', async (req, res) => {
   try {
     const results = await Result.find().sort({ submittedAt: -1 });
@@ -347,7 +354,7 @@ app.get('/results/student/:mobile', async (req, res) => {
 
 app.get('/results/exam', async (req, res) => {
   const { subject, testNumber } = req.query;
-  if (!subject || !testNumber) return res.status(400).json({ error: "subject and testNumber query params required" });
+  if (!subject || !testNumber) return res.status(400).json({ error: "subject and testNumber required" });
   try {
     const results = await Result.find({
       examSubject: { $regex: new RegExp(`^${subject}$`, 'i') },
@@ -360,6 +367,7 @@ app.get('/results/exam', async (req, res) => {
   }
 });
 
+// Notes
 app.post('/api/save-note', async (req, res) => {
   const { title, content } = req.body;
   if (!title || !content) return res.status(400).json({ success: false, message: "Missing fields" });
@@ -369,6 +377,7 @@ app.post('/api/save-note', async (req, res) => {
 
 app.get('/api/notes', async (req, res) => res.json(await Note.find().sort({ createdAt: -1 })));
 
+// Army Videos
 app.get('/api/army-videos', async (req, res) => res.json(await ArmyVideo.find().sort({ uploadedAt: -1 })));
 
 app.post('/save-army-video', async (req, res) => {
