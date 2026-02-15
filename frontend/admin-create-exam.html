@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Create Exam from PDF</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 30px auto; padding: 20px; background:#f9f9f9; }
+    h1 { text-align:center; color:#333; }
+    .card { background:white; padding:25px; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.1); margin-bottom:30px; }
+    label { display:block; margin:15px 0 6px; font-weight:bold; }
+    input, button, select { padding:10px; width:100%; box-sizing:border-box; margin-bottom:10px; }
+    button.primary { background:#28a745; color:white; border:none; border-radius:4px; cursor:pointer; font-size:16px; }
+    button.secondary { background:#007bff; color:white; }
+    #uploadResult, #status { padding:15px; margin:15px 0; border-radius:6px; }
+    .success { background:#d4edda; color:#155724; }
+    .error   { background:#f8d7da; color:#721c24; }
+    .question { background:#fff; padding:18px; margin:20px 0; border:1px solid #ddd; border-radius:6px; }
+    .options { margin:12px 0; padding-left:20px; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+
+  <h1>Create New Exam from PDF</h1>
+
+  <div class="card">
+    <form id="uploadForm">
+      <label>Exam Title</label>
+      <input type="text" name="title" required>
+
+      <label>Subject</label>
+      <input type="text" name="subject" required>
+
+      <label>Test Number</label>
+      <input type="number" name="testNumber" required min="1">
+
+      <label>PDF File</label>
+      <input type="file" name="pdf" accept=".pdf" required>
+
+      <button type="submit" class="primary">Upload & Parse Questions</button>
+    </form>
+
+    <div id="uploadResult" class="hidden"></div>
+  </div>
+
+  <div id="questionsSection" class="hidden">
+    <div class="card">
+      <h2>Set Correct Answers</h2>
+      <div id="questionsList"></div>
+      <button id="saveAnswersBtn" class="primary">Save All Answers</button>
+      <button id="finalizeBtn" class="secondary hidden">Finalize Draft</button>
+      <div id="status"></div>
+    </div>
+  </div>
+
+  <script>
+    const uploadForm = document.getElementById('uploadForm');
+    const uploadResult = document.getElementById('uploadResult');
+    const questionsSection = document.getElementById('questionsSection');
+    const questionsList = document.getElementById('questionsList');
+    const saveBtn = document.getElementById('saveAnswersBtn');
+    const finalizeBtn = document.getElementById('finalizeBtn');
+    const statusDiv = document.getElementById('status');
+
+    let currentDraftId = null;
+
+    uploadForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      uploadResult.className = '';
+      uploadResult.innerHTML = '<p style="color:#007bff;">Processing PDF... (10–40 seconds)</p>';
+      uploadResult.classList.remove('hidden');
+
+      const formData = new FormData(uploadForm);
+
+      try {
+        const res = await fetch('/api/exam/pdf-upload', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (res.ok) {
+          currentDraftId = data.draftId;
+          uploadResult.innerHTML = `<div class="success">Success! ${data.questionCount} questions parsed.</div>`;
+          loadQuestions(data.draftId);
+        } else {
+          uploadResult.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+        }
+      } catch (err) {
+        uploadResult.innerHTML = `<div class="error">Error: ${err.message}</div>`;
+      }
+    });
+
+    async function loadQuestions(draftId) {
+      const res = await fetch(`/api/pdf-draft/${draftId}`);
+      const draft = await res.json();
+
+      questionsList.innerHTML = '';
+      draft.questions.forEach((q, i) => {
+        const div = document.createElement('div');
+        div.className = 'question';
+        div.innerHTML = `
+          <strong>Q${i+1}:</strong> ${q.questionText}
+          <div class="options"><ul>${q.options.map(o => '<li>' + o + '</li>').join('')}</ul></div>
+          <label>Correct:
+            <select id="ans-${i}">
+              <option value="">--</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+              <option value="D">D</option>
+            </select>
+          </label>
+        `;
+        questionsList.appendChild(div);
+      });
+
+      questionsSection.classList.remove('hidden');
+    }
+
+    saveBtn.addEventListener('click', async () => {
+      statusDiv.innerHTML = 'Saving...';
+      let ok = true;
+      for (let i = 0; i < questionsList.children.length; i++) {
+        const val = document.getElementById(`ans-${i}`).value.trim().toUpperCase();
+        if (!val) continue;
+        const res = await fetch(`/api/pdf-draft/${currentDraftId}/set-answer`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ questionIndex: i, correctAnswer: val })
+        });
+        if (!res.ok) ok = false;
+      }
+      statusDiv.innerHTML = ok ? '<span style="color:green">Saved!</span>' : '<span style="color:red">Some failed</span>';
+      finalizeBtn.classList.remove('hidden');
+    });
+
+    finalizeBtn.addEventListener('click', async () => {
+      if (!confirm('Finalize?')) return;
+      const res = await fetch(`/api/pdf-draft/${currentDraftId}/finalize`, { method: 'POST' });
+      const data = await res.json();
+      statusDiv.innerHTML = res.ok ? '<span style="color:green">Finalized! Go conduct exam.</span>' : '<span style="color:red">Error</span>';
+    });
+  </script>
+</body>
+</html>
