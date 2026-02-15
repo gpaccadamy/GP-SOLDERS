@@ -339,34 +339,45 @@ app.get('/exam/:id', async (req, res) => {
   res.json(exam);
 });
 
-app.post('/submit-exam', async (req, res) => {
-  const { examId, answers, studentMobile, studentName } = req.body;
+app.post('/api/exam/pdf-upload', pdfUpload.single('pdf'), async (req, res) => {
+  console.log('PDF UPLOAD STARTED');
   try {
-    const exam = await Exam.findById(examId);
-    if (!exam) return res.status(404).json({ error: "Exam not found" });
-    let correct = 0;
-    exam.questions.forEach((q, i) => {
-      if (q.correctAnswer.toLowerCase() === answers[i]?.toLowerCase()) correct++;
+    console.log('File received:', req.file ? req.file.size + ' bytes' : 'NO FILE');
+    console.log('Fields:', req.body);
+
+    if (!req.file) return res.status(400).json({ error: "No file" });
+    if (!req.body.title || !req.body.subject || !req.body.testNumber) return res.status(400).json({ error: "Missing fields" });
+
+    console.log('Parsing PDF...');
+    const pdfData = await pdfParse(req.file.buffer);
+    console.log('PDF text length:', pdfData.text.length);
+
+    console.log('Parsing questions...');
+    const parsedQuestions = parseQuestionsFromText(pdfData.text);
+    console.log('Questions parsed:', parsedQuestions.length);
+
+    if (parsedQuestions.length === 0) return res.status(400).json({ error: "No questions parsed" });
+
+    console.log('Saving draft...');
+    const draft = new PdfQuestionDraft({
+      title: req.body.title,
+      subject: req.body.subject,
+      testNumber: Number(req.body.testNumber),
+      questions: parsedQuestions
     });
-    const wrong = exam.totalQuestions - correct;
-    await new Result({
-      studentMobile,
-      studentName,
-      examId,
-      examTitle: exam.title,
-      examSubject: exam.subject,
-      examTestNumber: exam.testNumber,
-      correct,
-      wrong,
-      score: correct,
-      total: exam.totalQuestions,
-      answers,
-      submittedAt: new Date()
-    }).save();
-    res.json({ message: "Exam submitted successfully!" });
+    await draft.save();
+    console.log('Draft saved, ID:', draft._id);
+
+    res.json({
+      message: "PDF processed successfully",
+      draftId: draft._id,
+      questionCount: draft.questions.length
+    });
+    console.log('SUCCESS response sent');
+
   } catch (err) {
-    console.error("Submit exam error:", err);
-    res.status(500).json({ error: "Failed to submit exam" });
+    console.error('PDF UPLOAD ERROR:', err);
+    res.status(500).json({ error: "Server error: " + err.message });
   }
 });
 
@@ -628,3 +639,4 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
