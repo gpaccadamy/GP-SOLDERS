@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const pdfParse = require('pdf-parse');          // ← added
 require('dotenv').config();
 const cloudinary = require('cloudinary').v2;
 
@@ -68,20 +69,23 @@ cloudinary.config({
 });
 
 // ────────────────────────────────────────────────
-// MODELS
+// MODELS (your original ones + new ones for PDF flow)
 // ────────────────────────────────────────────────
+
 const Student = mongoose.model('Student', new mongoose.Schema({
   name: String,
   roll: String,
   mobile: { type: String, unique: true },
   password: String
 }));
+
 const Video = mongoose.model('Video', new mongoose.Schema({
   subject: String,
   class: Number,
   videoId: String,
   title: String
 }));
+
 const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   title: String,
   subject: String,
@@ -93,6 +97,7 @@ const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
   }],
   createdAt: { type: Date, default: Date.now }
 }));
+
 const Exam = mongoose.model('Exam', new mongoose.Schema({
   title: String,
   subject: String,
@@ -105,6 +110,7 @@ const Exam = mongoose.model('Exam', new mongoose.Schema({
   }],
   conductedAt: { type: Date, default: Date.now }
 }));
+
 const Result = mongoose.model('Result', new mongoose.Schema({
   studentMobile: String,
   studentName: String,
@@ -119,16 +125,31 @@ const Result = mongoose.model('Result', new mongoose.Schema({
   answers: [String],
   submittedAt: { type: Date, default: Date.now }
 }));
+
 const Note = mongoose.model('Note', new mongoose.Schema({
   title: String,
   content: String,
   createdAt: { type: Date, default: Date.now }
 }));
+
 const ArmyVideo = mongoose.model('ArmyVideo', new mongoose.Schema({
   title: String,
   url: String,
   uploadedAt: { type: Date, default: Date.now }
 }, { timestamps: true }));
+
+// ─── NEW MODELS for PDF → questions flow ────────────────────────────────
+const PdfQuestionDraft = mongoose.model('PdfQuestionDraft', new mongoose.Schema({
+  title: String,
+  subject: String,
+  testNumber: Number,
+  questions: [{
+    questionText: String,
+    options: [String],           // ["A) ...", "B) ...", ...]
+    correctAnswer: { type: String, default: null }   // admin sets later ("A","B",...)
+  }],
+  createdAt: { type: Date, default: Date.now }
+}));
 
 // ────────────────────────────────────────────────
 // STUDENT LOGIN & MANAGEMENT
@@ -148,9 +169,11 @@ app.post('/student-login', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 app.get('/students', async (req, res) => {
   res.json(await Student.find());
 });
+
 app.post('/students', async (req, res) => {
   try {
     const { name, roll, mobile, password } = req.body;
@@ -165,6 +188,7 @@ app.post('/students', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 app.delete('/students/:id', async (req, res) => {
   const deleted = await Student.findByIdAndDelete(req.params.id);
   if (!deleted) return res.status(404).json({ error: "Student not found" });
@@ -177,6 +201,7 @@ app.delete('/students/:id', async (req, res) => {
 app.get('/videos', async (req, res) => {
   res.json(await Video.find());
 });
+
 app.post('/videos', async (req, res) => {
   const { subject, class: classNum, videoId, title } = req.body;
   if (!videoId || videoId.length !== 11)
@@ -203,6 +228,7 @@ app.post('/videos', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 app.delete('/videos/:id', async (req, res) => {
   try {
     const video = await Video.findByIdAndDelete(req.params.id);
@@ -213,6 +239,7 @@ app.delete('/videos/:id', async (req, res) => {
     res.status(500).json({ error: "Delete failed" });
   }
 });
+
 app.put('/videos/:id', async (req, res) => {
   try {
     const updated = await Video.findByIdAndUpdate(
@@ -229,11 +256,12 @@ app.put('/videos/:id', async (req, res) => {
 });
 
 // ────────────────────────────────────────────────
-// DRAFT EXAM ROUTES
+// YOUR EXISTING DRAFT EXAM ROUTES (image-based)
 // ────────────────────────────────────────────────
 app.get('/drafts', async (req, res) => {
   res.json(await DraftExam.find().sort({ createdAt: -1 }));
 });
+
 app.post('/drafts', async (req, res) => {
   const { title, subject, testNumber, questions } = req.body;
   if (!questions || questions.length === 0)
@@ -253,6 +281,7 @@ app.post('/drafts', async (req, res) => {
     res.status(500).json({ error: "Failed to create draft" });
   }
 });
+
 app.put('/drafts/:id', async (req, res) => {
   const { title, subject, testNumber, questions } = req.body;
   if (!questions || questions.length === 0)
@@ -278,7 +307,169 @@ app.put('/drafts/:id', async (req, res) => {
 });
 
 // ────────────────────────────────────────────────
-// CONDUCT EXAM ROUTE
+// NEW: PDF UPLOAD → PARSE → DRAFT QUESTIONS
+// ────────────────────────────────────────────────
+const pdfUpload = multer({ storage: multer.memoryStorage() });
+
+app.post('/api/exam/pdf-upload', pdfUpload.single('pdf'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No PDF file uploaded" });
+    }
+
+    if (!req.body.title || !req.body.subject || !req.body.testNumber) {
+      return res.status(400).json({ error: "title, subject, testNumber required" });
+    }
+
+    const pdfData = await pdfParse(req.file.buffer);
+    const text = pdfData.text;
+
+    const parsedQuestions = parseQuestionsFromText(text);
+
+    if (parsedQuestions.length === 0) {
+      return res.status(400).json({ error: "No questions could be parsed from PDF" });
+    }
+
+    const draft = new PdfQuestionDraft({
+      title: req.body.title,
+      subject: req.body.subject,
+      testNumber: Number(req.body.testNumber),
+      questions: parsedQuestions
+    });
+
+    await draft.save();
+
+    res.json({
+      message: "PDF processed successfully",
+      draftId: draft._id,
+      questionCount: draft.questions.length
+    });
+
+  } catch (err) {
+    console.error("PDF upload error:", err);
+    res.status(500).json({ error: "Failed to process PDF" });
+  }
+});
+
+// Very simple parser — improve based on your PDF format
+function parseQuestionsFromText(rawText) {
+  const lines = rawText
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
+
+  const questions = [];
+  let currentQuestion = null;
+
+  for (const line of lines) {
+    // New question starts with number + dot
+    if (/^\d+\./.test(line)) {
+      if (currentQuestion) {
+        questions.push(currentQuestion);
+      }
+      currentQuestion = {
+        questionText: line.replace(/^\d+\.\s*/, ''),
+        options: []
+      };
+      continue;
+    }
+
+    // Options like A), B), C), D)
+    if (/^[A-D]\)/i.test(line)) {
+      if (currentQuestion) {
+        currentQuestion.options.push(line);
+      }
+    }
+  }
+
+  // Don't forget last question
+  if (currentQuestion) {
+    questions.push(currentQuestion);
+  }
+
+  return questions;
+}
+
+app.get('/api/pdf-drafts', async (req, res) => {
+  const drafts = await PdfQuestionDraft.find().sort({ createdAt: -1 });
+  res.json(drafts);
+});
+
+app.get('/api/pdf-draft/:id', async (req, res) => {
+  try {
+    const draft = await PdfQuestionDraft.findById(req.params.id);
+    if (!draft) return res.status(404).json({ error: "Draft not found" });
+    res.json(draft);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Set correct answer for one question in PDF draft
+app.patch('/api/pdf-draft/:id/set-answer', async (req, res) => {
+  const { questionIndex, correctAnswer } = req.body;
+
+  if (questionIndex == null || !correctAnswer) {
+    return res.status(400).json({ error: "questionIndex and correctAnswer required" });
+  }
+
+  try {
+    const draft = await PdfQuestionDraft.findById(req.params.id);
+    if (!draft) return res.status(404).json({ error: "Draft not found" });
+
+    if (questionIndex < 0 || questionIndex >= draft.questions.length) {
+      return res.status(400).json({ error: "Invalid question index" });
+    }
+
+    draft.questions[questionIndex].correctAnswer = correctAnswer.toUpperCase();
+    await draft.save();
+
+    res.json({ message: "Answer updated", draft });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update answer" });
+  }
+});
+
+// Finalize PDF draft → convert to your normal DraftExam (image-less version)
+app.post('/api/pdf-draft/:id/finalize', async (req, res) => {
+  try {
+    const pdfDraft = await PdfQuestionDraft.findById(req.params.id);
+    if (!pdfDraft) return res.status(404).json({ error: "PDF draft not found" });
+
+    // Check if all questions have correct answers
+    const missing = pdfDraft.questions.some(q => !q.correctAnswer);
+    if (missing) {
+      return res.status(400).json({ error: "Some questions still missing correct answer" });
+    }
+
+    const draftExam = new DraftExam({
+      title: pdfDraft.title,
+      subject: pdfDraft.subject,
+      testNumber: pdfDraft.testNumber,
+      totalQuestions: pdfDraft.questions.length,
+      questions: pdfDraft.questions.map(q => ({
+        imageUrl: null,                    // no image in this flow
+        correctAnswer: q.correctAnswer
+      })),
+      // You can add question text later if frontend supports it
+    });
+
+    await draftExam.save();
+    await PdfQuestionDraft.findByIdAndDelete(req.params.id);
+
+    res.json({
+      message: "PDF draft finalized and moved to DraftExam",
+      draftExamId: draftExam._id
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to finalize draft" });
+  }
+});
+
+// ────────────────────────────────────────────────
+// CONDUCT EXAM ROUTE (your original)
 // ────────────────────────────────────────────────
 app.post('/conduct/:draftId', async (req, res) => {
   try {
@@ -316,6 +507,7 @@ app.post('/conduct/:draftId', async (req, res) => {
 app.get('/active-exams', async (req, res) => {
   res.json(await Exam.find().sort({ conductedAt: -1 }));
 });
+
 app.get('/exam/:id', async (req, res) => {
   const exam = await Exam.findById(req.params.id);
   if (!exam) return res.status(404).json({ error: "Exam not found" });
@@ -357,10 +549,8 @@ app.post('/submit-exam', async (req, res) => {
 });
 
 // ────────────────────────────────────────────────
-// RESULTS ROUTES (ADDED - THIS FIXES YOUR ERROR)
+// RESULTS ROUTES
 // ────────────────────────────────────────────────
-
-// 1. Get ALL results (admin view)
 app.get('/results', async (req, res) => {
   try {
     const results = await Result.find().sort({ submittedAt: -1 });
@@ -371,7 +561,6 @@ app.get('/results', async (req, res) => {
   }
 });
 
-// 2. Get results for one student (by mobile)
 app.get('/results/student/:mobile', async (req, res) => {
   try {
     const results = await Result.find({ studentMobile: req.params.mobile })
@@ -383,7 +572,6 @@ app.get('/results/student/:mobile', async (req, res) => {
   }
 });
 
-// 3. Get results filtered by subject + test number (for your public results page)
 app.get('/results/exam', async (req, res) => {
   const { subject, testNumber } = req.query;
   if (!subject || !testNumber) {
@@ -393,8 +581,7 @@ app.get('/results/exam', async (req, res) => {
     const results = await Result.find({
       examSubject: { $regex: new RegExp(`^${subject}$`, 'i') },
       examTestNumber: Number(testNumber)
-    }).sort({ correct: -1 }); // highest score first
-
+    }).sort({ correct: -1 });
     res.json(results);
   } catch (err) {
     console.error(err);
@@ -412,6 +599,7 @@ app.post('/api/save-note', async (req, res) => {
   await new Note({ title, content }).save();
   res.json({ success: true, message: "Note saved!" });
 });
+
 app.get('/api/notes', async (req, res) => {
   res.json(await Note.find().sort({ createdAt: -1 }));
 });
@@ -422,6 +610,7 @@ app.get('/api/notes', async (req, res) => {
 app.get('/api/army-videos', async (req, res) => {
   res.json(await ArmyVideo.find().sort({ uploadedAt: -1 }));
 });
+
 app.post('/save-army-video', async (req, res) => {
   const { title, url } = req.body;
   if (!title || !url)
@@ -431,7 +620,6 @@ app.post('/save-army-video', async (req, res) => {
   res.json({ success: true, message: "Army video saved" });
 });
 
-// Local disk upload for army videos
 const armyStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(__dirname, "uploads/army-videos");
@@ -442,7 +630,9 @@ const armyStorage = multer.diskStorage({
     cb(null, `${Date.now()}-${Math.random() * 100000}${path.extname(file.originalname)}`);
   }
 });
+
 const uploadArmyVideo = multer({ storage: armyStorage });
+
 app.post('/upload-army-video', uploadArmyVideo.single("video"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No video file" });
   const title = req.body.title;
