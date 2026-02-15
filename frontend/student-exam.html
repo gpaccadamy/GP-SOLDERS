@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Take Exam</title>
+  <style>
+    body { font-family: Arial; max-width: 900px; margin: 40px auto; padding: 20px; }
+    .question { margin: 30px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+    .options label { display: block; margin: 10px 0; font-size: 1.1em; }
+    button { padding: 15px 30px; background: #28a745; color: white; font-size: 1.2em; }
+  </style>
+</head>
+<body>
+  <h1 id="examTitle">Loading...</h1>
+  <div id="questions"></div>
+  <button onclick="submitExam()">Submit Exam</button>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const examId = urlParams.get('examId');
+
+    if (!examId) {
+      document.body.innerHTML = '<h1>No examId in URL</h1>';
+    }
+
+    fetch(`/exam/${examId}`)
+      .then(r => r.json())
+      .then(exam => {
+        document.getElementById('examTitle').innerText = `${exam.title} - ${exam.subject} Test ${exam.testNumber}`;
+        const container = document.getElementById('questions');
+        exam.questions.forEach((q, i) => {
+          const div = document.createElement('div');
+          div.className = 'question';
+          if (q.imageUrl) {
+            div.innerHTML = `<strong>Q${i+1}:</strong><br><img src="${q.imageUrl}" style="max-width:100%">`;
+          } else {
+            div.innerHTML = `<strong>Q${i+1}:</strong> ${q.questionText || 'No text'}<br>`;
+            const letters = ['A', 'B', 'C', 'D'];
+            q.options.forEach((opt, j) => {
+              div.innerHTML += `<label><input type="radio" name="q${i}" value="${letters[j]}"> ${opt}</label><br>`;
+            });
+          }
+          container.appendChild(div);
+        });
+      });
+
+    async function submitExam() {
+      const answers = [];
+      document.querySelectorAll('.question').forEach((qDiv, i) => {
+        const selected = qDiv.querySelector(`input[name="q${i}"]:checked`);
+        answers.push(selected ? selected.value : '');
+      });
+
+      const studentMobile = prompt("Mobile number");
+      const studentName = prompt("Name");
+
+      const res = await fetch('/submit-exam', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ examId, answers, studentMobile, studentName })
+      });
+
+      const data = await res.json();
+      alert(data.message || 'Submitted!');
+    }
+  </script>
+</body>
+</html>
