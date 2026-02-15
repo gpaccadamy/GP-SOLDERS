@@ -13,7 +13,7 @@ require('dotenv').config();
 const app = express();
 
 // ────────────────────────────────────────────────
-// SECURITY & PRODUCTION MIDDLEWARE [web:13][web:18]
+// S ECURITY & PRODUCTION MIDDLEWARE [web:13][web:18]
 // ────────────────────────────────────────────────
 app.use(helmet()); // Secure headers
 app.use(express.json({ limit: '10mb' }));
@@ -324,3 +324,4 @@ process.on('SIGTERM', async () => {
   await mongoose.connection.close();
   process.exit(0);
 });
+
