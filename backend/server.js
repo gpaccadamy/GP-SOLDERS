@@ -31,7 +31,7 @@ app.use(cors({
     credentials: false
 }));
 
-// Set limit to 50mb so you can paste huge question papers without errors
+// Payload limit badha di hai taaki bulk paste crash na ho
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -45,53 +45,52 @@ app.use(express.static(frontendPath));
 // 3. MONGODB CONNECTION
 // ────────────────────────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("✅ MongoDB Connected: Full Logic Active"))
+    .then(() => console.log("✅ MongoDB Connected: Full System Online"))
     .catch(err => { console.error("❌ MongoDB Error:", err); process.exit(1); });
 
 // ────────────────────────────────────────────────
-// 4. DATABASE MODELS (All Collections)
+// 4. DATABASE MODELS
 // ────────────────────────────────────────────────
 
-// Student Profile
-const Student = mongoose.model('Student', new mongoose.Schema({
-    name: String,
+// Student Schema
+const StudentSchema = new mongoose.Schema({
+    name: { type: String, required: true },
     roll: String,
-    mobile: { type: String, unique: true },
+    mobile: { type: String, unique: true, required: true },
     password: { type: String, required: true }
-}));
+});
+const Student = mongoose.model('Student', StudentSchema);
 
-// Draft Exams (Questions waiting to be made Live)
+// Question Sub-Schema
+const QuestionSchema = new mongoose.Schema({
+    questionText: { type: String, required: true },
+    options: [{ type: String, required: true }],
+    correctAnswer: { type: String, required: true },
+    imageUrl: { type: String, default: null }
+});
+
+// Draft Exam Schema (Bulk Paste Yahan Save Hoga)
 const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
-    title: String,
-    subject: String,
-    testNumber: Number,
+    title: { type: String, required: true },
+    subject: { type: String, required: true },
+    testNumber: { type: Number, required: true },
     totalQuestions: Number,
-    questions: [{
-        questionText: String,
-        options: [String],
-        correctAnswer: String,
-        imageUrl: { type: String, default: null }
-    }],
+    questions: [QuestionSchema],
     createdAt: { type: Date, default: Date.now }
 }));
 
-// Live Exams (Visible to Students)
+// Live Exam Schema
 const Exam = mongoose.model('Exam', new mongoose.Schema({
-    title: String,
-    subject: String,
+    title: { type: String, required: true },
+    subject: { type: String, required: true },
     classNum: Number,
-    testNumber: Number,
+    testNumber: { type: Number, required: true },
     totalQuestions: Number,
-    questions: [{
-        questionText: String,
-        options: [String],
-        correctAnswer: String,
-        imageUrl: { type: String, default: null }
-    }],
+    questions: [QuestionSchema],
     conductedAt: { type: Date, default: Date.now }
 }));
 
-// Student Results
+// Result Schema
 const Result = mongoose.model('Result', new mongoose.Schema({
     studentMobile: String,
     studentName: String,
@@ -124,26 +123,29 @@ const authenticate = (req, res, next) => {
 };
 
 // ────────────────────────────────────────────────
-// 6. STUDENT ROUTES (Login/Register)
+// 6. STUDENT AUTH ROUTES (Login & Register)
 // ────────────────────────────────────────────────
+
+// Student Registration
 app.post('/students', async (req, res) => {
     try {
         const { name, roll, mobile, password } = req.body;
         if (!name || !mobile || !password) return res.status(400).json({ error: "Missing fields" });
 
         const exists = await Student.findOne({ mobile });
-        if (exists) return res.status(409).json({ error: "Mobile number already exists" });
+        if (exists) return res.status(409).json({ error: "Mobile number exists" });
 
         const hashed = await bcrypt.hash(password, 10);
         const newStudent = new Student({ name, roll, mobile, password: hashed });
         await newStudent.save();
 
-        res.json({ message: "Student registered successfully" });
+        res.status(201).json({ message: "Registration successful" });
     } catch (err) {
         res.status(500).json({ error: "Registration failed" });
     }
 });
 
+// Student Login
 app.post('/student-login', async (req, res) => {
     try {
         const { mobile, password } = req.body;
@@ -166,46 +168,48 @@ app.post('/student-login', async (req, res) => {
 });
 
 // ────────────────────────────────────────────────
-// 7. NEW BULK PASTE EXAM ROUTE
+// 7. BULK SAVE ROUTE (MongoDB Storage)
 // ────────────────────────────────────────────────
 app.post('/api/save-bulk-exam', async (req, res) => {
     try {
         const { title, subject, testNumber, questions } = req.body;
 
-        if (!questions || questions.length === 0) 
-            return res.status(400).json({ error: "No questions to save" });
+        if (!title || !questions || questions.length === 0) {
+            return res.status(400).json({ error: "Incomplete data provided" });
+        }
 
         const draft = new DraftExam({
             title,
-            subject,
-            testNumber: Number(testNumber),
+            subject: subject || "General",
+            testNumber: Number(testNumber) || 1,
             totalQuestions: questions.length,
             questions: questions.map(q => ({
                 questionText: q.questionText,
                 options: q.options,
-                correctAnswer: q.correctAnswer
+                correctAnswer: q.correctAnswer,
+                imageUrl: null
             }))
         });
 
         await draft.save();
-        res.status(200).json({ success: true, message: "Exam saved to Drafts!", draftId: draft._id });
+        res.status(200).json({ success: true, message: "Exam saved to MongoDB Drafts" });
     } catch (err) {
-        console.error("Bulk Save Error:", err);
-        res.status(500).json({ error: "Internal Server Error" });
+        console.error("DB Save Error:", err);
+        res.status(500).json({ error: "Failed to save: " + err.message });
     }
 });
 
 // ────────────────────────────────────────────────
-// 8. EXAM MANAGEMENT (Live & Submit)
+// 8. EXAM & RESULTS LOGIC
 // ────────────────────────────────────────────────
 
-// Get active exams for students
+// Get all Live Exams for students
 app.get('/active-exams', async (req, res) => {
     const exams = await Exam.find().sort({ conductedAt: -1 });
     res.json(exams);
 });
 
-// Get a specific exam's questions (Hiding answers)
+// Get specific exam (without answers)
 app.get('/exam/:id', authenticate, async (req, res) => {
     try {
         const exam = await Exam.findById(req.params.id).select('-questions.correctAnswer');
@@ -216,7 +220,7 @@ app.get('/exam/:id', authenticate, async (req, res) => {
     }
 });
 
-// Admin: Make a Draft Live
+// Conduct: Move Draft to Live
 app.post('/conduct/:draftId', async (req, res) => {
     try {
         const draft = await DraftExam.findById(req.params.draftId);
@@ -229,22 +233,21 @@ app.post('/conduct/:draftId', async (req, res) => {
 
         await exam.save();
         await DraftExam.findByIdAndDelete(req.params.draftId);
-        res.json({ message: "Exam is now Live for students!" });
+        res.json({ message: "Exam is now Live!" });
     } catch (err) {
-        res.status(500).json({ error: "Failed to conduct exam" });
+        res.status(500).json({ error: "Process failed" });
     }
 });
 
-// Student: Submit Answers
+// Submit Exam Logic
 app.post('/submit-exam', authenticate, async (req, res) => {
     try {
         const { examId, answers } = req.body;
-
         const exam = await Exam.findById(examId);
         if (!exam) return res.status(404).json({ error: "Exam not found" });
 
         const already = await Result.findOne({ studentMobile: req.user.mobile, examId });
-        if (already) return res.status(400).json({ error: "You have already submitted this exam" });
+        if (already) return res.status(400).json({ error: "Already submitted" });
 
         let correct = 0;
         exam.questions.forEach((q, i) => {
@@ -266,22 +269,20 @@ app.post('/submit-exam', authenticate, async (req, res) => {
         });
 
         await result.save();
-        res.json({ message: "Exam submitted successfully", score: correct, total: exam.totalQuestions });
+        res.json({ message: "Done", score: correct });
     } catch (err) {
         res.status(500).json({ error: "Submission failed" });
     }
 });
 
-// ────────────────────────────────────────────────
-// 9. RESULTS ROUTE
-// ────────────────────────────────────────────────
+// Get Student Results
 app.get('/my-results', authenticate, async (req, res) => {
     const results = await Result.find({ studentMobile: req.user.mobile }).sort({ submittedAt: -1 });
     res.json(results);
 });
 
 // ────────────────────────────────────────────────
-// 10. SPA ROUTING & PORT
+// 9. SPA & SERVER START
 // ────────────────────────────────────────────────
 app.get('*', (req, res) => {
     res.sendFile(path.join(frontendPath, 'index.html'));
@@ -289,11 +290,5 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`
-    🚀 FULL SERVER RUNNING
-    -----------------------
-    Port: ${PORT}
-    Logic: Student Auth, Bulk Paste, Results, Drafts
-    -----------------------
-    `);
+    console.log(`🚀 FULL SYSTEM READY ON PORT ${PORT}`);
 });
