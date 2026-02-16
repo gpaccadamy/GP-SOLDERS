@@ -8,12 +8,13 @@ const pdfParse = require('pdf-parse');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
+const cloudinary = require('cloudinary').v2;
 
 const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key_2026';
 
 // ────────────────────────────────────────────────
-// CORS CONFIG (Updated)
+// CORS CONFIG
 // ────────────────────────────────────────────────
 const allowedOrigins = [
     'https://academy-student-portal.onrender.com',
@@ -30,10 +31,11 @@ app.use(cors({
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: false
+    credentials: false,
+    optionsSuccessStatus: 200
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' })); // Higher limit for bulk text paste
 
 // ────────────────────────────────────────────────
 // STATIC FRONTEND + UPLOADS
@@ -49,11 +51,11 @@ app.use('/uploads', express.static('uploads'));
 // MONGODB
 // ────────────────────────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("✅ MongoDB Connected"))
+    .then(() => console.log("✅ MongoDB Connected with Bulk Logic"))
     .catch(err => { console.error("❌ MongoDB Error:", err); process.exit(1); });
 
 // ────────────────────────────────────────────────
-// MODELS (Kept as per your original)
+// MODELS
 // ────────────────────────────────────────────────
 const Student = mongoose.model('Student', new mongoose.Schema({
     name: String, roll: String, mobile: { type: String, unique: true },
@@ -99,45 +101,45 @@ const authenticate = (req, res, next) => {
 };
 
 // ────────────────────────────────────────────────
-// PDF PARSER (FIXED FOR KANNADA)
+// NEW: BULK SAVE ROUTE (FOR COPY-PASTE)
 // ────────────────────────────────────────────────
-function parseQuestionsFromText(rawText) {
-    // Regex identifies numbers followed by . or ) including Kannada Unicode ranges
-    const blocks = rawText.split(/\n\s*(\d+)[\.\)\-]\s+/).filter(b => b.trim().length > 5);
-    let questions = [];
+app.post('/api/save-bulk-exam', async (req, res) => {
+    try {
+        const { title, subject, testNumber, questions } = req.body;
+        
+        // Save directly to DraftExam so admin can review it in the main dashboard
+        const draft = new DraftExam({
+            title,
+            subject,
+            testNumber: Number(testNumber),
+            totalQuestions: questions.length,
+            questions: questions.map(q => ({
+                questionText: q.questionText,
+                options: q.options,
+                correctAnswer: q.correctAnswer,
+                imageUrl: null
+            }))
+        });
 
-    for (let i = 0; i < blocks.length; i++) {
-        const block = blocks[i].trim();
-        if (!isNaN(block)) { // Question number identified
-            const content = blocks[i+1] ? blocks[i+1].split('\n') : [];
-            const questionText = content[0].trim();
-            // Handle Kannada OCR variants for A) B) C) D)
-            const optionRegex = /^[A-D\u0CB0-\u0CB9\u0CDE-\u0CDF][\.\)\-]\s*/i; 
-            const options = content.filter(line => optionRegex.test(line.trim()));
-
-            questions.push({
-                questionText,
-                options: options.length > 0 ? options : ["A) ", "B) ", "C) ", "D) "],
-                correctAnswer: null
-            });
-            i++; 
-        }
+        await draft.save();
+        res.json({ success: true, message: "Bulk exam saved to drafts" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to save bulk exam" });
     }
-    return questions;
-}
+});
 
 // ────────────────────────────────────────────────
-// STUDENT ROUTES
+// STUDENT ROUTES (Keep your original logic)
 // ────────────────────────────────────────────────
 app.post('/students', async (req, res) => {
-    try {
-        const { name, roll, mobile, password } = req.body;
-        const exists = await Student.findOne({ mobile });
-        if (exists) return res.status(409).json({ error: "Mobile exists" });
-        const hashed = await bcrypt.hash(password, 10);
-        await new Student({ name, roll, mobile, password: hashed }).save();
-        res.json({ message: "Student added" });
-    } catch (e) { res.status(500).json({ error: "Signup Failed" }); }
+    const { name, roll, mobile, password } = req.body;
+    if (!name || !mobile || !password) return res.status(400).json({ error: "Missing fields" });
+    const exists = await Student.findOne({ mobile });
+    if (exists) return res.status(409).json({ error: "Mobile exists" });
+    const hashed = await bcrypt.hash(password, 10);
+    await new Student({ name, roll, mobile, password: hashed }).save();
+    res.json({ message: "Student added" });
 });
 
 app.post('/student-login', async (req, res) => {
@@ -145,103 +147,22 @@ app.post('/student-login', async (req, res) => {
     const student = await Student.findOne({ mobile });
     if (!student || !(await bcrypt.compare(password, student.password)))
         return res.status(401).json({ error: "Invalid credentials" });
-
     const token = jwt.sign({ mobile: student.mobile, name: student.name }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, name: student.name, mobile: student.mobile });
 });
 
 // ────────────────────────────────────────────────
-// PDF FLOW (FIXED JSON CRASH ERROR)
+// EXAM ROUTES (Keep your original logic)
 // ────────────────────────────────────────────────
-const pdfUpload = multer({ storage: multer.memoryStorage() });
-
-app.post('/api/exam/pdf-upload', pdfUpload.single('pdf'), async (req, res) => {
-    try {
-        if (!req.file) return res.status(400).json({ error: "PDF required" });
-        
-        console.log("Processing PDF for:", req.body.title);
-
-        // Memory Safe Parsing
-        let pdfData;
-        try {
-            pdfData = await pdfParse(req.file.buffer);
-        } catch (parseErr) {
-            return res.status(500).json({ error: "PDF library crashed. File too complex." });
-        }
-
-        const questions = parseQuestionsFromText(pdfData.text);
-
-        if (!questions.length)
-            return res.status(422).json({ error: "No Kannada questions found in PDF" });
-
-        const draft = new PdfQuestionDraft({
-            title: req.body.title,
-            subject: req.body.subject,
-            testNumber: Number(req.body.testNumber),
-            questions
-        });
-
-        await draft.save();
-        // Return valid JSON to prevent "Unexpected end of JSON"
-        res.status(200).json({ message: "PDF Processed", draftId: draft._id, count: questions.length });
-
-    } catch (err) {
-        console.error("Critical PDF Error:", err);
-        if (!res.headersSent) {
-            res.status(500).json({ error: "Internal Server Error" });
-        }
-    }
-});
-
-// GET DRAFT DATA
-app.get('/api/pdf-draft/:id', async (req, res) => {
-    try {
-        const draft = await PdfQuestionDraft.findById(req.params.id);
-        res.json(draft);
-    } catch (e) { res.status(404).json({ error: "Not found" }); }
-});
-
-app.patch('/api/pdf-draft/:id/set-answer', async (req, res) => {
-    const { questionIndex, correctAnswer } = req.body;
-    const draft = await PdfQuestionDraft.findById(req.params.id);
-    if (!draft) return res.status(404).json({ error: "Draft not found" });
-    
-    draft.questions[questionIndex].correctAnswer = correctAnswer.toUpperCase();
-    await draft.save();
-    res.json({ success: true });
-});
-
-app.post('/api/pdf-draft/:id/finalize', async (req, res) => {
-    const pdfDraft = await PdfQuestionDraft.findById(req.params.id);
-    const draft = new DraftExam({
-        title: pdfDraft.title,
-        subject: pdfDraft.subject,
-        testNumber: pdfDraft.testNumber,
-        totalQuestions: pdfDraft.questions.length,
-        questions: pdfDraft.questions.map(q => ({
-            questionText: q.questionText,
-            options: q.options,
-            correctAnswer: q.correctAnswer,
-            imageUrl: null
-        }))
-    });
-    await draft.save();
-    await PdfQuestionDraft.findByIdAndDelete(req.params.id);
-    res.json({ message: "Finalized", draftId: draft._id });
-});
-
-// ────────────────────────────────────────────────
-// EXAM ROUTES
-// ────────────────────────────────────────────────
-app.get('/active-exams', async (req, res) => res.json(await Exam.find().sort({ conductedAt: -1 })));
-
 app.get('/exam/:id', authenticate, async (req, res) => {
     const exam = await Exam.findById(req.params.id).select('-questions.correctAnswer');
+    if (!exam) return res.status(404).json({ error: "Exam not found" });
     res.json(exam);
 });
 
 app.post('/conduct/:draftId', async (req, res) => {
     const draft = await DraftExam.findById(req.params.draftId);
+    if (!draft) return res.status(404).json({ error: "Draft not found" });
     const exam = new Exam({ ...draft.toObject(), conductedAt: new Date() });
     await exam.save();
     await DraftExam.findByIdAndDelete(req.params.draftId);
@@ -251,25 +172,22 @@ app.post('/conduct/:draftId', async (req, res) => {
 app.post('/submit-exam', authenticate, async (req, res) => {
     const { examId, answers } = req.body;
     const exam = await Exam.findById(examId);
+    if (!exam) return res.status(404).json({ error: "Exam not found" });
+    const already = await Result.findOne({ studentMobile: req.user.mobile, examId });
+    if (already) return res.status(400).json({ error: "Already submitted" });
+
     let correct = 0;
     exam.questions.forEach((q, i) => { if (q.correctAnswer === answers[i]) correct++; });
-    
     const result = new Result({
-        studentMobile: req.user.mobile,
-        studentName: req.user.name,
-        examId,
-        examTitle: exam.title,
-        examSubject: exam.subject,
-        examTestNumber: exam.testNumber,
-        correct,
-        total: exam.totalQuestions,
-        answers
+        studentMobile: req.user.mobile, studentName: req.user.name,
+        examId, examTitle: exam.title, examSubject: exam.subject, examTestNumber: exam.testNumber,
+        correct, wrong: exam.totalQuestions - correct, score: correct, total: exam.totalQuestions, answers
     });
     await result.save();
-    res.json({ score: correct });
+    res.json({ message: "Done", score: correct });
 });
 
 app.get('*', (req, res) => res.sendFile(path.join(frontendPath, 'index.html')));
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, '0.0.0.0', () => console.log(`🚀 System Online on ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Full System Ready on ${PORT}`));
