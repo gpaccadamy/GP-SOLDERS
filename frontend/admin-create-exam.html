@@ -2,130 +2,168 @@
 <html lang="kn">
 <head>
     <meta charset="UTF-8">
-    <title>AI Hybrid Parser (Fixed)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR to MongoDB Exam Maker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tiro+Kannada&family=Poppins:wght@400;600&display=swap');
-        body { font-family: 'Poppins', sans-serif; background: #f0f4f8; }
-        .kn-text { font-family: 'Tiro Kannada', serif; line-height: 1.6; }
+        body { font-family: 'Poppins', sans-serif; background-color: #f1f5f9; }
+        .kn-font { font-family: 'Tiro Kannada', serif; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <div class="max-w-4xl mx-auto bg-white p-6 rounded-3xl shadow-2xl border border-gray-200">
-        <h1 class="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
-            🛡️ AI Question Splitter (Anti-Error Mode)
-        </h1>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-            <input type="text" id="title" placeholder="Exam Title" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
-            <input type="text" id="subject" placeholder="Subject" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
-            <input type="number" id="testNumber" placeholder="Test No." class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
+    <div class="max-w-5xl mx-auto">
+        <div class="glass p-8 rounded-3xl shadow-xl border border-white mb-8">
+            <h1 class="text-3xl font-black text-slate-800 mb-2">📸 OCR Exam Parser</h1>
+            <p class="text-slate-500">Paste the text extracted from Google Lens or any OCR tool. We will clean it automatically.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <input type="text" id="title" placeholder="Exam Title (e.g., KPSC Mock 1)" class="p-4 rounded-2xl border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
+                <input type="text" id="subject" placeholder="Subject" class="p-4 rounded-2xl border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
+                <input type="number" id="testNumber" placeholder="Test No." class="p-4 rounded-2xl border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
         </div>
 
-        <textarea id="rawInput" rows="12" class="w-full p-4 border-2 border-dashed border-gray-300 rounded-2xl kn-text text-lg mb-4 focus:border-blue-500 outline-none" 
-            placeholder="Paste here. Even with new lines after numbers..."></textarea>
-        
-        <button onclick="superAIParse()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-xl hover:bg-blue-700 shadow-lg transition-all">
-            Parse Mixed Questions Now 🚀
-        </button>
+        <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-100 mb-8">
+            <label class="block text-sm font-bold text-slate-400 mb-2 uppercase tracking-widest">Paste Extracted OCR Text</label>
+            <textarea id="ocrInput" rows="12" class="w-full p-5 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl kn-font text-xl outline-none focus:border-blue-400 transition-all" 
+                placeholder="Paste here..."></textarea>
+            
+            <div class="flex gap-4 mt-4">
+                <button onclick="processOCR()" class="flex-grow bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 shadow-lg shadow-blue-200">
+                    Extract Questions ✨
+                </button>
+                <button onclick="document.getElementById('ocrInput').value=''" class="bg-slate-100 text-slate-500 px-6 rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all">
+                    Clear
+                </button>
+            </div>
+        </div>
 
-        <div id="previewArea" class="mt-10 hidden">
-            <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Review Extracted Questions (<span id="count">0</span>)</h2>
-            <div id="cardContainer" class="space-y-6"></div>
-            <button onclick="saveToMongo()" class="w-full mt-10 bg-green-600 text-white py-5 rounded-2xl font-black text-2xl shadow-xl hover:bg-green-700 transition-all">
-                SAVE TO DATABASE 💾
-            </button>
+        <div id="previewSection" class="hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Review Questions (<span id="qCount">0</span>)</h2>
+                <div class="text-xs font-bold text-amber-600 bg-amber-50 px-4 py-2 rounded-full border border-amber-100 uppercase">Verification Required</div>
+            </div>
+
+            <div id="questionsList" class="space-y-6"></div>
+
+            <div class="mt-12 mb-24">
+                <button onclick="submitToDB()" class="w-full bg-emerald-600 text-white py-6 rounded-3xl font-black text-2xl shadow-2xl hover:bg-emerald-700 hover:scale-[1.02] transition-all">
+                    UPLOAD TO MONGODB 🚀
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        let parsedQuestions = [];
+        let finalQuestions = [];
 
-        function superAIParse() {
-            const rawText = document.getElementById('rawInput').value.trim();
-            if (!rawText) return alert("Please paste text!");
+        function processOCR() {
+            const raw = document.getElementById('ocrInput').value;
+            if(!raw.trim()) return alert("Please paste OCR text first!");
 
-            // IMPROVED REGEX: Splits by English/Kannada numbers even if followed by newlines
-            // It looks for Number followed by . or ) and any amount of whitespace
-            const sections = rawText.split(/\n?\s*(?:\d+|[\u0CE6-\u0CEF]+)[\.\)\-]\s*/);
+            // 1. OCR CLEANUP: Remove weird symbols often added by OCR
+            let cleanText = raw.replace(/[|¦©®™]/g, ""); 
             
-            // The first element is usually empty or intro text
-            const questionContents = sections.filter(s => s.trim().length > 10);
+            // 2. SPLITTING: Split by number patterns (English 1-99 or Kannada ೧-೯೯)
+            const blocks = cleanText.split(/\n\s*(\d+|[\u0CE6-\u0CEF]+)[\.\)\-]\s+/).filter(b => b.trim().length > 5);
             
-            parsedQuestions = [];
-            const container = document.getElementById('cardContainer');
-            container.innerHTML = "";
+            finalQuestions = [];
+            const list = document.getElementById('questionsList');
+            list.innerHTML = "";
 
-            questionContents.forEach((content, index) => {
-                const lines = content.split('\n').map(l => l.trim()).filter(l => l);
-                
-                // Smart Option Detection: A), B), C), D) or 1), 2), 3), 4) or ಎ), ಬಿ)
-                const optRegex = /^([A-D]|ಎ|ಬಿ|ಸಿ|ಡಿ|[1-4]|೧|೨|೩|೪)[\.\)\-]\s*/i;
-                
-                // Separate Question Text from Options
-                const options = lines.filter(l => optRegex.test(l));
-                const questionTextLines = lines.filter(l => !optRegex.test(l));
-                const questionText = questionTextLines.join(' ');
+            for (let i = 0; i < blocks.length; i++) {
+                // If it's a number, the next index is the content
+                if (blocks[i].match(/^(\d+|[\u0CE6-\u0CEF]+)$/)) {
+                    const qNum = blocks[i];
+                    const content = blocks[i+1] || "";
+                    
+                    const lines = content.split('\n').map(l => l.trim()).filter(l => l);
+                    
+                    // Regex for options (Eng: A-D, Kan: ಎ-ಡಿ, Numbers: 1-4)
+                    const optRegex = /^([A-D]|ಎ|ಬಿ|ಸಿ|ಡಿ|[1-4]|೧|೨|೩|೪)[\.\)\-]\s*/i;
+                    
+                    const options = lines.filter(l => optRegex.test(l));
+                    // Join non-option lines into one single question string (Fixes OCR line breaks)
+                    const questionText = lines.filter(l => !optRegex.test(l)).join(' ');
 
-                const qObj = {
-                    questionText,
-                    options: options.length >= 2 ? options : ["Option A", "Option B", "Option C", "Option D"],
-                    correctAnswer: ""
-                };
+                    const qObj = {
+                        questionText,
+                        options: options.length >= 2 ? options : ["Option A", "Option B", "Option C", "Option D"],
+                        correctAnswer: ""
+                    };
 
-                parsedQuestions.push(qObj);
-                renderCard(qObj, index);
-            });
-
-            if (parsedQuestions.length > 0) {
-                document.getElementById('count').innerText = parsedQuestions.length;
-                document.getElementById('previewArea').classList.remove('hidden');
-                window.scrollTo({ top: document.getElementById('previewArea').offsetTop, behavior: 'smooth' });
-            } else {
-                alert("AI couldn't find questions. Try to ensure each question starts with a number like 1. or 2.");
+                    finalQuestions.push(qObj);
+                    addQuestionCard(qObj, finalQuestions.length - 1, qNum);
+                    i++; // Skip content block
+                }
             }
+
+            document.getElementById('qCount').innerText = finalQuestions.length;
+            document.getElementById('previewSection').classList.remove('hidden');
+            window.scrollTo({ top: document.getElementById('previewSection').offsetTop - 20, behavior: 'smooth' });
         }
 
-        function renderCard(q, idx) {
-            const div = document.createElement('div');
-            div.className = "bg-white p-6 rounded-2xl shadow-md border-l-8 border-blue-500";
-            div.innerHTML = `
-                <div class="kn-text font-bold text-gray-800 text-lg mb-4">${idx + 1}. ${q.questionText}</div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                    ${q.options.map(opt => `<div class="kn-text p-3 bg-blue-50 border border-blue-100 rounded-xl text-sm">${opt}</div>`).join('')}
-                </div>
-                <div class="flex gap-2 items-center">
-                    <span class="text-xs font-bold text-gray-400 mr-2 uppercase">Correct:</span>
-                    ${['A', 'B', 'C', 'D'].map(val => `
-                        <button onclick="setCorrect(${idx}, '${val}', this)" 
-                            class="ans-btn-${idx} w-10 h-10 border-2 rounded-lg font-bold transition-all">
-                            ${val}
-                        </button>
-                    `).join('')}
+        function addQuestionCard(q, idx, num) {
+            const container = document.getElementById('questionsList');
+            const card = document.createElement('div');
+            card.className = "bg-white p-6 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-all";
+            card.innerHTML = `
+                <div class="flex gap-4">
+                    <div class="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-lg shadow-blue-100">
+                        ${num}
+                    </div>
+                    <div class="flex-grow">
+                        <textarea oninput="updateQText(${idx}, this.value)" class="w-full kn-font text-lg font-semibold text-slate-800 bg-transparent border-none focus:ring-0 p-0 mb-4 resize-none" rows="2">${q.questionText}</textarea>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                            ${q.options.map((opt, oIdx) => `
+                                <input type="text" value="${opt}" oninput="updateOpt(${idx}, ${oIdx}, this.value)" 
+                                    class="kn-font p-3 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:bg-white outline-none">
+                            `).join('')}
+                        </div>
+
+                        <div class="flex items-center gap-3 border-t pt-4">
+                            <span class="text-xs font-black text-slate-400 uppercase tracking-tighter">Correct Answer:</span>
+                            ${['A', 'B', 'C', 'D'].map(choice => `
+                                <button onclick="setCorrect(${idx}, '${choice}', this)" 
+                                    class="ans-btn-${idx} w-11 h-11 rounded-xl border-2 border-slate-100 font-bold text-slate-400 hover:bg-slate-50 transition-all">
+                                    ${choice}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
                 </div>
             `;
-            document.getElementById('cardContainer').appendChild(div);
+            container.appendChild(card);
         }
 
+        function updateQText(i, val) { finalQuestions[i].questionText = val; }
+        function updateOpt(qi, oi, val) { finalQuestions[qi].options[oi] = val; }
+        
         function setCorrect(qIdx, val, btn) {
-            parsedQuestions[qIdx].correctAnswer = val;
+            finalQuestions[qIdx].correctAnswer = val;
             document.querySelectorAll(`.ans-btn-${qIdx}`).forEach(b => {
-                b.className = `ans-btn-${qIdx} w-10 h-10 border-2 rounded-lg font-bold bg-white text-gray-500`;
+                b.className = `ans-btn-${qIdx} w-11 h-11 rounded-xl border-2 border-slate-100 font-bold text-slate-400 bg-white`;
             });
-            btn.className = `ans-btn-${qIdx} w-10 h-10 bg-blue-600 text-white rounded-lg font-bold border-blue-600 scale-110`;
+            btn.className = `ans-btn-${qIdx} w-11 h-11 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-200 scale-110 transition-all`;
         }
 
-        async function saveToMongo() {
+        async function submitToDB() {
             const title = document.getElementById('title').value;
-            if (!title) return alert("Enter Exam Title");
-            if (parsedQuestions.some(q => !q.correctAnswer)) return alert("Select answers for ALL questions");
+            if(!title) return alert("Please enter Exam Title!");
+            
+            if(finalQuestions.some(q => !q.correctAnswer)) {
+                return alert("Some questions don't have a correct answer selected!");
+            }
 
             const payload = {
                 title,
-                subject: document.getElementById('subject').value || "Mixed",
-                testNumber: document.getElementById('testNumber').value || 1,
-                questions: parsedQuestions
+                subject: document.getElementById('subject').value || "General",
+                testNumber: parseInt(document.getElementById('testNumber').value) || 1,
+                questions: finalQuestions
             };
 
             try {
@@ -134,11 +172,16 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                if (res.ok) {
-                    alert("🎉 Success! Saved to MongoDB.");
+                const data = await res.json();
+                if(data.success) {
+                    alert("✅ Success! Exam saved to Database.");
                     window.location.reload();
+                } else {
+                    alert("❌ Error: " + data.error);
                 }
-            } catch (err) { alert("Server connection failed"); }
+            } catch (err) {
+                alert("❌ Connection to server failed.");
+            }
         }
     </script>
 </body>
