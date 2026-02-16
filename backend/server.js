@@ -11,7 +11,7 @@ const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key_2026';
 
 // ────────────────────────────────────────────────
-// 1. MIDDLEWARES & CORS
+// 1. MIDDLEWARES & CORS (Crucial for Large Mixed Data)
 // ────────────────────────────────────────────────
 const allowedOrigins = [
     'https://academy-student-portal.onrender.com',
@@ -31,12 +31,12 @@ app.use(cors({
     credentials: false
 }));
 
-// Payload limit badha di hai taaki bulk paste crash na ho
+// Payload limit 50mb is correct for long Kannada question papers
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // ────────────────────────────────────────────────
-// 2. STATIC FILES & PATHS
+// 2. STATIC FILES
 // ────────────────────────────────────────────────
 const frontendPath = path.join(__dirname, '../frontend');
 app.use(express.static(frontendPath));
@@ -45,7 +45,7 @@ app.use(express.static(frontendPath));
 // 3. MONGODB CONNECTION
 // ────────────────────────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("✅ MongoDB Connected: Full System Online"))
+    .then(() => console.log("✅ MongoDB Connected: Full System Online (Mixed Language Supported)"))
     .catch(err => { console.error("❌ MongoDB Error:", err); process.exit(1); });
 
 // ────────────────────────────────────────────────
@@ -53,15 +53,14 @@ mongoose.connect(process.env.MONGO_URI)
 // ────────────────────────────────────────────────
 
 // Student Schema
-const StudentSchema = new mongoose.Schema({
+const Student = mongoose.model('Student', new mongoose.Schema({
     name: { type: String, required: true },
     roll: String,
     mobile: { type: String, unique: true, required: true },
     password: { type: String, required: true }
-});
-const Student = mongoose.model('Student', StudentSchema);
+}));
 
-// Question Sub-Schema
+// Question Sub-Schema (Using default null for images)
 const QuestionSchema = new mongoose.Schema({
     questionText: { type: String, required: true },
     options: [{ type: String, required: true }],
@@ -69,7 +68,7 @@ const QuestionSchema = new mongoose.Schema({
     imageUrl: { type: String, default: null }
 });
 
-// Draft Exam Schema (Bulk Paste Yahan Save Hoga)
+// Draft Exam Schema
 const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
     title: { type: String, required: true },
     subject: { type: String, required: true },
@@ -123,10 +122,9 @@ const authenticate = (req, res, next) => {
 };
 
 // ────────────────────────────────────────────────
-// 6. STUDENT AUTH ROUTES (Login & Register)
+// 6. STUDENT AUTH ROUTES
 // ────────────────────────────────────────────────
 
-// Student Registration
 app.post('/students', async (req, res) => {
     try {
         const { name, roll, mobile, password } = req.body;
@@ -145,7 +143,6 @@ app.post('/students', async (req, res) => {
     }
 });
 
-// Student Login
 app.post('/student-login', async (req, res) => {
     try {
         const { mobile, password } = req.body;
@@ -168,14 +165,16 @@ app.post('/student-login', async (req, res) => {
 });
 
 // ────────────────────────────────────────────────
-// 7. BULK SAVE ROUTE (MongoDB Storage)
+// 7. BULK SAVE ROUTE (MongoDB Storage with Logs)
 // ────────────────────────────────────────────────
 app.post('/api/save-bulk-exam', async (req, res) => {
+    console.log("📥 Receiving Bulk Data for Exam:", req.body.title);
+    
     try {
         const { title, subject, testNumber, questions } = req.body;
 
         if (!title || !questions || questions.length === 0) {
-            return res.status(400).json({ error: "Incomplete data provided" });
+            return res.status(400).json({ error: "No questions found to save" });
         }
 
         const draft = new DraftExam({
@@ -187,15 +186,16 @@ app.post('/api/save-bulk-exam', async (req, res) => {
                 questionText: q.questionText,
                 options: q.options,
                 correctAnswer: q.correctAnswer,
-                imageUrl: null
+                imageUrl: q.imageUrl || null
             }))
         });
 
-        await draft.save();
+        const savedDraft = await draft.save();
+        console.log("✅ Successfully saved to Drafts. ID:", savedDraft._id);
         res.status(200).json({ success: true, message: "Exam saved to MongoDB Drafts" });
     } catch (err) {
-        console.error("DB Save Error:", err);
-        res.status(500).json({ error: "Failed to save: " + err.message });
+        console.error("❌ DB Save Error:", err);
+        res.status(500).json({ error: "Internal Server Error: " + err.message });
     }
 });
 
@@ -203,13 +203,15 @@ app.post('/api/save-bulk-exam', async (req, res) => {
 // 8. EXAM & RESULTS LOGIC
 // ────────────────────────────────────────────────
 
-// Get all Live Exams for students
 app.get('/active-exams', async (req, res) => {
-    const exams = await Exam.find().sort({ conductedAt: -1 });
-    res.json(exams);
+    try {
+        const exams = await Exam.find().sort({ conductedAt: -1 });
+        res.json(exams);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch exams" });
+    }
 });
 
-// Get specific exam (without answers)
 app.get('/exam/:id', authenticate, async (req, res) => {
     try {
         const exam = await Exam.findById(req.params.id).select('-questions.correctAnswer');
@@ -220,7 +222,6 @@ app.get('/exam/:id', authenticate, async (req, res) => {
     }
 });
 
-// Conduct: Move Draft to Live
 app.post('/conduct/:draftId', async (req, res) => {
     try {
         const draft = await DraftExam.findById(req.params.draftId);
@@ -228,6 +229,7 @@ app.post('/conduct/:draftId', async (req, res) => {
 
         const exam = new Exam({
             ...draft.toObject(),
+            _id: new mongoose.Types.ObjectId(), // New ID for Live Exam
             conductedAt: new Date()
         });
 
@@ -239,7 +241,6 @@ app.post('/conduct/:draftId', async (req, res) => {
     }
 });
 
-// Submit Exam Logic
 app.post('/submit-exam', authenticate, async (req, res) => {
     try {
         const { examId, answers } = req.body;
@@ -269,20 +270,19 @@ app.post('/submit-exam', authenticate, async (req, res) => {
         });
 
         await result.save();
-        res.json({ message: "Done", score: correct });
+        res.json({ message: "Submitted", score: correct });
     } catch (err) {
         res.status(500).json({ error: "Submission failed" });
     }
 });
 
-// Get Student Results
 app.get('/my-results', authenticate, async (req, res) => {
     const results = await Result.find({ studentMobile: req.user.mobile }).sort({ submittedAt: -1 });
     res.json(results);
 });
 
 // ────────────────────────────────────────────────
-// 9. SPA & SERVER START
+// 9. SPA & START
 // ────────────────────────────────────────────────
 app.get('*', (req, res) => {
     res.sendFile(path.join(frontendPath, 'index.html'));
@@ -290,5 +290,5 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 FULL SYSTEM READY ON PORT ${PORT}`);
+    console.log(`🚀 SERVER RUNNING ON PORT ${PORT}`);
 });
