@@ -1,144 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - Create Exam from PDF</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 900px; margin: 30px auto; padding: 20px; background:#f9f9f9; }
-    h1 { text-align:center; color:#333; }
-    .card { background:white; padding:25px; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.1); margin-bottom:30px; }
-    label { display:block; margin:15px 0 6px; font-weight:bold; }
-    input, button, select { padding:10px; width:100%; box-sizing:border-box; margin-bottom:10px; }
-    button.primary { background:#28a745; color:white; border:none; border-radius:4px; cursor:pointer; font-size:16px; }
-    button.secondary { background:#007bff; color:white; }
-    #uploadResult, #status { padding:15px; margin:15px 0; border-radius:6px; }
-    .success { background:#d4edda; color:#155724; }
-    .error   { background:#f8d7da; color:#721c24; }
-    .question { background:#fff; padding:18px; margin:20px 0; border:1px solid #ddd; border-radius:6px; }
-    .options { margin:12px 0; padding-left:20px; }
-    .hidden { display:none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Create PDF Exam</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
+<body class="bg-gray-100 min-h-screen p-4 md:p-8">
 
-  <h1>Create New Exam from PDF</h1>
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8"><i class="fas fa-file-pdf text-red-600 mr-2"></i>PDF Exam Maker</h1>
 
-  <div class="card">
-    <form id="uploadForm">
-      <label>Exam Title</label>
-      <input type="text" name="title" required>
+        <div id="upload-section" class="bg-white p-6 rounded-xl shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-blue-600">Step 1: Upload Question PDF</h2>
+            <form id="uploadForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="text" id="title" placeholder="Exam Title (e.g. Weekly Test)" class="border p-2 rounded" required>
+                <input type="text" id="subject" placeholder="Subject" class="border p-2 rounded" required>
+                <input type="number" id="testNumber" placeholder="Test No." class="border p-2 rounded" required>
+                <div class="md:col-span-3">
+                    <input type="file" id="pdfFile" accept=".pdf" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required>
+                </div>
+                <button type="submit" class="md:col-span-3 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                    <i class="fas fa-upload mr-2"></i> Upload & Extract Questions
+                </button>
+            </form>
+        </div>
 
-      <label>Subject</label>
-      <input type="text" name="subject" required>
+        <div id="review-section" class="hidden bg-white p-6 rounded-xl shadow-md mb-8">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="text-xl font-semibold text-orange-600">Step 2: Review & Set Correct Answers</h2>
+                <span id="qCount" class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-bold"></span>
+            </div>
 
-      <label>Test Number</label>
-      <input type="number" name="testNumber" required min="1">
+            <div id="questions-container" class="space-y-6">
+                </div>
 
-      <label>PDF File</label>
-      <input type="file" name="pdf" accept=".pdf" required>
-
-      <button type="submit" class="primary">Upload & Parse Questions</button>
-    </form>
-
-    <div id="uploadResult" class="hidden"></div>
-  </div>
-
-  <div id="questionsSection" class="hidden">
-    <div class="card">
-      <h2>Set Correct Answers</h2>
-      <div id="questionsList"></div>
-      <button id="saveAnswersBtn" class="primary">Save All Answers</button>
-      <button id="finalizeBtn" class="secondary hidden">Finalize Draft</button>
-      <div id="status"></div>
+            <div class="mt-10 pt-6 border-t flex gap-4">
+                <button onclick="finalizeExam()" class="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-700 shadow-lg">
+                    <i class="fas fa-check-double mr-2"></i> Finalize & Make Live
+                </button>
+                <button onclick="location.reload()" class="bg-gray-200 text-gray-700 px-6 rounded-xl hover:bg-gray-300">
+                    Cancel
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script>
-    const uploadForm = document.getElementById('uploadForm');
-    const uploadResult = document.getElementById('uploadResult');
-    const questionsSection = document.getElementById('questionsSection');
-    const questionsList = document.getElementById('questionsList');
-    const saveBtn = document.getElementById('saveAnswersBtn');
-    const finalizeBtn = document.getElementById('finalizeBtn');
-    const statusDiv = document.getElementById('status');
+    <script>
+        const API_URL = "https://academy-student-portal.onrender.com"; // Change to your actual backend URL
+        let currentDraftId = null;
 
-    let currentDraftId = null;
+        // --- Step 1: Handle Upload ---
+        document.getElementById('uploadForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('pdf', document.getElementById('pdfFile').files[0]);
+            formData.append('title', document.getElementById('title').value);
+            formData.append('subject', document.getElementById('subject').value);
+            formData.append('testNumber', document.getElementById('testNumber').value);
 
-    uploadForm.addEventListener('submit', async e => {
-      e.preventDefault();
-      uploadResult.className = '';
-      uploadResult.innerHTML = '<p style="color:#007bff;">Processing PDF... (10–40 seconds)</p>';
-      uploadResult.classList.remove('hidden');
+            try {
+                const res = await fetch(`${API_URL}/api/exam/pdf-upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if (data.draftId) {
+                    currentDraftId = data.draftId;
+                    loadDraft(data.draftId);
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch (err) {
+                alert("Upload failed. Check console.");
+            }
+        };
 
-      const formData = new FormData(uploadForm);
+        // --- Step 2: Load Draft for Review ---
+        async function loadDraft(id) {
+            const res = await fetch(`${API_URL}/api/pdf-draft/${id}`);
+            const draft = await res.json();
+            
+            document.getElementById('upload-section').classList.add('hidden');
+            document.getElementById('review-section').classList.remove('hidden');
+            document.getElementById('qCount').innerText = `${draft.questions.length} Questions Found`;
 
-      try {
-        const res = await fetch('/api/exam/pdf-upload', { method: 'POST', body: formData });
-        const data = await res.json();
-
-        if (res.ok) {
-          currentDraftId = data.draftId;
-          uploadResult.innerHTML = `<div class="success">Success! ${data.questionCount} questions parsed.</div>`;
-          loadQuestions(data.draftId);
-        } else {
-          uploadResult.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+            const container = document.getElementById('questions-container');
+            container.innerHTML = draft.questions.map((q, index) => `
+                <div class="p-4 border rounded-lg bg-gray-50 relative group">
+                    <p class="font-bold text-gray-800 mb-3">Q${index + 1}: ${q.questionText}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4 text-sm text-gray-600">
+                        ${q.options.map(opt => `<div>${opt}</div>`).join('')}
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <label class="font-semibold text-sm">Correct Answer:</label>
+                        <select onchange="updateAnswer(${index}, this.value)" class="border p-1 rounded bg-white focus:ring-2 focus:ring-orange-400">
+                            <option value="">-- Select --</option>
+                            <option value="A" ${q.correctAnswer === 'A' ? 'selected' : ''}>A</option>
+                            <option value="B" ${q.correctAnswer === 'B' ? 'selected' : ''}>B</option>
+                            <option value="C" ${q.correctAnswer === 'C' ? 'selected' : ''}>C</option>
+                            <option value="D" ${q.correctAnswer === 'D' ? 'selected' : ''}>D</option>
+                        </select>
+                    </div>
+                </div>
+            `).join('');
         }
-      } catch (err) {
-        uploadResult.innerHTML = `<div class="error">Error: ${err.message}</div>`;
-      }
-    });
 
-    async function loadQuestions(draftId) {
-      const res = await fetch(`/api/pdf-draft/${draftId}`);
-      const draft = await res.json();
+        // --- Step 3: Update Answer in Backend ---
+        async function updateAnswer(qIndex, answer) {
+            if (!answer) return;
+            await fetch(`${API_URL}/api/pdf-draft/${currentDraftId}/set-answer`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ questionIndex: qIndex, correctAnswer: answer })
+            });
+        }
 
-      questionsList.innerHTML = '';
-      draft.questions.forEach((q, i) => {
-        const div = document.createElement('div');
-        div.className = 'question';
-        div.innerHTML = `
-          <strong>Q${i+1}:</strong> ${q.questionText}
-          <div class="options"><ul>${q.options.map(o => '<li>' + o + '</li>').join('')}</ul></div>
-          <label>Correct:
-            <select id="ans-${i}">
-              <option value="">--</option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
-              <option value="D">D</option>
-            </select>
-          </label>
-        `;
-        questionsList.appendChild(div);
-      });
-
-      questionsSection.classList.remove('hidden');
-    }
-
-    saveBtn.addEventListener('click', async () => {
-      statusDiv.innerHTML = 'Saving...';
-      let ok = true;
-      for (let i = 0; i < questionsList.children.length; i++) {
-        const val = document.getElementById(`ans-${i}`).value.trim().toUpperCase();
-        if (!val) continue;
-        const res = await fetch(`/api/pdf-draft/${currentDraftId}/set-answer`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ questionIndex: i, correctAnswer: val })
-        });
-        if (!res.ok) ok = false;
-      }
-      statusDiv.innerHTML = ok ? '<span style="color:green">Saved!</span>' : '<span style="color:red">Some failed</span>';
-      finalizeBtn.classList.remove('hidden');
-    });
-
-    finalizeBtn.addEventListener('click', async () => {
-      if (!confirm('Finalize?')) return;
-      const res = await fetch(`/api/pdf-draft/${currentDraftId}/finalize`, { method: 'POST' });
-      const data = await res.json();
-      statusDiv.innerHTML = res.ok ? '<span style="color:green">Finalized! Go conduct exam.</span>' : '<span style="color:red">Error</span>';
-    });
-  </script>
+        // --- Step 4: Finalize ---
+        async function finalizeExam() {
+            const res = await fetch(`${API_URL}/api/pdf-draft/${currentDraftId}/finalize`, {
+                method: 'POST'
+            });
+            const data = await res.json();
+            if (data.message) {
+                alert("🎉 Exam is now Live for students!");
+                window.location.href = "/"; // Go to dashboard
+            } else {
+                alert("Error: " + data.error);
+            }
+        }
+    </script>
 </body>
 </html>
