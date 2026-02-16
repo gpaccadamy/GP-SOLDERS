@@ -2,175 +2,119 @@
 <html lang="kn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - PDF Exam Maker</title>
+    <title>Admin - Create Exam</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tiro+Kannada&display=swap');
-        .kannada-font { font-family: 'Tiro Kannada', serif; }
-        body { background-color: #f8fafc; }
-    </style>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Tiro+Kannada&display=swap'); .kn { font-family: 'Tiro Kannada', serif; }</style>
 </head>
-<body class="p-4 md:p-8">
+<body class="bg-gray-50 p-6">
+    <div class="max-w-5xl mx-auto bg-white p-8 rounded-3xl shadow-lg">
+        <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">Bulk Exam Creator (Copy-Paste)</h1>
 
-    <div class="max-w-5xl mx-auto">
-        <header class="mb-10 text-center">
-            <h1 class="text-4xl font-extrabold text-gray-900 mb-2">Exam Controller</h1>
-            <p class="text-gray-500 italic">Upload Kannada PDF and generate exams instantly</p>
-        </header>
-
-        <div id="upload-section" class="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
-            <form id="uploadForm" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <input type="text" id="title" placeholder="Exam Title (e.g. Army GD-04)" class="border p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500" required>
-                    <input type="text" id="subject" placeholder="Subject" class="border p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500" required>
-                    <input type="number" id="testNumber" placeholder="Test No." class="border p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500" required>
-                </div>
-                
-                <div class="border-4 border-dashed border-blue-50 rounded-3xl p-12 text-center hover:bg-blue-50 transition cursor-pointer" onclick="document.getElementById('pdfFile').click()">
-                    <i class="fas fa-file-pdf text-6xl text-blue-200 mb-4"></i>
-                    <p class="text-gray-400 font-medium">Select PDF Question Paper</p>
-                    <input type="file" id="pdfFile" accept=".pdf" class="hidden" required>
-                    <p id="fileName" class="text-blue-600 mt-2 font-bold"></p>
-                </div>
-
-                <button type="submit" id="uploadBtn" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xl hover:bg-blue-700 shadow-lg shadow-blue-200 disabled:bg-gray-300">
-                    <i class="fas fa-magic mr-2"></i> START EXTRACTION
-                </button>
-            </form>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <input type="text" id="title" placeholder="Exam Title" class="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
+            <input type="text" id="subject" placeholder="Subject" class="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
+            <input type="number" id="testNumber" placeholder="Test No" class="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
         </div>
 
-        <div id="loader" class="hidden text-center py-20">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-4 border-blue-600 mb-4"></div>
-            <p class="text-xl font-bold text-blue-900">Processing Kannada Text...</p>
+        <div class="mb-6">
+            <label class="block font-bold mb-2 text-gray-600">Paste Question Paper Content Here:</label>
+            <textarea id="rawInput" rows="10" class="w-full border-2 border-dashed border-gray-300 p-4 rounded-2xl kn outline-none focus:border-blue-500" placeholder="1. Question text... A) Option B) Option..."></textarea>
         </div>
+
+        <button onclick="processText()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition">
+            Process & Separate Questions
+        </button>
 
         <div id="review-section" class="hidden mt-10">
-            <div class="bg-yellow-50 border-l-8 border-yellow-400 p-6 rounded-2xl mb-8">
-                <h3 class="font-black text-yellow-800 uppercase text-sm mb-1">Check Questions Below</h3>
-                <p class="text-yellow-700">Agar PDF se text galat aaya hai toh aap box mein click karke thik kar sakte hain.</p>
-            </div>
-
-            <div id="questions-list" class="space-y-8"></div>
-
-            <div class="mt-12 sticky bottom-4 bg-white/80 backdrop-blur p-4 rounded-3xl shadow-2xl border flex gap-4">
-                <button onclick="finalizeExam()" class="flex-1 bg-green-600 text-white py-5 rounded-2xl font-black text-xl hover:bg-green-700 transition">
-                    <i class="fas fa-rocket mr-2"></i> PUBLISH EXAM NOW
-                </button>
-            </div>
+            <h2 class="text-2xl font-bold text-orange-600 mb-6">Step 2: Review & Set Correct Answers</h2>
+            <div id="questions-list" class="space-y-6"></div>
+            <button onclick="saveBulk()" class="mt-10 w-full bg-green-600 text-white py-5 rounded-2xl font-bold text-2xl shadow-lg hover:bg-green-700 transition">
+                Publish to Drafts
+            </button>
         </div>
     </div>
 
     <script>
-        const API_URL = window.location.origin;
-        let currentDraftId = null;
+        let extractedQuestions = [];
 
-        document.getElementById('pdfFile').onchange = (e) => {
-            document.getElementById('fileName').innerText = e.target.files[0].name;
-        };
+        function processText() {
+            const text = document.getElementById('rawInput').value;
+            if (!text.trim()) return alert("Please paste some text first!");
 
-        document.getElementById('uploadForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('uploadBtn');
-            const loader = document.getElementById('loader');
-            const uploadSection = document.getElementById('upload-section');
-
-            const formData = new FormData();
-            formData.append('pdf', document.getElementById('pdfFile').files[0]);
-            formData.append('title', document.getElementById('title').value);
-            formData.append('subject', document.getElementById('subject').value);
-            formData.append('testNumber', document.getElementById('testNumber').value);
-
-            btn.disabled = true;
-            loader.classList.remove('hidden');
-
-            try {
-                const res = await fetch(`${API_URL}/api/exam/pdf-upload`, { method: 'POST', body: formData });
-                
-                // Content check to avoid "Unexpected end of JSON"
-                const contentType = res.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("Server did not return JSON. Possible crash.");
-                }
-
-                const data = await res.json();
-                if (data.draftId) {
-                    currentDraftId = data.draftId;
-                    uploadSection.classList.add('hidden');
-                    loader.classList.add('hidden');
-                    loadReview(data.draftId);
-                } else {
-                    alert("Error: " + data.error);
-                }
-            } catch (err) {
-                alert("Critical Error: " + err.message);
-                loader.classList.add('hidden');
-                btn.disabled = false;
-            }
-        };
-
-        async function loadReview(id) {
-            const res = await fetch(`${API_URL}/api/pdf-draft/${id}`);
-            const draft = await res.json();
+            // Regex: Finds numbers followed by . or ) including Kannada support
+            const blocks = text.split(/\n\s*(\d+)[\.\)\-]\s+/).filter(b => b.trim().length > 5);
             
-            document.getElementById('review-section').classList.remove('hidden');
+            extractedQuestions = [];
             const list = document.getElementById('questions-list');
-            
-            list.innerHTML = draft.questions.map((q, i) => `
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                    <div class="flex items-center gap-4 mb-4">
-                        <span class="bg-blue-600 text-white w-10 h-10 flex items-center justify-center rounded-full font-bold">${i+1}</span>
-                        <input type="text" value="${q.questionText}" 
-                            class="flex-1 text-lg font-bold outline-none border-b focus:border-blue-500 kannada-font py-2"
-                            placeholder="Question Text...">
-                    </div>
+            list.innerHTML = "";
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-                        ${q.options.map((opt, optIdx) => `
-                            <div class="flex items-center gap-2 bg-gray-50 p-3 rounded-xl">
-                                <span class="font-bold text-blue-500">${String.fromCharCode(65+optIdx)})</span>
-                                <input type="text" value="${opt}" class="w-full bg-transparent outline-none kannada-font">
-                            </div>
-                        `).join('')}
-                    </div>
+            for (let i = 0; i < blocks.length; i++) {
+                if (!isNaN(blocks[i])) {
+                    const number = blocks[i];
+                    const content = blocks[i+1] || "";
+                    const lines = content.split('\n').map(l => l.trim()).filter(l => l);
+                    
+                    const qText = lines[0];
+                    // Detect options A) B) C) D) or Kannada ໖) ໖)
+                    const optRegex = /^[A-D\u0CB0-\u0CB9\u0CDE-\u0CDF][\.\)\-]\s*/i;
+                    const options = lines.filter(l => optRegex.test(l));
 
-                    <div class="flex items-center gap-4 bg-blue-50 p-4 rounded-2xl">
-                        <span class="text-sm font-bold text-blue-700">CHOOSE CORRECT OPTION:</span>
+                    extractedQuestions.push({
+                        questionText: qText,
+                        options: options.length >= 2 ? options : ["A) ", "B) ", "C) ", "D) "],
+                        correctAnswer: null
+                    });
+
+                    const qDiv = document.createElement('div');
+                    qDiv.className = "bg-gray-50 p-6 rounded-2xl border border-gray-200 shadow-sm";
+                    qDiv.innerHTML = `
+                        <p class="font-bold text-lg mb-3 kn">${number}. ${qText}</p>
+                        <div class="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-4 kn">
+                            ${options.map(o => `<span>${o}</span>`).join('')}
+                        </div>
                         <div class="flex gap-2">
                             ${['A','B','C','D'].map(ans => `
-                                <button onclick="setAns(${i}, '${ans}', this)" 
-                                    class="w-12 h-12 rounded-xl font-bold transition ${q.correctAnswer === ans ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border border-blue-200'}">
-                                    ${ans}
+                                <button onclick="setAns(${extractedQuestions.length-1}, '${ans}', this)" 
+                                    class="px-4 py-2 border rounded-lg bg-white text-blue-600 font-bold hover:bg-blue-600 hover:text-white transition">
+                                    Set ${ans}
                                 </button>
                             `).join('')}
                         </div>
-                    </div>
-                </div>
-            `).join('');
+                    `;
+                    list.appendChild(qDiv);
+                    i++;
+                }
+            }
+            document.getElementById('review-section').classList.remove('hidden');
         }
 
-        async function setAns(idx, ans, btn) {
-            // Update UI
-            const row = btn.parentElement.querySelectorAll('button');
-            row.forEach(b => b.className = "w-12 h-12 rounded-xl font-bold bg-white text-blue-600 border border-blue-200");
-            btn.className = "w-12 h-12 rounded-xl font-bold bg-blue-600 text-white";
+        function setAns(qIdx, ans, btn) {
+            extractedQuestions[qIdx].correctAnswer = ans;
+            btn.parentElement.querySelectorAll('button').forEach(b => b.className = "px-4 py-2 border rounded-lg bg-white text-blue-600 font-bold");
+            btn.className = "px-4 py-2 border rounded-lg bg-blue-600 text-white font-bold shadow-md";
+        }
 
-            // Save to server
-            await fetch(`${API_URL}/api/pdf-draft/${currentDraftId}/set-answer`, {
-                method: 'PATCH',
+        async function saveBulk() {
+            const data = {
+                title: document.getElementById('title').value,
+                subject: document.getElementById('subject').value,
+                testNumber: document.getElementById('testNumber').value,
+                questions: extractedQuestions
+            };
+
+            if (!data.title || extractedQuestions.some(q => !q.correctAnswer)) {
+                return alert("Please enter title and select answers for ALL questions!");
+            }
+
+            const res = await fetch('/api/save-bulk-exam', {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ questionIndex: idx, correctAnswer: ans })
+                body: JSON.stringify(data)
             });
-        }
 
-        async function finalizeExam() {
-            const res = await fetch(`${API_URL}/api/pdf-draft/${currentDraftId}/finalize`, { method: 'POST' });
             if (res.ok) {
-                alert("✅ Exam successfully created!");
-                window.location.href = "/";
-            } else {
-                alert("Error finalizing exam.");
+                alert("Saved to Drafts! You can now make it live from your Admin Dashboard.");
+                window.location.reload();
             }
         }
     </script>
