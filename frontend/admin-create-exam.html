@@ -1,188 +1,35 @@
 <!DOCTYPE html>
-<html lang="kn">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OCR to MongoDB Exam Maker</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tiro+Kannada&family=Poppins:wght@400;600&display=swap');
-        body { font-family: 'Poppins', sans-serif; background-color: #f1f5f9; }
-        .kn-font { font-family: 'Tiro Kannada', serif; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-    </style>
+    <title>Upload PDF Questions</title>
 </head>
-<body class="p-4 md:p-8">
+<body>
+    <h2>Upload Question PDF (Kannada + English)</h2>
 
-    <div class="max-w-5xl mx-auto">
-        <div class="glass p-8 rounded-3xl shadow-xl border border-white mb-8">
-            <h1 class="text-3xl font-black text-slate-800 mb-2">📸 OCR Exam Parser</h1>
-            <p class="text-slate-500">Paste the text extracted from Google Lens or any OCR tool. We will clean it automatically.</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                <input type="text" id="title" placeholder="Exam Title (e.g., KPSC Mock 1)" class="p-4 rounded-2xl border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
-                <input type="text" id="subject" placeholder="Subject" class="p-4 rounded-2xl border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
-                <input type="number" id="testNumber" placeholder="Test No." class="p-4 rounded-2xl border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
-            </div>
-        </div>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="pdf" accept=".pdf" required />
+        <button type="submit">Upload</button>
+    </form>
 
-        <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-100 mb-8">
-            <label class="block text-sm font-bold text-slate-400 mb-2 uppercase tracking-widest">Paste Extracted OCR Text</label>
-            <textarea id="ocrInput" rows="12" class="w-full p-5 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl kn-font text-xl outline-none focus:border-blue-400 transition-all" 
-                placeholder="Paste here..."></textarea>
-            
-            <div class="flex gap-4 mt-4">
-                <button onclick="processOCR()" class="flex-grow bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 shadow-lg shadow-blue-200">
-                    Extract Questions ✨
-                </button>
-                <button onclick="document.getElementById('ocrInput').value=''" class="bg-slate-100 text-slate-500 px-6 rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all">
-                    Clear
-                </button>
-            </div>
-        </div>
-
-        <div id="previewSection" class="hidden">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-slate-800">Review Questions (<span id="qCount">0</span>)</h2>
-                <div class="text-xs font-bold text-amber-600 bg-amber-50 px-4 py-2 rounded-full border border-amber-100 uppercase">Verification Required</div>
-            </div>
-
-            <div id="questionsList" class="space-y-6"></div>
-
-            <div class="mt-12 mb-24">
-                <button onclick="submitToDB()" class="w-full bg-emerald-600 text-white py-6 rounded-3xl font-black text-2xl shadow-2xl hover:bg-emerald-700 hover:scale-[1.02] transition-all">
-                    UPLOAD TO MONGODB 🚀
-                </button>
-            </div>
-        </div>
-    </div>
+    <p id="message"></p>
 
     <script>
-        let finalQuestions = [];
+        const form = document.getElementById("uploadForm");
 
-        function processOCR() {
-            const raw = document.getElementById('ocrInput').value;
-            if(!raw.trim()) return alert("Please paste OCR text first!");
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-            // 1. OCR CLEANUP: Remove weird symbols often added by OCR
-            let cleanText = raw.replace(/[|¦©®™]/g, ""); 
-            
-            // 2. SPLITTING: Split by number patterns (English 1-99 or Kannada ೧-೯೯)
-            const blocks = cleanText.split(/\n\s*(\d+|[\u0CE6-\u0CEF]+)[\.\)\-]\s+/).filter(b => b.trim().length > 5);
-            
-            finalQuestions = [];
-            const list = document.getElementById('questionsList');
-            list.innerHTML = "";
+            const formData = new FormData(form);
 
-            for (let i = 0; i < blocks.length; i++) {
-                // If it's a number, the next index is the content
-                if (blocks[i].match(/^(\d+|[\u0CE6-\u0CEF]+)$/)) {
-                    const qNum = blocks[i];
-                    const content = blocks[i+1] || "";
-                    
-                    const lines = content.split('\n').map(l => l.trim()).filter(l => l);
-                    
-                    // Regex for options (Eng: A-D, Kan: ಎ-ಡಿ, Numbers: 1-4)
-                    const optRegex = /^([A-D]|ಎ|ಬಿ|ಸಿ|ಡಿ|[1-4]|೧|೨|೩|೪)[\.\)\-]\s*/i;
-                    
-                    const options = lines.filter(l => optRegex.test(l));
-                    // Join non-option lines into one single question string (Fixes OCR line breaks)
-                    const questionText = lines.filter(l => !optRegex.test(l)).join(' ');
-
-                    const qObj = {
-                        questionText,
-                        options: options.length >= 2 ? options : ["Option A", "Option B", "Option C", "Option D"],
-                        correctAnswer: ""
-                    };
-
-                    finalQuestions.push(qObj);
-                    addQuestionCard(qObj, finalQuestions.length - 1, qNum);
-                    i++; // Skip content block
-                }
-            }
-
-            document.getElementById('qCount').innerText = finalQuestions.length;
-            document.getElementById('previewSection').classList.remove('hidden');
-            window.scrollTo({ top: document.getElementById('previewSection').offsetTop - 20, behavior: 'smooth' });
-        }
-
-        function addQuestionCard(q, idx, num) {
-            const container = document.getElementById('questionsList');
-            const card = document.createElement('div');
-            card.className = "bg-white p-6 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-all";
-            card.innerHTML = `
-                <div class="flex gap-4">
-                    <div class="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-lg shadow-blue-100">
-                        ${num}
-                    </div>
-                    <div class="flex-grow">
-                        <textarea oninput="updateQText(${idx}, this.value)" class="w-full kn-font text-lg font-semibold text-slate-800 bg-transparent border-none focus:ring-0 p-0 mb-4 resize-none" rows="2">${q.questionText}</textarea>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-                            ${q.options.map((opt, oIdx) => `
-                                <input type="text" value="${opt}" oninput="updateOpt(${idx}, ${oIdx}, this.value)" 
-                                    class="kn-font p-3 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:bg-white outline-none">
-                            `).join('')}
-                        </div>
-
-                        <div class="flex items-center gap-3 border-t pt-4">
-                            <span class="text-xs font-black text-slate-400 uppercase tracking-tighter">Correct Answer:</span>
-                            ${['A', 'B', 'C', 'D'].map(choice => `
-                                <button onclick="setCorrect(${idx}, '${choice}', this)" 
-                                    class="ans-btn-${idx} w-11 h-11 rounded-xl border-2 border-slate-100 font-bold text-slate-400 hover:bg-slate-50 transition-all">
-                                    ${choice}
-                                </button>
-                            `).join('')}
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.appendChild(card);
-        }
-
-        function updateQText(i, val) { finalQuestions[i].questionText = val; }
-        function updateOpt(qi, oi, val) { finalQuestions[qi].options[oi] = val; }
-        
-        function setCorrect(qIdx, val, btn) {
-            finalQuestions[qIdx].correctAnswer = val;
-            document.querySelectorAll(`.ans-btn-${qIdx}`).forEach(b => {
-                b.className = `ans-btn-${qIdx} w-11 h-11 rounded-xl border-2 border-slate-100 font-bold text-slate-400 bg-white`;
+            const response = await fetch("http://localhost:3000/upload", {
+                method: "POST",
+                body: formData
             });
-            btn.className = `ans-btn-${qIdx} w-11 h-11 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-200 scale-110 transition-all`;
-        }
 
-        async function submitToDB() {
-            const title = document.getElementById('title').value;
-            if(!title) return alert("Please enter Exam Title!");
-            
-            if(finalQuestions.some(q => !q.correctAnswer)) {
-                return alert("Some questions don't have a correct answer selected!");
-            }
-
-            const payload = {
-                title,
-                subject: document.getElementById('subject').value || "General",
-                testNumber: parseInt(document.getElementById('testNumber').value) || 1,
-                questions: finalQuestions
-            };
-
-            try {
-                const res = await fetch('/api/save-bulk-exam', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                if(data.success) {
-                    alert("✅ Success! Exam saved to Database.");
-                    window.location.reload();
-                } else {
-                    alert("❌ Error: " + data.error);
-                }
-            } catch (err) {
-                alert("❌ Connection to server failed.");
-            }
-        }
+            const result = await response.text();
+            document.getElementById("message").innerText = result;
+        });
     </script>
 </body>
 </html>
