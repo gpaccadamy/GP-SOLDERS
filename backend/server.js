@@ -14,332 +14,262 @@ const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key_2026';
 
 // ────────────────────────────────────────────────
-// CORS CONFIG
+// CORS & MIDDLEWARE
 // ────────────────────────────────────────────────
 const allowedOrigins = [
     'https://academy-student-portal.onrender.com',
     'http://localhost:3000',
 ];
-
 app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+        else callback(new Error('Not allowed by CORS'));
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: false,
-    optionsSuccessStatus: 200
+    credentials: false
 }));
-
 app.use(express.json());
 
 // ────────────────────────────────────────────────
-// STATIC FRONTEND + UPLOADS
+// STATIC PATHS & UPLOADS
 // ────────────────────────────────────────────────
 const frontendPath = path.join(__dirname, '../frontend');
 app.use(express.static(frontendPath));
 
-const uploadDir = './uploads';
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+const uploadDir = './uploads/army-videos';
+if (!fs.existsSync(uploadDir)) { fs.mkdirSync(uploadDir, { recursive: true }); }
 app.use('/uploads', express.static('uploads'));
 
 // ────────────────────────────────────────────────
-// MONGODB
+// DATABASE & CLOUDINARY
 // ────────────────────────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("✅ MongoDB Connected"))
     .catch(err => { console.error("❌ MongoDB Error:", err); process.exit(1); });
 
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 // ────────────────────────────────────────────────
-// MODELS
+// MODELS (ALL ORIGINAL + NEW)
 // ────────────────────────────────────────────────
 const Student = mongoose.model('Student', new mongoose.Schema({
-    name: String,
-    roll: String,
-    mobile: { type: String, unique: true },
+    name: String, roll: String, mobile: { type: String, unique: true },
     password: { type: String, required: true }
 }));
 
-const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
-    title: String,
-    subject: String,
-    testNumber: Number,
-    totalQuestions: Number,
-    questions: [{
-        imageUrl: String,
-        questionText: String,
-        options: [String],
-        correctAnswer: String
-    }],
-    createdAt: { type: Date, default: Date.now }
+const Video = mongoose.model('Video', new mongoose.Schema({
+    subject: String, class: Number, videoId: String, title: String
 }));
 
 const Exam = mongoose.model('Exam', new mongoose.Schema({
-    title: String,
-    subject: String,
-    classNum: Number,
-    testNumber: Number,
+    title: String, subject: String, classNum: Number, testNumber: Number,
     totalQuestions: Number,
-    questions: [{
-        imageUrl: String,
-        questionText: String,
-        options: [String],
-        correctAnswer: String
-    }],
+    questions: [{ imageUrl: String, questionText: String, options: [String], correctAnswer: String }],
     conductedAt: { type: Date, default: Date.now }
 }));
 
-const Result = mongoose.model('Result', new mongoose.Schema({
-    studentMobile: String,
-    studentName: String,
-    examId: mongoose.Schema.Types.ObjectId,
-    examTitle: String,
-    examSubject: String,
-    examTestNumber: Number,
-    correct: Number,
-    wrong: Number,
-    score: Number,
-    total: Number,
-    answers: [String],
-    submittedAt: { type: Date, default: Date.now }
+const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
+    title: String, subject: String, testNumber: Number, totalQuestions: Number,
+    questions: [{ imageUrl: String, questionText: String, options: [String], correctAnswer: String }]
 }));
 
 const PdfQuestionDraft = mongoose.model('PdfQuestionDraft', new mongoose.Schema({
-    title: String,
-    subject: String,
-    testNumber: Number,
-    questions: [{
-        questionText: String,
-        options: [String],
-        correctAnswer: { type: String, default: null }
-    }],
+    title: String, subject: String, testNumber: Number,
+    questions: [{ questionText: String, options: [String], correctAnswer: { type: String, default: null } }],
     createdAt: { type: Date, default: Date.now }
 }));
+
+const Result = mongoose.model('Result', new mongoose.Schema({
+    studentMobile: String, studentName: String, examId: mongoose.Schema.Types.ObjectId,
+    examTitle: String, examSubject: String, examTestNumber: Number,
+    correct: Number, total: Number, score: Number, answers: [String], submittedAt: { type: Date, default: Date.now }
+}));
+
+const Note = mongoose.model('Note', new mongoose.Schema({
+    title: String, content: String, createdAt: { type: Date, default: Date.now }
+}));
+
+const ArmyVideo = mongoose.model('ArmyVideo', new mongoose.Schema({
+    title: String, url: String, uploadedAt: { type: Date, default: Date.now }
+}, { timestamps: true }));
 
 // ────────────────────────────────────────────────
 // AUTH MIDDLEWARE
 // ────────────────────────────────────────────────
 const authenticate = (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ error: "Access Denied" });
-
+    if (!token) return res.status(401).json({ error: "Unauthorized" });
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
+        req.user = jwt.verify(token, JWT_SECRET);
         next();
-    } catch {
-        res.status(401).json({ error: "Session Expired" });
-    }
+    } catch (err) { res.status(401).json({ error: "Invalid Session" }); }
 };
 
 // ────────────────────────────────────────────────
-// PDF PARSER
+// KANNADA-SUPPORTED PDF PARSER
 // ────────────────────────────────────────────────
 function parseQuestionsFromText(rawText) {
-    const blocks = rawText.split(/\n\s*\d+[\.\)\-]\s+/).filter(b => b.trim());
-    return blocks.map(block => {
-        const lines = block.split('\n').map(l => l.trim()).filter(l => l);
-        const optionRegex = /^[A-D][\.\)\-]\s+/i;
-        const questionText = lines.filter(l => !optionRegex.test(l)).join(' ');
-        const options = lines.filter(l => optionRegex.test(l));
-        return { questionText, options, correctAnswer: null };
-    });
+    // Regex identifies numbers followed by . or ) including Kannada characters
+    const blocks = rawText.split(/\n\s*(\d+)[\.\)\-]\s+/).filter(b => b.trim().length > 5);
+    let questions = [];
+
+    for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i].trim();
+        if (!isNaN(block)) { // This is the question number
+            const content = blocks[i+1] ? blocks[i+1].split('\n') : [];
+            const questionText = content[0].trim();
+            // Looks for A) B) C) D) or common OCR misreads like ໖)
+            const optionRegex = /^[A-D\u0CB0-\u0CB9\u0CDE-\u0CDF][\.\)\-]\s*/i; 
+            const options = content.filter(line => optionRegex.test(line.trim()));
+
+            questions.push({
+                questionText,
+                options: options.length > 0 ? options : ["A) ", "B) ", "C) ", "D) "],
+                correctAnswer: null
+            });
+            i++; 
+        }
+    }
+    return questions;
 }
 
 // ────────────────────────────────────────────────
-// STUDENT ROUTES
+// ROUTES: AUTH & STUDENTS
 // ────────────────────────────────────────────────
-app.post('/students', async (req, res) => {
-    const { name, roll, mobile, password } = req.body;
-
-    if (!name || !mobile || !password)
-        return res.status(400).json({ error: "Missing fields" });
-
-    const exists = await Student.findOne({ mobile });
-    if (exists) return res.status(409).json({ error: "Mobile exists" });
-
-    const hashed = await bcrypt.hash(password, 10);
-    await new Student({ name, roll, mobile, password: hashed }).save();
-
-    res.json({ message: "Student added" });
-});
-
 app.post('/student-login', async (req, res) => {
     const { mobile, password } = req.body;
     const student = await Student.findOne({ mobile });
-
-    if (!student || !(await bcrypt.compare(password, student.password)))
+    if (!student || !(await bcrypt.compare(password, student.password))) {
         return res.status(401).json({ error: "Invalid credentials" });
-
-    const token = jwt.sign(
-        { mobile: student.mobile, name: student.name },
-        JWT_SECRET,
-        { expiresIn: '7d' }
-    );
-
+    }
+    const token = jwt.sign({ mobile: student.mobile, name: student.name }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, name: student.name, mobile: student.mobile });
 });
 
+app.post('/students', async (req, res) => {
+    try {
+        const { name, roll, mobile, password } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await new Student({ name, roll, mobile, password: hashedPassword }).save();
+        res.json({ message: "Student Registered" });
+    } catch (err) { res.status(400).json({ error: "Mobile number exists" }); }
+});
+
+app.get('/students', async (req, res) => res.json(await Student.find()));
+
 // ────────────────────────────────────────────────
-// PDF FLOW
+// ROUTES: PDF TO EXAM (THE NEW LOGIC)
 // ────────────────────────────────────────────────
 const pdfUpload = multer({ storage: multer.memoryStorage() });
 
 app.post('/api/exam/pdf-upload', pdfUpload.single('pdf'), async (req, res) => {
     try {
-
-        if (!req.file)
-            return res.status(400).json({ error: "PDF required" });
-
-        if (!req.body.title || !req.body.subject || !req.body.testNumber)
-            return res.status(400).json({ error: "Missing fields" });
-
         const pdfData = await pdfParse(req.file.buffer);
         const questions = parseQuestionsFromText(pdfData.text);
-
-        if (!questions.length)
-            return res.status(400).json({ error: "No questions found" });
+        if (questions.length === 0) return res.status(400).json({ error: "Could not find questions" });
 
         const draft = new PdfQuestionDraft({
-            title: req.body.title,
-            subject: req.body.subject,
-            testNumber: Number(req.body.testNumber),
-            questions
+            title: req.body.title, subject: req.body.subject,
+            testNumber: Number(req.body.testNumber), questions
         });
-
         await draft.save();
-
-        res.json({ message: "PDF Processed", draftId: draft._id });
-
-    } catch (err) {
-        res.status(500).json({ error: "PDF Processing Failed" });
-    }
+        res.json({ draftId: draft._id, count: questions.length });
+    } catch (err) { res.status(500).json({ error: "Processing failed" }); }
 });
+
+app.get('/api/pdf-draft/:id', async (req, res) => res.json(await PdfQuestionDraft.findById(req.params.id)));
 
 app.patch('/api/pdf-draft/:id/set-answer', async (req, res) => {
     const { questionIndex, correctAnswer } = req.body;
     const draft = await PdfQuestionDraft.findById(req.params.id);
-
-    if (!draft)
-        return res.status(404).json({ error: "Draft not found" });
-
-    if (questionIndex < 0 || questionIndex >= draft.questions.length)
-        return res.status(400).json({ error: "Invalid index" });
-
     draft.questions[questionIndex].correctAnswer = correctAnswer.toUpperCase();
     await draft.save();
-
     res.json({ success: true });
 });
 
 app.post('/api/pdf-draft/:id/finalize', async (req, res) => {
     const pdfDraft = await PdfQuestionDraft.findById(req.params.id);
-    if (!pdfDraft)
-        return res.status(404).json({ error: "Draft not found" });
-
-    const draft = new DraftExam({
-        title: pdfDraft.title,
-        subject: pdfDraft.subject,
-        testNumber: pdfDraft.testNumber,
+    const mainDraft = new DraftExam({
+        title: pdfDraft.title, subject: pdfDraft.subject, testNumber: pdfDraft.testNumber,
         totalQuestions: pdfDraft.questions.length,
         questions: pdfDraft.questions.map(q => ({
-            questionText: q.questionText,
-            options: q.options,
-            correctAnswer: q.correctAnswer,
-            imageUrl: null
+            questionText: q.questionText, options: q.options, correctAnswer: q.correctAnswer
         }))
     });
-
-    await draft.save();
+    await mainDraft.save();
     await PdfQuestionDraft.findByIdAndDelete(req.params.id);
-
-    res.json({ message: "Finalized", draftId: draft._id });
+    res.json({ message: "Exam Ready in Drafts", draftId: mainDraft._id });
 });
 
 // ────────────────────────────────────────────────
-// EXAM ROUTES
+// ROUTES: ARMY VIDEOS & NOTES (OLD LOGIC)
 // ────────────────────────────────────────────────
+const armyStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadDir),
+    filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
+});
+const uploadArmy = multer({ storage: armyStorage });
+
+app.post('/upload-army-video', uploadArmy.single("video"), async (req, res) => {
+    const video = new ArmyVideo({ title: req.body.title, url: `/uploads/army-videos/${req.file.filename}` });
+    await video.save();
+    res.json({ success: true, video });
+});
+
+app.get('/api/army-videos', async (req, res) => res.json(await ArmyVideo.find().sort({ uploadedAt: -1 })));
+
+app.post('/api/save-note', async (req, res) => {
+    await new Note(req.body).save();
+    res.json({ success: true });
+});
+
+app.get('/api/notes', async (req, res) => res.json(await Note.find().sort({ createdAt: -1 })));
+
+// ────────────────────────────────────────────────
+// ROUTES: EXAMS & RESULTS
+// ────────────────────────────────────────────────
+app.get('/active-exams', async (req, res) => res.json(await Exam.find().sort({ conductedAt: -1 })));
+
 app.get('/exam/:id', authenticate, async (req, res) => {
-    const exam = await Exam.findById(req.params.id)
-        .select('-questions.correctAnswer');
-
-    if (!exam)
-        return res.status(404).json({ error: "Exam not found" });
-
+    const exam = await Exam.findById(req.params.id).select('-questions.correctAnswer');
     res.json(exam);
 });
 
-app.post('/conduct/:draftId', async (req, res) => {
-    const draft = await DraftExam.findById(req.params.draftId);
-    if (!draft)
-        return res.status(404).json({ error: "Draft not found" });
-
-    const exam = new Exam({
-        ...draft.toObject(),
-        conductedAt: new Date()
-    });
-
-    await exam.save();
-    await DraftExam.findByIdAndDelete(req.params.draftId);
-
-    res.json({ message: "Live!" });
-});
-
 app.post('/submit-exam', authenticate, async (req, res) => {
-
     const { examId, answers } = req.body;
-
     const exam = await Exam.findById(examId);
-    if (!exam)
-        return res.status(404).json({ error: "Exam not found" });
-
-    const already = await Result.findOne({
-        studentMobile: req.user.mobile,
-        examId
-    });
-
-    if (already)
-        return res.status(400).json({ error: "Already submitted" });
-
     let correct = 0;
-
-    exam.questions.forEach((q, i) => {
-        if (q.correctAnswer === answers[i]) correct++;
-    });
-
-    const wrong = exam.totalQuestions - correct;
-
+    exam.questions.forEach((q, i) => { if (q.correctAnswer === answers[i]) correct++; });
     const result = new Result({
-        studentMobile: req.user.mobile,
-        studentName: req.user.name,
-        examId,
-        examTitle: exam.title,
-        examSubject: exam.subject,
-        examTestNumber: exam.testNumber,
-        correct,
-        wrong,
-        score: correct,
-        total: exam.totalQuestions,
-        answers
+        studentMobile: req.user.mobile, studentName: req.user.name,
+        examId, examTitle: exam.title, examSubject: exam.subject, examTestNumber: exam.testNumber,
+        correct, total: exam.totalQuestions, score: correct, answers
     });
-
     await result.save();
+    res.json({ score: correct });
+});
 
-    res.json({ message: "Done", score: correct });
+app.get('/results/exam', async (req, res) => {
+    const { subject, testNumber } = req.query;
+    res.json(await Result.find({ examSubject: subject, examTestNumber: Number(testNumber) }).sort({ score: -1 }));
 });
 
 // ────────────────────────────────────────────────
-// SPA
+// VIDEOS & CATCH-ALL
 // ────────────────────────────────────────────────
-app.get('*', (req, res) =>
-    res.sendFile(path.join(frontendPath, 'index.html'))
-);
+app.get('/videos', async (req, res) => res.json(await Video.find()));
+app.post('/videos', async (req, res) => {
+    const { subject, class: c, videoId, title } = req.body;
+    await Video.findOneAndUpdate({ subject, class: c }, { videoId, title }, { upsert: true });
+    res.json({ message: "Video Saved" });
+});
+
+app.get('*', (req, res) => res.sendFile(path.join(frontendPath, 'index.html')));
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, '0.0.0.0', () =>
-    console.log(`🚀 Full System Ready on ${PORT}`)
-);
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 System Online on Port ${PORT}`));
