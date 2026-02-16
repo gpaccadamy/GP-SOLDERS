@@ -2,193 +2,127 @@
 <html lang="kn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Bulk Exam Maker</title>
+    <title>Hybrid Bulk Exam Maker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tiro+Kannada&family=Poppins:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Tiro+Kannada&family=Poppins:wght@400;600&display=swap');
         body { font-family: 'Poppins', sans-serif; }
-        .kn { font-family: 'Tiro Kannada', serif; }
+        .kn-text { font-family: 'Tiro Kannada', serif; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen p-4 md:p-8">
-
-    <div class="max-w-5xl mx-auto">
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-8">
-            <h1 class="text-2xl font-bold text-slate-800 mb-2">🚀 AI Question Parser</h1>
-            <p class="text-slate-500 text-sm">Paste your full question paper text below. The AI will split it into separate questions.</p>
-        </div>
-
-        <div class="bg-white p-6 rounded-3xl shadow-md border border-slate-200 mb-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Exam Title</label>
-                    <input type="text" id="title" placeholder="e.g. FDA Mock Test" class="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Subject</label>
-                    <input type="text" id="subject" placeholder="e.g. General Kannada" class="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Test Number</label>
-                    <input type="number" id="testNumber" placeholder="1" class="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
-                </div>
+<body class="bg-gray-50 p-6">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white p-8 rounded-3xl shadow-lg border border-gray-200">
+            <h1 class="text-2xl font-bold mb-6">📝 Mixed Language Exam Creator (Eng + ಕನ್ನ)</h1>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <input type="text" id="title" placeholder="Exam Title" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="subject" placeholder="Subject" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="number" id="testNumber" placeholder="Test No." class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
-            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Paste Question Paper Text</label>
-            <textarea id="rawInput" rows="12" class="w-full p-4 bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl kn text-lg outline-none focus:border-blue-500 transition-all" 
-                placeholder="1. Question text here...&#10;A) Option 1&#10;B) Option 2..."></textarea>
+            <textarea id="rawInput" rows="10" class="w-full p-4 border-2 border-dashed rounded-2xl kn-text text-lg mb-4" 
+                placeholder="Paste mixed language paper here...&#10;1. Question...&#10;A) Option&#10;೧. ಪ್ರಶ್ನೆ...&#10;ಎ) ಆಯ್ಕೆ..."></textarea>
             
-            <button onclick="parseQuestions()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">
-                Parse & Preview Questions ✨
+            <button onclick="parseMixedText()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition-all">
+                Parse & Generate Cards ✨
             </button>
         </div>
 
-        <div id="previewSection" class="hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-slate-800">Review Questions (<span id="count">0</span>)</h2>
-                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">Draft Mode</span>
-            </div>
-
-            <div id="questionsContainer" class="space-y-6"></div>
-
-            <div class="mt-12 mb-20">
-                <button onclick="saveToMongo()" class="w-full bg-green-600 text-white py-6 rounded-3xl font-black text-2xl shadow-xl hover:bg-green-700 hover:scale-[1.01] transition-all">
-                    SAVE ALL TO MONGODB 💾
-                </button>
-            </div>
+        <div id="previewArea" class="mt-10 hidden">
+            <h2 class="text-xl font-bold mb-4">Preview Questions (<span id="count">0</span>)</h2>
+            <div id="cardContainer" class="space-y-6"></div>
+            
+            <button onclick="saveFinalData()" class="w-full mt-10 bg-green-600 text-white py-6 rounded-2xl font-black text-xl shadow-xl hover:scale-105 transition-all">
+                SAVE TO DATABASE 💾
+            </button>
         </div>
     </div>
 
     <script>
-        let parsedQuestions = [];
+        let parsedData = [];
 
-        function parseQuestions() {
-            const rawText = document.getElementById('rawInput').value;
-            if (!rawText.trim()) return alert("Please paste some text first!");
-
-            // Regex: Splits by numbers like 1., 2), or 10-
-            const questionBlocks = rawText.split(/\n\s*(\d+)[\.\)\-]\s+/).filter(b => b.trim().length > 5);
+        function parseMixedText() {
+            const raw = document.getElementById('rawInput').value;
+            // REGEX: Splits by English numbers (1, 2) OR Kannada numbers (೧, ೨)
+            const blocks = raw.split(/\n\s*(\d+|[\u0CE6-\u0CEF]+)[\.\)\-]\s+/).filter(b => b.trim().length > 2);
             
-            parsedQuestions = [];
-            const container = document.getElementById('questionsContainer');
+            parsedData = [];
+            const container = document.getElementById('cardContainer');
             container.innerHTML = "";
 
-            // The split creates pairs: [number, content, number, content...]
-            for (let i = 0; i < questionBlocks.length; i++) {
-                // If the block is just a number, the next block is the question content
-                if (!isNaN(questionBlocks[i])) {
-                    const qNum = questionBlocks[i];
-                    const content = questionBlocks[i+1] || "";
-                    
+            for (let i = 0; i < blocks.length; i++) {
+                if (blocks[i].match(/^(\d+|[\u0CE6-\u0CEF]+)$/)) {
+                    const num = blocks[i];
+                    const content = blocks[i+1] || "";
                     const lines = content.split('\n').map(l => l.trim()).filter(l => l);
-                    const qText = lines[0]; // First line is question
-
-                    // Identify options starting with A), B), C), D) or Kannada equivalents
-                    const optRegex = /^[A-D\u0CB0-\u0CB9][\.\)\-]\s*/i;
+                    
+                    // Regex for Options: A-D or Kannada ಎ, ಬಿ, ಸಿ, ಡಿ
+                    const optRegex = /^([A-D]|ಎ|ಬಿ|ಸಿ|ಡಿ)[\.\)\-]\s*/i;
                     const options = lines.filter(l => optRegex.test(l));
+                    const questionText = lines[0];
 
                     const qObj = {
-                        questionText: qText,
-                        options: options.length >= 2 ? options : ["A) Option 1", "B) Option 2", "C) Option 3", "D) Option 4"],
+                        questionText,
+                        options: options.length > 0 ? options : ["A) ", "B) ", "C) ", "D) "],
                         correctAnswer: ""
                     };
-
-                    parsedQuestions.push(qObj);
-                    renderQuestionCard(qObj, parsedQuestions.length - 1, qNum);
-                    i++; // Skip the content block in next iteration
+                    parsedData.push(qObj);
+                    renderCard(qObj, parsedData.length - 1, num);
+                    i++;
                 }
             }
-
-            document.getElementById('count').innerText = parsedQuestions.length;
-            document.getElementById('previewSection').classList.remove('hidden');
-            window.scrollTo({ top: document.getElementById('previewSection').offsetTop, behavior: 'smooth' });
+            document.getElementById('count').innerText = parsedData.length;
+            document.getElementById('previewArea').classList.remove('hidden');
         }
 
-        function renderQuestionCard(q, index, displayNum) {
-            const container = document.getElementById('questionsContainer');
-            const card = document.createElement('div');
-            card.className = "bg-white p-6 rounded-3xl shadow-sm border border-slate-200 hover:border-blue-300 transition-colors";
-            card.innerHTML = `
+        function renderCard(q, idx, displayNum) {
+            const div = document.createElement('div');
+            div.className = "bg-white p-6 rounded-2xl shadow-sm border border-gray-100";
+            div.innerHTML = `
                 <div class="flex gap-4">
-                    <div class="bg-blue-50 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center font-bold flex-shrink-0">
-                        ${displayNum}
-                    </div>
+                    <span class="bg-gray-100 px-3 py-1 rounded-lg font-bold">${displayNum}</span>
                     <div class="flex-grow">
-                        <textarea oninput="updateQ(${index}, this.value)" class="w-full kn font-semibold text-slate-800 bg-transparent border-none focus:ring-0 text-lg mb-4" rows="2">${q.questionText}</textarea>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                            ${q.options.map((opt, oIdx) => `
-                                <input type="text" value="${opt}" oninput="updateOpt(${index}, ${oIdx}, this.value)" 
-                                    class="kn p-3 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:bg-white outline-none">
-                            `).join('')}
+                        <p class="kn-text font-semibold text-lg mb-3">${q.questionText}</p>
+                        <div class="grid grid-cols-2 gap-2 mb-4">
+                            ${q.options.map(opt => `<div class="kn-text bg-gray-50 p-2 rounded text-sm border">${opt}</div>`).join('')}
                         </div>
-
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-slate-400 uppercase mr-2">Correct Answer:</span>
-                            ${['A', 'B', 'C', 'D'].map(choice => `
-                                <button onclick="setCorrect(${index}, '${choice}', this)" 
-                                    class="ans-btn-${index} w-10 h-10 rounded-lg border-2 border-slate-100 font-bold text-slate-400 hover:border-blue-200 transition-all">
-                                    ${choice}
-                                </button>
+                        <div class="flex gap-2 items-center">
+                            <span class="text-xs font-bold text-gray-400">SELECT CORRECT:</span>
+                            ${['A', 'B', 'C', 'D'].map(ans => `
+                                <button onclick="setAns(${idx}, '${ans}', this)" class="ans-btn-${idx} w-10 h-10 border rounded-lg font-bold hover:bg-blue-50">${ans}</button>
                             `).join('')}
                         </div>
                     </div>
                 </div>
             `;
-            container.appendChild(card);
+            document.getElementById('cardContainer').appendChild(div);
         }
 
-        // Live Update Functions
-        function updateQ(idx, val) { parsedQuestions[idx].questionText = val; }
-        function updateOpt(qIdx, oIdx, val) { parsedQuestions[qIdx].options[oIdx] = val; }
-        
-        function setCorrect(qIdx, val, btn) {
-            parsedQuestions[qIdx].correctAnswer = val;
-            const buttons = document.querySelectorAll(`.ans-btn-${qIdx}`);
-            buttons.forEach(b => {
-                b.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-                b.classList.add('text-slate-400', 'border-slate-100');
-            });
-            btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-            btn.classList.remove('text-slate-400', 'border-slate-100');
+        function setAns(qIdx, val, btn) {
+            parsedData[qIdx].correctAnswer = val;
+            document.querySelectorAll(`.ans-btn-${qIdx}`).forEach(b => b.className = `ans-btn-${qIdx} w-10 h-10 border rounded-lg font-bold`);
+            btn.className = `ans-btn-${qIdx} w-10 h-10 bg-blue-600 text-white rounded-lg font-bold`;
         }
 
-        async function saveToMongo() {
-            const title = document.getElementById('title').value;
-            const subject = document.getElementById('subject').value;
-            const testNumber = document.getElementById('testNumber').value;
-
-            if (!title || !subject) return alert("Please fill Exam Title and Subject!");
-
-            // Final Validation: Check if any correct answer is missing
-            const incomplete = parsedQuestions.some(q => !q.correctAnswer);
-            if (incomplete) return alert("Please select correct answers for all questions!");
-
+        async function saveFinalData() {
             const payload = {
-                title,
-                subject,
-                testNumber: parseInt(testNumber),
-                questions: parsedQuestions
+                title: document.getElementById('title').value,
+                subject: document.getElementById('subject').value,
+                testNumber: document.getElementById('testNumber').value,
+                questions: parsedData
             };
 
-            try {
-                const res = await fetch('/api/save-bulk-exam', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+            if (parsedData.some(q => !q.correctAnswer)) return alert("Please select all correct answers!");
 
-                const data = await res.json();
-                if (data.success) {
-                    alert("🎉 Success! Exam saved to MongoDB Drafts.");
-                    window.location.reload();
-                } else {
-                    alert("❌ Error: " + data.error);
-                }
-            } catch (err) {
-                alert("❌ Connection Failed. Make sure your server is running.");
-            }
+            const res = await fetch('/api/save-bulk-exam', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) { alert("🎉 Saved Successfully!"); window.location.reload(); }
+            else { alert("❌ Save failed. Check Console."); }
         }
     </script>
 </body>
