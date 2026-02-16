@@ -2,118 +2,121 @@
 <html lang="kn">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Create Exam</title>
+    <title>Admin - Bulk Paste & Edit</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>@import url('https://fonts.googleapis.com/css2?family=Tiro+Kannada&display=swap'); .kn { font-family: 'Tiro Kannada', serif; }</style>
 </head>
-<body class="bg-gray-50 p-6">
-    <div class="max-w-5xl mx-auto bg-white p-8 rounded-3xl shadow-lg">
-        <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">Bulk Exam Creator (Copy-Paste)</h1>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white p-8 rounded-3xl shadow-xl mb-6">
+            <h1 class="text-3xl font-bold mb-4">Paste & Split Exam Maker</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <input type="text" id="title" placeholder="Exam Title" class="border p-4 rounded-xl outline-none">
+                <input type="text" id="subject" placeholder="Subject" class="border p-4 rounded-xl outline-none">
+                <input type="number" id="testNumber" placeholder="Test Number" class="border p-4 rounded-xl outline-none">
+            </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <input type="text" id="title" placeholder="Exam Title" class="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
-            <input type="text" id="subject" placeholder="Subject" class="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
-            <input type="number" id="testNumber" placeholder="Test No" class="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
+            <textarea id="rawInput" rows="10" class="w-full border-2 border-dashed p-4 rounded-2xl kn mb-4" 
+                placeholder="Paste full text here... e.g. 1. Question... A) Option B) Option..."></textarea>
+            
+            <button onclick="splitQuestions()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700">
+                Split Questions Below 👇
+            </button>
         </div>
 
-        <div class="mb-6">
-            <label class="block font-bold mb-2 text-gray-600">Paste Question Paper Content Here:</label>
-            <textarea id="rawInput" rows="10" class="w-full border-2 border-dashed border-gray-300 p-4 rounded-2xl kn outline-none focus:border-blue-500" placeholder="1. Question text... A) Option B) Option..."></textarea>
-        </div>
-
-        <button onclick="processText()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition">
-            Process & Separate Questions
-        </button>
-
-        <div id="review-section" class="hidden mt-10">
-            <h2 class="text-2xl font-bold text-orange-600 mb-6">Step 2: Review & Set Correct Answers</h2>
-            <div id="questions-list" class="space-y-6"></div>
-            <button onclick="saveBulk()" class="mt-10 w-full bg-green-600 text-white py-5 rounded-2xl font-bold text-2xl shadow-lg hover:bg-green-700 transition">
-                Publish to Drafts
+        <div id="edit-area" class="hidden">
+            <h2 class="text-xl font-bold mb-4 text-gray-700">Review & Edit Questions:</h2>
+            <div id="questions-list" class="space-y-4"></div>
+            
+            <button onclick="saveToMongo()" class="mt-10 w-full bg-green-600 text-white py-5 rounded-2xl font-black text-2xl shadow-lg">
+                SAVE ALL TO MONGODB
             </button>
         </div>
     </div>
 
     <script>
-        let extractedQuestions = [];
+        let questionData = [];
 
-        function processText() {
+        function splitQuestions() {
             const text = document.getElementById('rawInput').value;
-            if (!text.trim()) return alert("Please paste some text first!");
-
-            // Regex: Finds numbers followed by . or ) including Kannada support
+            // Split by number patterns like 1. or 2.
             const blocks = text.split(/\n\s*(\d+)[\.\)\-]\s+/).filter(b => b.trim().length > 5);
             
-            extractedQuestions = [];
+            questionData = [];
             const list = document.getElementById('questions-list');
             list.innerHTML = "";
 
             for (let i = 0; i < blocks.length; i++) {
                 if (!isNaN(blocks[i])) {
-                    const number = blocks[i];
+                    const qNum = blocks[i];
                     const content = blocks[i+1] || "";
                     const lines = content.split('\n').map(l => l.trim()).filter(l => l);
                     
                     const qText = lines[0];
-                    // Detect options A) B) C) D) or Kannada ໖) ໖)
+                    // Regex to find options like A), B) or Kannada variants
                     const optRegex = /^[A-D\u0CB0-\u0CB9\u0CDE-\u0CDF][\.\)\-]\s*/i;
                     const options = lines.filter(l => optRegex.test(l));
 
-                    extractedQuestions.push({
-                        questionText: qText,
-                        options: options.length >= 2 ? options : ["A) ", "B) ", "C) ", "D) "],
-                        correctAnswer: null
-                    });
+                    const qObj = { questionText: qText, options: options, correctAnswer: "" };
+                    questionData.push(qObj);
 
-                    const qDiv = document.createElement('div');
-                    qDiv.className = "bg-gray-50 p-6 rounded-2xl border border-gray-200 shadow-sm";
-                    qDiv.innerHTML = `
-                        <p class="font-bold text-lg mb-3 kn">${number}. ${qText}</p>
-                        <div class="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-4 kn">
-                            ${options.map(o => `<span>${o}</span>`).join('')}
+                    const qCard = document.createElement('div');
+                    qCard.className = "bg-white p-6 rounded-2xl shadow-md border-l-8 border-blue-500";
+                    qCard.innerHTML = `
+                        <div class="mb-2">
+                            <span class="font-bold text-blue-600">Question ${qNum}:</span>
+                            <textarea oninput="updateQ(${questionData.length-1}, this.value)" class="w-full kn p-2 border rounded-lg mt-1">${qText}</textarea>
                         </div>
-                        <div class="flex gap-2">
-                            ${['A','B','C','D'].map(ans => `
-                                <button onclick="setAns(${extractedQuestions.length-1}, '${ans}', this)" 
-                                    class="px-4 py-2 border rounded-lg bg-white text-blue-600 font-bold hover:bg-blue-600 hover:text-white transition">
-                                    Set ${ans}
+                        <div class="grid grid-cols-2 gap-2 mb-4">
+                            ${qObj.options.map((opt, idx) => `
+                                <input type="text" value="${opt}" class="border p-2 rounded kn text-sm" 
+                                    oninput="updateOpt(${questionData.length-1}, ${idx}, this.value)">
+                            `).join('')}
+                        </div>
+                        <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
+                            <span class="text-sm font-bold">Select Answer:</span>
+                            ${['A','B','C','D'].map(l => `
+                                <button onclick="setAns(${questionData.length-1}, '${l}', this)" 
+                                    class="w-10 h-10 border-2 rounded-lg font-bold hover:bg-blue-500 hover:text-white transition">
+                                    ${l}
                                 </button>
                             `).join('')}
                         </div>
                     `;
-                    list.appendChild(qDiv);
+                    list.appendChild(qCard);
                     i++;
                 }
             }
-            document.getElementById('review-section').classList.remove('hidden');
+            document.getElementById('edit-area').classList.remove('hidden');
         }
 
-        function setAns(qIdx, ans, btn) {
-            extractedQuestions[qIdx].correctAnswer = ans;
-            btn.parentElement.querySelectorAll('button').forEach(b => b.className = "px-4 py-2 border rounded-lg bg-white text-blue-600 font-bold");
-            btn.className = "px-4 py-2 border rounded-lg bg-blue-600 text-white font-bold shadow-md";
+        // Live Update Functions
+        function updateQ(idx, val) { questionData[idx].questionText = val; }
+        function updateOpt(qIdx, oIdx, val) { questionData[idx].options[oIdx] = val; }
+        
+        function setAns(qIdx, letter, btn) {
+            questionData[qIdx].correctAnswer = letter;
+            btn.parentElement.querySelectorAll('button').forEach(b => b.className = "w-10 h-10 border-2 rounded-lg font-bold");
+            btn.className = "w-10 h-10 bg-blue-600 text-white rounded-lg font-bold";
         }
 
-        async function saveBulk() {
-            const data = {
+        async function saveToMongo() {
+            const payload = {
                 title: document.getElementById('title').value,
                 subject: document.getElementById('subject').value,
                 testNumber: document.getElementById('testNumber').value,
-                questions: extractedQuestions
+                questions: questionData
             };
-
-            if (!data.title || extractedQuestions.some(q => !q.correctAnswer)) {
-                return alert("Please enter title and select answers for ALL questions!");
-            }
 
             const res = await fetch('/api/save-bulk-exam', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify(payload)
             });
 
             if (res.ok) {
-                alert("Saved to Drafts! You can now make it live from your Admin Dashboard.");
+                alert("🎉 Successfully Saved to MongoDB Drafts!");
                 window.location.reload();
             }
         }
