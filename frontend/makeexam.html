@@ -62,8 +62,32 @@
       font-weight: 700;
       letter-spacing: 1px;
     }
+    /* ── License Counter ── */
+    .license-counter {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: default;
+      transition: border-color 0.3s;
+    }
+    .license-counter.ok { border-color: rgba(63,185,80,0.4); }
+    .license-counter.warn { border-color: rgba(210,153,34,0.5); }
+    .license-counter.blocked { border-color: rgba(218,54,51,0.5); background: rgba(218,54,51,0.07); }
+    .lc-icon { font-size: 0.85rem; }
+    .lc-text { display: flex; flex-direction: column; line-height: 1.2; }
+    .lc-num { font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700; }
+    .lc-num.ok { color: #3fb950; }
+    .lc-num.warn { color: var(--warning); }
+    .lc-num.blocked { color: #f85149; animation: blink 1s infinite; }
+    .lc-label { font-size: 0.62rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; }
+
     .status-badge {
-      margin-left: auto;
       padding: 4px 12px;
       border-radius: 20px;
       font-size: 0.75rem;
@@ -462,9 +486,20 @@
 <div class="header">
   <a href="admin.html" class="header-back"><i class="fas fa-arrow-left"></i></a>
   <h1><i class="fas fa-calendar-alt" style="color:var(--scheduled);margin-right:6px;"></i>EXAM SCHEDULER</h1>
-  <div class="status-badge" id="statusBadge">
-    <div class="pulse-dot"></div>
-    <span id="statusBadgeText">LIVE</span>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+    <!-- License Counter -->
+    <div class="license-counter ok" id="licenseCounter" title="Exams remaining / total allowed">
+      <i class="fas fa-ticket-alt lc-icon" style="color:#3fb950;"></i>
+      <div class="lc-text">
+        <span class="lc-num ok" id="lcNum">—</span>
+        <span class="lc-label">Left</span>
+      </div>
+    </div>
+    <!-- Live/Scheduled Badge -->
+    <div class="status-badge" id="statusBadge">
+      <div class="pulse-dot"></div>
+      <span id="statusBadgeText">LIVE</span>
+    </div>
   </div>
 </div>
 
@@ -587,11 +622,47 @@
   window.onload = () => {
     loadDrafts();
     checkCurrentExam();
+    loadLicense();
     // Set min datetime to now
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     document.getElementById('scheduleDateTime').min = now.toISOString().slice(0, 16);
   };
+
+  // ── Load License Counter ──
+  async function loadLicense() {
+    try {
+      const res = await fetch(`${API}/api/license-status`);
+      const data = await res.json();
+      const { totalAllowed, totalConducted, remaining } = data;
+      const pct = totalAllowed > 0 ? (totalConducted / totalAllowed) * 100 : 0;
+
+      const counter = document.getElementById('licenseCounter');
+      const numEl = document.getElementById('lcNum');
+      const icon = counter.querySelector('.lc-icon');
+
+      numEl.textContent = remaining + '/' + totalAllowed;
+
+      if (remaining <= 0) {
+        counter.className = 'license-counter blocked';
+        numEl.className = 'lc-num blocked';
+        icon.style.color = '#f85149';
+        counter.title = '⛔ Exam limit reached! Contact company to increase limit.';
+      } else if (pct >= 80) {
+        counter.className = 'license-counter warn';
+        numEl.className = 'lc-num warn';
+        icon.style.color = 'var(--warning)';
+        counter.title = `⚠️ Only ${remaining} exams remaining out of ${totalAllowed}`;
+      } else {
+        counter.className = 'license-counter ok';
+        numEl.className = 'lc-num ok';
+        icon.style.color = '#3fb950';
+        counter.title = `✅ ${remaining} exams remaining out of ${totalAllowed} allowed`;
+      }
+    } catch {
+      document.getElementById('lcNum').textContent = '—';
+    }
+  }
 
   // ── Alert ──
   function showAlert(msg, type = 'info') {
@@ -970,6 +1041,7 @@
         document.getElementById('scheduleDuration').value = '';
         loadDrafts();
         setTimeout(checkCurrentExam, 500);
+        loadLicense();
       } else {
         showAlert(data.error || 'Scheduling failed', 'error');
       }
