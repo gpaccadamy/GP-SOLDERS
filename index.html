@@ -4,114 +4,104 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
   <title>GP Soldier Academy</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e40af">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GP Academy">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
+    *, *::before, *::after {
+      margin: 0; padding: 0;
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
 
-    html, body {
-      width: 100%;
+    html {
       height: 100%;
-      overflow: hidden;
-      position: fixed;
-      background: #020817;
+      height: -webkit-fill-available;
     }
 
     body {
-      background: radial-gradient(circle at 20% 30%, #0f172a 0%, #020817 100%);
+      width: 100vw;
+      height: 100vh;
+      height: -webkit-fill-available;
+      overflow: hidden;
+      background: #020817;
       color: #e2e8f0;
       font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
+    /* Particles */
     .bg-particles {
       position: fixed;
       inset: 0;
       pointer-events: none;
-      z-index: 1;
+      z-index: 0;
+      background: radial-gradient(circle at 20% 30%, #0f172a 0%, #020817 100%);
     }
 
     .particle {
       position: absolute;
-      background: rgba(59, 130, 246, 0.4);
+      background: rgba(59, 130, 246, 0.35);
       border-radius: 50%;
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
       animation: float 18s infinite ease-in-out;
-      will-change: transform;
     }
 
     @keyframes float {
-      0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
-      25%       { transform: translateY(-60px) translateX(40px) rotate(15deg); }
-      50%       { transform: translateY(-120px) translateX(-30px) rotate(-10deg); }
-      75%       { transform: translateY(-40px) translateX(50px) rotate(20deg); }
+      0%, 100% { transform: translateY(0) translateX(0); }
+      33%       { transform: translateY(-50px) translateX(30px); }
+      66%       { transform: translateY(-90px) translateX(-20px); }
     }
 
-    .welcome-screen {
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(15,23,42,0.94), rgba(2,8,23,0.97));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 200;
-      opacity: 0;
-      animation: fadeInBg 0.8s forwards 0.2s;
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    }
-
-    @keyframes fadeInBg {
-      to { opacity: 1; }
-    }
-
-    .welcome-content {
+    /* Splash content */
+    .splash {
+      position: relative;
+      z-index: 10;
       text-align: center;
-      transform: translateY(120px);
-      opacity: 0;
-      animation: popupFromBottom 0.9s cubic-bezier(0.23, 1, 0.32, 1) forwards 0.4s;
-      padding: 24px 20px;
+      padding: 32px 24px;
       width: 100%;
-      max-width: 420px;
+      max-width: 360px;
+      opacity: 0;
+      transform: translateY(40px);
+      animation: rise 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards 0.3s;
     }
 
-    @keyframes popupFromBottom {
-      to { transform: translateY(0); opacity: 1; }
+    @keyframes rise {
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .logo-ring {
-      width: 90px;
-      height: 90px;
+    /* Logo */
+    .logo-wrap {
+      width: 88px; height: 88px;
       border-radius: 50%;
       border: 3px solid rgba(96,165,250,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      background: rgba(15,23,42,0.8);
-      box-shadow: 0 0 30px rgba(96,165,250,0.3);
-      animation: ring-pulse 2.5s ease-in-out infinite;
+      margin: 0 auto 22px;
+      background: rgba(15,23,42,0.9);
+      display: flex; align-items: center; justify-content: center;
+      animation: pulse 2.5s ease-in-out infinite;
+      overflow: hidden;
     }
-    @keyframes ring-pulse {
+    @keyframes pulse {
       0%,100% { box-shadow: 0 0 20px rgba(96,165,250,0.3); }
-      50%      { box-shadow: 0 0 50px rgba(96,165,250,0.6); }
+      50%      { box-shadow: 0 0 45px rgba(96,165,250,0.65); }
     }
-    .logo-ring img {
-      width: 76px;
-      height: 76px;
-      border-radius: 50%;
-      object-fit: cover;
+    .logo-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover; border-radius: 50%;
     }
-    .logo-ring .logo-fallback {
-      font-size: 2.8rem;
-    }
+    .logo-fallback { font-size: 2.6rem; }
 
+    /* Title */
     h1 {
-      font-size: clamp(2rem, 10vw, 3.8rem);
+      font-size: clamp(1.9rem, 9vw, 3.2rem);
       font-weight: 800;
-      letter-spacing: -1px;
       line-height: 1.1;
+      letter-spacing: -0.5px;
       background: linear-gradient(90deg, #60a5fa, #a5b4fc, #c084fc);
       -webkit-background-clip: text;
       background-clip: text;
@@ -119,83 +109,60 @@
       margin-bottom: 10px;
       animation: glow 2.5s ease-in-out infinite alternate;
     }
-
     @keyframes glow {
-      from { text-shadow: 0 0 20px rgba(96,165,250,0.4); }
-      to   { text-shadow: 0 0 50px rgba(96,165,250,0.8), 0 0 80px rgba(165,180,252,0.5); }
+      from { filter: drop-shadow(0 0 8px rgba(96,165,250,0.4)); }
+      to   { filter: drop-shadow(0 0 20px rgba(96,165,250,0.8)); }
     }
 
     .subtitle {
-      font-size: clamp(0.85rem, 3.5vw, 1.1rem);
+      font-size: clamp(0.75rem, 3.2vw, 0.95rem);
       color: #94a3b8;
-      margin-bottom: 6px;
-      letter-spacing: 2px;
+      letter-spacing: 2.5px;
       text-transform: uppercase;
+      margin-bottom: 6px;
     }
 
     .tagline {
-      font-size: clamp(0.75rem, 3vw, 0.95rem);
+      font-size: clamp(0.72rem, 2.8vw, 0.88rem);
       color: #475569;
-      margin-bottom: 28px;
       font-style: italic;
+      margin-bottom: 30px;
     }
 
-    .loading-bar {
-      width: 200px;
-      height: 4px;
-      background: rgba(71,85,105,0.4);
-      border-radius: 10px;
-      overflow: hidden;
-      margin: 0 auto 12px;
+    /* Progress bar */
+    .bar-wrap {
+      width: 180px; height: 4px;
+      background: rgba(71,85,105,0.35);
+      border-radius: 10px; overflow: hidden;
+      margin: 0 auto 10px;
     }
-
-    .bar {
-      width: 0%;
+    .bar-fill {
       height: 100%;
-      background: linear-gradient(90deg, #60a5fa, #a5b4fc);
+      width: 0%;
+      background: linear-gradient(90deg, #3b82f6, #a5b4fc);
       border-radius: 10px;
-      animation: load 2.2s ease-in-out forwards 0.7s;
+      animation: fill 3s ease-in-out forwards 0.5s;
     }
+    @keyframes fill { to { width: 100%; } }
 
-    @keyframes load {
-      to { width: 100%; }
-    }
-
-    .loading-text {
-      font-size: 0.72rem;
+    .loading-txt {
+      font-size: 0.68rem;
       color: #475569;
-      letter-spacing: 1.5px;
+      letter-spacing: 2px;
       text-transform: uppercase;
       animation: blink 1.4s ease-in-out infinite;
     }
     @keyframes blink {
-      0%,100% { opacity: 0.4; }
+      0%,100% { opacity: 0.35; }
       50%      { opacity: 1; }
     }
 
+    /* Fade out */
     .fade-out {
-      animation: fadeOut 0.7s forwards;
-      pointer-events: none;
+      animation: fadeOut 0.6s ease-in forwards;
     }
-
     @keyframes fadeOut {
-      to { opacity: 0; transform: scale(1.015); }
-    }
-
-    /* ── IFRAME — fills entire screen, no scroll ── */
-    #app-frame {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      /* iOS safe area support */
-      height: -webkit-fill-available;
-      border: none;
-      display: none;
-      z-index: 10;
-      background: #020817;
-      overflow: hidden;
+      to { opacity: 0; transform: scale(1.01); }
     }
   </style>
 </head>
@@ -203,66 +170,43 @@
 
   <div class="bg-particles" id="particles"></div>
 
-  <div class="welcome-screen" id="welcome">
-    <div class="welcome-content">
-
-      <div class="logo-ring">
-        <img src="gplogo.jpg" alt="GP Soldiers"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-        <span class="logo-fallback" style="display:none;">🎖️</span>
-      </div>
-
-      <h1>GP SOLDIER<br>ACADEMY</h1>
-      <div class="subtitle">Discipline &nbsp;•&nbsp; Courage &nbsp;•&nbsp; Victory</div>
-      <div class="tagline">ನಮ್ಮ ರಾಷ್ಟ್ರ ಧ್ವಜ ಹಾರುತ್ತಿರುವವರೆಗೂ</div>
-
-      <div class="loading-bar">
-        <div class="bar"></div>
-      </div>
-      <div class="loading-text">Loading...</div>
-
+  <div class="splash" id="splash">
+    <div class="logo-wrap">
+      <img src="gplogo.jpg" alt="GP Soldiers"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <span class="logo-fallback" style="display:none;">🎖️</span>
     </div>
-  </div>
 
-  <iframe
-    id="app-frame"
-    src="https://academy-student-portal.onrender.com"
-    allowfullscreen
-    scrolling="yes"
-  ></iframe>
+    <h1>GP SOLDIER<br>ACADEMY</h1>
+    <div class="subtitle">Discipline &nbsp;•&nbsp; Courage &nbsp;•&nbsp; Victory</div>
+    <div class="tagline">ನಮ್ಮ ರಾಷ್ಟ್ರ ಧ್ವಜ ಹಾರುತ್ತಿರುವವರೆಗೂ</div>
+
+    <div class="bar-wrap"><div class="bar-fill"></div></div>
+    <div class="loading-txt">Loading...</div>
+  </div>
 
 <script>
   // ── Particles ──
   const pc = document.getElementById('particles');
-  for (let i = 0; i < 14; i++) {
+  for (let i = 0; i < 12; i++) {
     const p = document.createElement('div');
     p.className = 'particle';
-    const size = Math.random() * 3 + 2;
-    p.style.cssText = `
-      width:${size}px; height:${size}px;
-      left:${Math.random()*100}vw;
-      top:${Math.random()*120}vh;
-      animation-duration:${Math.random()*10+12}s;
-      animation-delay:${Math.random()*-12}s;
-    `;
+    const s = Math.random() * 3 + 2;
+    p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}vw;top:${Math.random()*100}vh;animation-duration:${Math.random()*8+14}s;animation-delay:${Math.random()*-10}s;`;
     pc.appendChild(p);
   }
 
-  // ── Splash → App ──
-  const DISPLAY_DURATION = 4000;
+  // ── Wake up the backend while splash shows ──
+  fetch('https://academy-backend-e02j.onrender.com/api/license-status').catch(()=>{});
 
+  // ── After splash → redirect directly to portal ──
+  // Direct redirect = portal fills 100% of screen natively, no iframe gap
   setTimeout(() => {
-    const welcome = document.getElementById('welcome');
-    welcome.classList.add('fade-out');
-
+    document.getElementById('splash').classList.add('fade-out');
     setTimeout(() => {
-      welcome.style.display = 'none';
-      const frame = document.getElementById('app-frame');
-      frame.style.display = 'block';
-      setTimeout(() => { pc.style.display = 'none'; }, 800);
-    }, 700);
-
-  }, DISPLAY_DURATION);
+      window.location.replace('https://academy-student-portal.onrender.com');
+    }, 600);
+  }, 3800);
 </script>
 </body>
 </html>
