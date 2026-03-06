@@ -2,271 +2,368 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GP Soldiers – Exam Results</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>My Results - GP Soldiers</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" href="data:,">
   <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f2f4f8;
-      margin: 0; padding: 0;
-      color: #333;
+    @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+    :root {
+      --primary: #2563eb;
+      --accent: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --bg: #f0f9ff;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
     }
-    .top-header {
-      background: #111827;
-      padding: 12px;
-      text-align: center;
-      color: #ffffff;
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: 1px;
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .app { max-width: 480px; margin: 0 auto; background: var(--card); min-height: 100vh; box-shadow: 0 0 30px rgba(0,0,0,0.08); }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── LOGIN ── */
+    .login-hero {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      padding: 50px 24px 36px; text-align: center; color: white;
     }
-    header {
+    .logo-wrap { width: 74px; height: 74px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.4); overflow: hidden; margin: 0 auto 14px; }
+    .logo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .login-hero h1 { font-family: 'Rajdhani', sans-serif; font-size: 1.5rem; font-weight: 700; letter-spacing: 1px; }
+    .login-hero p { font-size: 0.85rem; opacity: 0.75; margin-top: 4px; }
+
+    .login-body { padding: 26px 22px; }
+    .login-body h2 { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 18px; text-align: center; }
+
+    .auth-alert { display: none; padding: 10px 14px; border-radius: 8px; font-size: 0.86rem; margin-bottom: 12px; align-items: center; gap: 8px; }
+    .auth-alert.show { display: flex; }
+    .auth-alert.error { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+
+    .inp-group { margin-bottom: 13px; }
+    .inp-group label { display: block; font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 5px; }
+    .inp-group input {
+      width: 100%; padding: 12px 15px;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 1rem; font-family: inherit; color: var(--text);
+      background: #f8fafc; outline: none; transition: border-color 0.2s;
+    }
+    .inp-group input:focus { border-color: var(--primary); background: white; }
+
+    .btn-login {
+      width: 100%; padding: 13px;
       background: linear-gradient(135deg, #2563eb, #3b82f6);
-      padding: 18px;
-      text-align: center;
-      color: white;
-      font-size: 22px;
-      font-weight: 600;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+      color: white; border: none; border-radius: 12px;
+      font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.3); transition: all 0.2s;
     }
-    .container {
-      padding: 15px;
-      max-width: 600px;
-      margin: auto;
+    .btn-login:hover { transform: translateY(-1px); }
+    .btn-login:disabled { opacity: 0.6; transform: none; }
+
+    .back-link { text-align: center; margin-top: 14px; font-size: 0.88rem; }
+    .back-link a { color: var(--primary); font-weight: 600; text-decoration: none; }
+
+    /* ── RESULTS PAGE ── */
+    .results-header {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      color: white; padding: 20px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
     }
-    .settings-card {
+    .results-header h2 { font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700; }
+    .student-chip {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: 0.78rem; font-weight: 600;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .btn-logout {
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+      color: white; border-radius: 8px; padding: 6px 12px;
+      font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+
+    /* Summary Bar */
+    .summary-bar {
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 18px;
+      display: flex; gap: 10px;
+    }
+    .sum-box {
+      flex: 1; background: white; border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px; text-align: center;
+    }
+    .sum-num { font-family: 'Rajdhani', sans-serif; font-size: 1.5rem; font-weight: 700; }
+    .sum-box.exams .sum-num { color: var(--primary); }
+    .sum-box.avg .sum-num { color: var(--accent); }
+    .sum-box.best .sum-num { color: var(--warning); }
+    .sum-lbl { font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
+
+    /* Results List */
+    .results-body { padding: 16px; }
+    .results-body h3 { font-size: 0.85rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+
+    .result-card {
       background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
       padding: 16px;
-      border-radius: 14px;
-      margin-bottom: 15px;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      transition: box-shadow 0.2s;
     }
-    .settings-title {
-      font-size: 15px;
-      color: #555;
-      margin-bottom: 5px;
-      font-weight: 600;
+    .result-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+    .rc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+    .rc-title { font-weight: 700; font-size: 0.98rem; color: var(--text); margin-bottom: 3px; }
+    .rc-meta { font-size: 0.76rem; color: var(--muted); }
+
+    .score-badge {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      color: white; border-radius: 12px; padding: 8px 14px;
+      text-align: center; min-width: 64px; flex-shrink: 0;
     }
-    select, button {
-      width: 100%;
-      padding: 14px;
-      font-size: 16px;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      background: #f9fafb;
+    .score-badge .score-val { font-family: 'Rajdhani', sans-serif; font-size: 1.4rem; font-weight: 700; line-height: 1; }
+    .score-badge .score-lbl { font-size: 0.62rem; opacity: 0.8; margin-top: 1px; }
+    .score-badge.excellent { background: linear-gradient(135deg, #059669, #10b981); }
+    .score-badge.good { background: linear-gradient(135deg, #d97706, #f59e0b); color: #000; }
+    .score-badge.poor { background: linear-gradient(135deg, #dc2626, #ef4444); }
+
+    .rc-stats { display: flex; gap: 8px; }
+    .rc-stat {
+      flex: 1; background: #f8fafc; border-radius: 8px;
+      padding: 8px; text-align: center;
     }
-    .btn {
-      background: #2563eb;
-      color: white;
-      border: none;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .download-btn {
-      width: 100%;
-      padding: 15px;
-      background: #0E9F6E;
-      color: white;
-      border: none;
-      border-radius: 14px;
-      font-size: 18px;
-      margin-top: 20px;
-      font-weight: 700;
-      cursor: pointer;
-      display: none;
-    }
-    .exam-info {
-      text-align: center;
-      font-size: 18px;
-      font-weight: 600;
-      color: #2563eb;
-      margin: 18px 0;
-    }
-    .total-students {
-      text-align: center;
-      font-size: 16px;
-      font-weight: 600;
-      margin: 10px 0;
-      color: #444;
-    }
-    .table-container {
-      background: white;
-      padding: 10px;
-      border-radius: 14px;
-      margin-top: 15px;
-      box-shadow: 0 5px 18px rgba(0,0,0,0.15);
-      overflow-x: auto;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 320px;
-    }
-    th, td {
-      padding: 12px 8px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-      font-size: 15px;
-    }
-    th {
-      background: #667eea;
-      color: white;
-    }
-    .error-msg {
-      color: #dc2626;
-      text-align: center;
-      padding: 20px;
-      font-weight: bold;
-    }
+    .rc-stat-num { font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; font-weight: 700; }
+    .rc-stat.c .rc-stat-num { color: var(--accent); }
+    .rc-stat.w .rc-stat-num { color: var(--danger); }
+    .rc-stat.s .rc-stat-num { color: var(--warning); }
+    .rc-stat-lbl { font-size: 0.66rem; color: var(--muted); }
+
+    .rc-date { font-size: 0.72rem; color: var(--muted); margin-top: 10px; display: flex; align-items: center; gap: 4px; }
+
+    /* Percent bar */
+    .pct-bar { height: 5px; background: var(--border); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+    .pct-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+
+    /* Empty & Loading */
+    .empty-state { text-align: center; padding: 50px 24px; }
+    .empty-state .ei { font-size: 3.5rem; margin-bottom: 14px; opacity: 0.3; }
+    .empty-state h3 { font-size: 1.1rem; color: var(--text); margin-bottom: 6px; }
+    .empty-state p { font-size: 0.88rem; color: var(--muted); }
+
+    .loader { text-align: center; padding: 40px; color: var(--muted); }
+    .spinner { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
+<div class="app">
 
-<div class="top-header">GP SOLDIERS ACADEMY</div>
-<header>Exam Results</header>
-
-<div class="container">
-  <div class="settings-card">
-    <div class="settings-title">Select Subject</div>
-    <select id="subjectSelect">
-      <option value="">Choose subject</option>
-      <option value="english">English</option>
-      <option value="kannada">Kannada</option>
-      <option value="gk">GK</option>
-      <option value="maths">Maths</option>
-    </select>
+  <!-- LOGIN SCREEN -->
+  <div id="sLogin" class="screen active">
+    <div class="login-hero">
+      <div class="logo-wrap"><img src="gplogo.jpg" alt="GP Soldiers"></div>
+      <h1>GP SOLDIERS ACADEMY</h1>
+      <p>View your exam results</p>
+    </div>
+    <div class="login-body">
+      <h2><i class="fas fa-chart-bar" style="color:var(--primary);margin-right:7px;"></i>My Results</h2>
+      <div class="auth-alert" id="loginAlert"></div>
+      <div class="inp-group">
+        <label>Mobile Number</label>
+        <input type="tel" id="loginMobile" placeholder="Enter mobile number" inputmode="numeric">
+      </div>
+      <div class="inp-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Enter password">
+      </div>
+      <button class="btn-login" id="loginBtn" onclick="doLogin()">
+        <i class="fas fa-sign-in-alt"></i> Login to View Results
+      </button>
+      <div class="back-link"><a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a></div>
+    </div>
   </div>
 
-  <div class="settings-card">
-    <div class="settings-title">Select Test Number</div>
-    <select id="testNumberSelect"></select>
+  <!-- RESULTS SCREEN -->
+  <div id="sResults" class="screen">
+    <div class="results-header">
+      <div>
+        <h2><i class="fas fa-trophy" style="margin-right:7px;color:#fbbf24;"></i>My Results</h2>
+        <div class="student-chip" style="margin-top:5px;"><i class="fas fa-user"></i><span id="studentNameChip">Student</span></div>
+      </div>
+      <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-bar" id="summaryBar" style="display:none;">
+      <div class="sum-box exams">
+        <div class="sum-num" id="sumExams">0</div>
+        <div class="sum-lbl">Exams</div>
+      </div>
+      <div class="sum-box avg">
+        <div class="sum-num" id="sumAvg">0%</div>
+        <div class="sum-lbl">Avg Score</div>
+      </div>
+      <div class="sum-box best">
+        <div class="sum-num" id="sumBest">0%</div>
+        <div class="sum-lbl">Best Score</div>
+      </div>
+    </div>
+
+    <div class="results-body">
+      <div class="loader" id="loader"><div class="spinner"></div><p>Loading results...</p></div>
+      <div id="resultsList"></div>
+    </div>
   </div>
 
-  <button class="btn" onclick="loadResults()">Show Results</button>
-
-  <div id="examInfo" class="exam-info" style="display:none;"></div>
-  <div id="totalStudents" class="total-students"></div>
-
-  <div class="table-container" id="resultBox">
-    <table>
-      <thead>
-        <tr>
-          <th style="width:60px;">Rank</th>
-          <th style="width:45%;">Name</th>
-          <th style="width:25%;">Roll</th>
-          <th style="width:20%;">Score</th>
-        </tr>
-      </thead>
-      <tbody id="resultsBody">
-        <tr><td colspan="4" style="text-align:center;">Select subject and test</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- New button: Download Result (opens external link) -->
-  <button class="download-btn" id="downloadBtn" onclick="openDownloadPage()">
-    Download Result
-  </button>
 </div>
 
 <script>
-  const API_URL = "https://academy-backend-e02j.onrender.com";
-  const DOWNLOAD_URL = "https://academy-student-portal.onrender.com/dresult.html";
+  const API = 'https://academy-backend-e02j.onrender.com';
+  let token = null, studentName = '';
 
-  // Populate test numbers
-  (function populateTests() {
-    const select = document.getElementById('testNumberSelect');
-    select.innerHTML = `<option value="">Select test</option>`;
-    for (let i = 1; i <= 50; i++) {
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = `Test ${i}`;
-      select.appendChild(opt);
-    }
-  })();
+  window.onload = () => {
+    token = localStorage.getItem('gp_token');
+    studentName = localStorage.getItem('gp_name') || 'Student';
+    if (token) loadResults();
+  };
+
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  async function doLogin() {
+    const mobile = document.getElementById('loginMobile').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    if (!mobile || !pass) return showAlert('Enter mobile and password');
+    document.getElementById('loginBtn').disabled = true;
+    try {
+      const res = await fetch(`${API}/student-login`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobile, password: pass })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        token = data.token; studentName = data.name;
+        localStorage.setItem('gp_token', token);
+        localStorage.setItem('gp_name', studentName);
+        loadResults();
+      } else {
+        showAlert(data.error || 'Login failed');
+      }
+    } catch { showAlert('Connection error. Try again.'); }
+    document.getElementById('loginBtn').disabled = false;
+  }
+
+  function showAlert(msg) {
+    const el = document.getElementById('loginAlert');
+    el.className = 'auth-alert error show';
+    el.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg}`;
+  }
+
+  function logout() {
+    localStorage.removeItem('gp_token');
+    localStorage.removeItem('gp_name');
+    token = null;
+    show('sLogin');
+  }
 
   async function loadResults() {
-    const subject = document.getElementById('subjectSelect').value.trim();
-    const testNumber = document.getElementById('testNumberSelect').value.trim();
-
-    if (!subject || !testNumber) {
-      alert("Please select both subject and test number");
-      return;
-    }
-
-    const infoDiv = document.getElementById("examInfo");
-    const totalDiv = document.getElementById("totalStudents");
-    const body = document.getElementById("resultsBody");
-    const downloadBtn = document.getElementById("downloadBtn");
-
-    infoDiv.style.display = "none";
-    downloadBtn.style.display = "none";
-    body.innerHTML = '<tr><td colspan="4" style="text-align:center;">Loading...</td></tr>';
+    document.getElementById('studentNameChip').textContent = studentName;
+    show('sResults');
+    document.getElementById('loader').style.display = 'block';
+    document.getElementById('resultsList').innerHTML = '';
 
     try {
-      const url = `${API_URL}/results/exam?subject=${encodeURIComponent(subject)}&testNumber=${testNumber}`;
-      const res = await fetch(url);
+      const res = await fetch(`${API}/my-results`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Server error (${res.status})`);
-      }
+      if (res.status === 401) { logout(); return; }
 
       const results = await res.json();
+      document.getElementById('loader').style.display = 'none';
 
-      if (results.length === 0) {
-        body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#dc2626;">No results found for this exam</td></tr>';
-        totalDiv.innerText = "";
+      if (!results.length) {
+        document.getElementById('resultsList').innerHTML = `
+          <div class="empty-state">
+            <div class="ei">📋</div>
+            <h3>No results yet</h3>
+            <p>You haven't attempted any exams yet.<br>Check back after your next exam!</p>
+          </div>`;
         return;
       }
 
-      results.sort((a, b) => b.correct - a.correct);
+      // Summary
+      const totalExams = results.length;
+      const avgScore = Math.round(results.reduce((s, r) => s + (r.score / r.total * 100), 0) / totalExams);
+      const bestScore = Math.round(Math.max(...results.map(r => r.score / r.total * 100)));
+      document.getElementById('sumExams').textContent = totalExams;
+      document.getElementById('sumAvg').textContent = avgScore + '%';
+      document.getElementById('sumBest').textContent = bestScore + '%';
+      document.getElementById('summaryBar').style.display = 'flex';
 
-      infoDiv.innerText = `${subject.toUpperCase()} — Test ${testNumber}`;
-      infoDiv.style.display = "block";
+      // Cards
+      document.getElementById('resultsList').innerHTML = `
+        <h3><i class="fas fa-history" style="margin-right:5px;"></i>All Attempts (${totalExams})</h3>
+        ${results.map(r => buildCard(r)).join('')}
+      `;
 
-      totalDiv.innerText = `Total Students Appeared: ${results.length}`;
-
-      body.innerHTML = results.map((r, index) => `
-        <tr>
-          <td>#${index + 1}</td>
-          <td>${r.studentName || "N/A"}</td>
-          <td>${r.roll || r.studentRoll || "N/A"}</td>
-          <td><b>${r.correct}</b> / ${r.total}</td>
-        </tr>
-      `).join("");
-
-      downloadBtn.style.display = "block";
-
-    } catch (err) {
-      console.error("Results error:", err);
-      body.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#dc2626;">
-        Failed to load results<br><br>${err.message || "Please try again"}
-      </td></tr>`;
+    } catch {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('resultsList').innerHTML = `
+        <div class="empty-state">
+          <div class="ei">⚠️</div>
+          <h3>Failed to load</h3>
+          <p>Could not connect to server. Please try again.</p>
+        </div>`;
     }
   }
 
-  // Open download page in new tab (browser) or prompt for external browser (web app/PWA)
-  function openDownloadPage() {
-    // Try to open in new tab (works in normal browsers)
-    const newWindow = window.open(DOWNLOAD_URL, '_blank');
+  function buildCard(r) {
+    const pct = Math.round((r.score / r.total) * 100);
+    const badgeClass = pct >= 80 ? 'excellent' : pct >= 50 ? 'good' : 'poor';
+    const barColor = pct >= 80 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444';
+    const date = new Date(r.submittedAt).toLocaleString('en-IN', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
 
-    // If blocked or in webview/PWA/in-app browser, show message
-    if (!newWindow || newWindow.closed || typeof newWindow === 'undefined') {
-      const confirmed = confirm(
-        "This link will open in your browser.\n\n" +
-        "Do you want to open https://academy-student-portal.onrender.com/dresult.html now?\n\n" +
-        "Press OK to continue (recommended in external browser)."
-      );
-
-      if (confirmed) {
-        // Fallback for webview / Cordova / Capacitor / PWA
-        window.open(DOWNLOAD_URL, '_system') || window.open(DOWNLOAD_URL, '_blank');
-      }
-    }
+    return `
+      <div class="result-card">
+        <div class="rc-top">
+          <div>
+            <div class="rc-title">${r.examTitle}</div>
+            <div class="rc-meta">${r.examSubject} &nbsp;|&nbsp; Test #${r.examTestNumber}</div>
+          </div>
+          <div class="score-badge ${badgeClass}">
+            <div class="score-val">${r.score}/${r.total}</div>
+            <div class="score-lbl">${pct}%</div>
+          </div>
+        </div>
+        <div class="rc-stats">
+          <div class="rc-stat c"><div class="rc-stat-num">${r.correct}</div><div class="rc-stat-lbl">✅ Correct</div></div>
+          <div class="rc-stat w"><div class="rc-stat-num">${r.wrong}</div><div class="rc-stat-lbl">❌ Wrong</div></div>
+          <div class="rc-stat s"><div class="rc-stat-num">${r.unanswered}</div><div class="rc-stat-lbl">⏭ Skipped</div></div>
+        </div>
+        <div class="pct-bar"><div class="pct-fill" style="width:${pct}%;background:${barColor};"></div></div>
+        <div class="rc-date"><i class="fas fa-clock"></i> ${date}</div>
+      </div>`;
   }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('sLogin').classList.contains('active')) doLogin();
+  });
 </script>
 </body>
 </html>
