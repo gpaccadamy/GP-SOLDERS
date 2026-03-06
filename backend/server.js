@@ -10,6 +10,7 @@ require('dotenv').config();
 
 const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key_2026';
+const COMPANY_PASSWORD = process.env.COMPANY_PASSWORD || 'gpsoldiers@company2026';
 
 // ────────────────────────────────────────────────
 // 1. MIDDLEWARES & CORS
@@ -18,7 +19,6 @@ const allowedOrigins = [
     'https://academy-student-portal.onrender.com',
     'http://localhost:3000',
 ];
-
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -40,26 +40,26 @@ const frontendPath = path.join(__dirname, '../frontend');
 app.use(express.static(frontendPath));
 
 // ────────────────────────────────────────────────
-// 3. MULTER - Excel Upload (Memory Storage)
+// 3. MULTER
 // ────────────────────────────────────────────────
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         if (file.originalname.match(/\.(xlsx|xls)$/)) cb(null, true);
-        else cb(new Error('Only Excel files (.xlsx, .xls) are allowed'));
+        else cb(new Error('Only Excel files allowed'));
     }
 });
 
 // ────────────────────────────────────────────────
-// 4. MONGODB CONNECTION
+// 4. MONGODB
 // ────────────────────────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("✅ MongoDB Connected"))
     .catch(err => { console.error("❌ MongoDB Error:", err); process.exit(1); });
 
 // ────────────────────────────────────────────────
-// 5. DATABASE MODELS
+// 5. MODELS
 // ────────────────────────────────────────────────
 
 const Student = mongoose.model('Student', new mongoose.Schema({
@@ -85,18 +85,18 @@ const DraftExam = mongoose.model('DraftExam', new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 }));
 
-// ScheduledExam: has a fixed startAt and endAt, locked once created
+// ScheduledExam: questions auto-deleted after exam ends
 const ScheduledExam = mongoose.model('ScheduledExam', new mongoose.Schema({
     title: { type: String, required: true },
     subject: { type: String, required: true },
     testNumber: { type: Number, required: true },
     totalQuestions: Number,
     durationMinutes: { type: Number, required: true },
-    questions: [QuestionSchema],
-    // Status: 'scheduled' | 'live' | 'ended'
-    status: { type: String, default: 'scheduled' },
-    scheduledAt: { type: Date, required: true },  // when exam starts
-    expiresAt: { type: Date, required: true },     // when exam ends
+    questions: [QuestionSchema],           // auto-cleared after exam ends
+    questionsDeleted: { type: Boolean, default: false },
+    status: { type: String, default: 'scheduled' }, // scheduled | live | ended
+    scheduledAt: { type: Date, required: true },
+    expiresAt: { type: Date, required: true },
     createdAt: { type: Date, default: Date.now }
 }));
 
@@ -116,6 +116,14 @@ const Result = mongoose.model('Result', new mongoose.Schema({
     submittedAt: { type: Date, default: Date.now }
 }));
 
+// ExamLicense: company controls total allowed exams
+const ExamLicense = mongoose.model('ExamLicense', new mongoose.Schema({
+    totalAllowed: { type: Number, default: 50 },
+    totalConducted: { type: Number, default: 0 },
+    lastUpdatedBy: { type: String, default: 'company' },
+    updatedAt: { type: Date, default: Date.now }
+}));
+
 // ────────────────────────────────────────────────
 // 6. AUTH MIDDLEWARE
 // ────────────────────────────────────────────────
@@ -131,7 +139,18 @@ const authenticate = (req, res, next) => {
 };
 
 // ────────────────────────────────────────────────
-// 7. STUDENT AUTH ROUTES
+// 7. LICENSE HELPER
+// ────────────────────────────────────────────────
+async function getLicense() {
+    let license = await ExamLicense.findOne();
+    if (!license) {
+        license = await new ExamLicense({ totalAllowed: 50, totalConducted: 0 }).save();
+    }
+    return license;
+}
+
+// ────────────────────────────────────────────────
+// 8. STUDENT AUTH
 // ────────────────────────────────────────────────
 
 app.post('/students', async (req, res) => {
@@ -143,26 +162,19 @@ app.post('/students', async (req, res) => {
         const hashed = await bcrypt.hash(password, 10);
         await new Student({ name, roll, mobile, password: hashed }).save();
         res.status(201).json({ message: "Registration successful" });
-    } catch {
-        res.status(500).json({ error: "Registration failed" });
-    }
+    } catch { res.status(500).json({ error: "Registration failed" }); }
 });
 
 app.get('/students', async (req, res) => {
-    try {
-        res.json(await Student.find().select('-password'));
-    } catch {
-        res.status(500).json({ error: "Failed to fetch students" });
-    }
+    try { res.json(await Student.find().select('-password')); }
+    catch { res.status(500).json({ error: "Failed to fetch students" }); }
 });
 
 app.delete('/students/:id', async (req, res) => {
     try {
         await Student.findByIdAndDelete(req.params.id);
         res.json({ message: "Student deleted" });
-    } catch {
-        res.status(500).json({ error: "Delete failed" });
-    }
+    } catch { res.status(500).json({ error: "Delete failed" }); }
 });
 
 app.post('/student-login', async (req, res) => {
@@ -173,13 +185,81 @@ app.post('/student-login', async (req, res) => {
             return res.status(401).json({ error: "Invalid mobile or password" });
         const token = jwt.sign({ mobile: student.mobile, name: student.name }, JWT_SECRET, { expiresIn: '7d' });
         res.json({ token, name: student.name, mobile: student.mobile });
-    } catch {
-        res.status(500).json({ error: "Login failed" });
-    }
+    } catch { res.status(500).json({ error: "Login failed" }); }
 });
 
 // ────────────────────────────────────────────────
-// 8. EXCEL UPLOAD → DRAFT
+// 9. COMPANY ROUTES (license control)
+// ────────────────────────────────────────────────
+
+// Company login check
+app.post('/api/company/login', (req, res) => {
+    const { password } = req.body;
+    if (password === COMPANY_PASSWORD) {
+        res.json({ success: true, message: "Access granted" });
+    } else {
+        res.status(401).json({ error: "Invalid company password" });
+    }
+});
+
+// Get license info
+app.post('/api/company/license', async (req, res) => {
+    try {
+        const { password } = req.body;
+        if (password !== COMPANY_PASSWORD) return res.status(401).json({ error: "Unauthorized" });
+        const license = await getLicense();
+        res.json({
+            totalAllowed: license.totalAllowed,
+            totalConducted: license.totalConducted,
+            remaining: license.totalAllowed - license.totalConducted,
+            updatedAt: license.updatedAt
+        });
+    } catch { res.status(500).json({ error: "Failed to fetch license" }); }
+});
+
+// Update license (company sets new total allowed)
+app.post('/api/company/set-limit', async (req, res) => {
+    try {
+        const { password, totalAllowed } = req.body;
+        if (password !== COMPANY_PASSWORD) return res.status(401).json({ error: "Unauthorized" });
+        if (!totalAllowed || totalAllowed < 1) return res.status(400).json({ error: "Invalid limit" });
+
+        const license = await ExamLicense.findOne();
+        if (license) {
+            license.totalAllowed = Number(totalAllowed);
+            license.updatedAt = new Date();
+            await license.save();
+        } else {
+            await new ExamLicense({ totalAllowed: Number(totalAllowed), totalConducted: 0 }).save();
+        }
+        res.json({ success: true, message: `Exam limit set to ${totalAllowed}` });
+    } catch { res.status(500).json({ error: "Failed to update limit" }); }
+});
+
+// Reset conducted count (company can reset)
+app.post('/api/company/reset-count', async (req, res) => {
+    try {
+        const { password } = req.body;
+        if (password !== COMPANY_PASSWORD) return res.status(401).json({ error: "Unauthorized" });
+        await ExamLicense.updateOne({}, { totalConducted: 0, updatedAt: new Date() });
+        res.json({ success: true, message: "Exam count reset to 0" });
+    } catch { res.status(500).json({ error: "Failed to reset count" }); }
+});
+
+// Admin: get license status (no password needed — just shows counts)
+app.get('/api/license-status', async (req, res) => {
+    try {
+        const license = await getLicense();
+        res.json({
+            totalAllowed: license.totalAllowed,
+            totalConducted: license.totalConducted,
+            remaining: license.totalAllowed - license.totalConducted
+        });
+    } catch { res.status(500).json({ error: "Failed to fetch status" }); }
+});
+
+// ────────────────────────────────────────────────
+// 10. EXCEL UPLOAD → DRAFT
 // ────────────────────────────────────────────────
 
 app.post('/api/upload-exam', upload.single('examFile'), async (req, res) => {
@@ -200,11 +280,9 @@ app.post('/api/upload-exam', upload.single('examFile'), async (req, res) => {
             const row = rows[i];
             const qText = String(row[1] || '').trim();
             if (!qText) continue;
-
             const answer = String(row[6] || '').trim().toUpperCase();
             if (!['A', 'B', 'C', 'D'].includes(answer))
                 return res.status(400).json({ error: `Row ${i + 1}: Answer must be A/B/C/D. Got: "${row[6]}"` });
-
             questions.push({
                 questionNumber: Number(row[0]) || (questions.length + 1),
                 questionText: qText,
@@ -225,10 +303,8 @@ app.post('/api/upload-exam', upload.single('examFile'), async (req, res) => {
             totalQuestions: questions.length, questions
         }).save();
 
-        console.log(`✅ Draft: "${title}" — ${questions.length} questions`);
         res.json({ success: true, draftId: draft._id, totalQuestions: questions.length, questions });
     } catch (err) {
-        console.error("❌ Upload Error:", err);
         res.status(500).json({ error: "Failed to process Excel: " + err.message });
     }
 });
@@ -255,7 +331,7 @@ app.put('/api/drafts/:id', async (req, res) => {
             { new: true }
         );
         if (!draft) return res.status(404).json({ error: "Draft not found" });
-        res.json({ success: true, message: "Draft updated" });
+        res.json({ success: true });
     } catch { res.status(500).json({ error: "Failed to update draft" }); }
 });
 
@@ -267,22 +343,27 @@ app.delete('/api/drafts/:id', async (req, res) => {
 });
 
 // ────────────────────────────────────────────────
-// 9. SCHEDULE EXAM (locked once set)
+// 11. SCHEDULE EXAM (with license check)
 // ────────────────────────────────────────────────
 
 app.post('/api/schedule/:draftId', async (req, res) => {
     try {
         const { scheduledAt, durationMinutes } = req.body;
-
         if (!scheduledAt || !durationMinutes)
-            return res.status(400).json({ error: "scheduledAt and durationMinutes are required" });
+            return res.status(400).json({ error: "scheduledAt and durationMinutes required" });
 
         const startTime = new Date(scheduledAt);
-        if (isNaN(startTime.getTime()))
-            return res.status(400).json({ error: "Invalid scheduledAt date" });
+        if (isNaN(startTime.getTime())) return res.status(400).json({ error: "Invalid date" });
+        if (startTime <= new Date()) return res.status(400).json({ error: "Scheduled time must be in the future" });
 
-        if (startTime <= new Date())
-            return res.status(400).json({ error: "Scheduled time must be in the future" });
+        // ── LICENSE CHECK ──
+        const license = await getLicense();
+        if (license.totalConducted >= license.totalAllowed) {
+            return res.status(403).json({
+                error: `Exam limit reached! You have used all ${license.totalAllowed} allowed exams. Please contact the company to increase your limit.`,
+                limitReached: true
+            });
+        }
 
         const draft = await DraftExam.findById(req.params.draftId);
         if (!draft) return res.status(404).json({ error: "Draft not found" });
@@ -290,87 +371,96 @@ app.post('/api/schedule/:draftId', async (req, res) => {
         const expiresAt = new Date(startTime.getTime() + Number(durationMinutes) * 60 * 1000);
 
         // Cancel any existing scheduled/live exam
-        await ScheduledExam.updateMany(
-            { status: { $in: ['scheduled', 'live'] } },
-            { status: 'ended' }
-        );
+        await ScheduledExam.updateMany({ status: { $in: ['scheduled', 'live'] } }, { status: 'ended' });
 
         const scheduled = await new ScheduledExam({
-            title: draft.title,
-            subject: draft.subject,
-            testNumber: draft.testNumber,
-            totalQuestions: draft.totalQuestions,
-            durationMinutes: Number(durationMinutes),
-            questions: draft.questions,
-            status: 'scheduled',
-            scheduledAt: startTime,
-            expiresAt
+            title: draft.title, subject: draft.subject, testNumber: draft.testNumber,
+            totalQuestions: draft.totalQuestions, durationMinutes: Number(durationMinutes),
+            questions: draft.questions, status: 'scheduled', scheduledAt: startTime, expiresAt
         }).save();
+
+        // Increment conducted count
+        await ExamLicense.updateOne({}, { $inc: { totalConducted: 1 }, updatedAt: new Date() });
 
         // Delete draft after scheduling
         await DraftExam.findByIdAndDelete(req.params.draftId);
 
-        console.log(`📅 Exam scheduled: "${draft.title}" at ${startTime} for ${durationMinutes} mins`);
+        console.log(`📅 Exam scheduled: "${draft.title}" | Used: ${license.totalConducted + 1}/${license.totalAllowed}`);
         res.json({
             success: true,
-            message: `Exam scheduled for ${startTime.toLocaleString()}`,
+            message: `Exam scheduled!`,
             examId: scheduled._id,
             scheduledAt: startTime,
-            expiresAt
+            expiresAt,
+            licenseUsed: license.totalConducted + 1,
+            licenseTotal: license.totalAllowed
         });
 
     } catch (err) {
-        console.error("❌ Schedule Error:", err);
-        res.status(500).json({ error: "Failed to schedule exam: " + err.message });
+        res.status(500).json({ error: "Failed to schedule: " + err.message });
     }
 });
 
-// Admin: cancel a scheduled exam
 app.post('/api/cancel-exam/:id', async (req, res) => {
     try {
         const exam = await ScheduledExam.findByIdAndUpdate(req.params.id, { status: 'ended' }, { new: true });
         if (!exam) return res.status(404).json({ error: "Exam not found" });
         res.json({ success: true, message: "Exam cancelled" });
-    } catch {
-        res.status(500).json({ error: "Failed to cancel exam" });
-    }
+    } catch { res.status(500).json({ error: "Failed to cancel" }); }
 });
 
-// Admin: get all scheduled exams
 app.get('/api/scheduled-exams', async (req, res) => {
     try {
         res.json(await ScheduledExam.find().select('-questions').sort({ scheduledAt: -1 }));
-    } catch {
-        res.status(500).json({ error: "Failed to fetch scheduled exams" });
-    }
+    } catch { res.status(500).json({ error: "Failed to fetch" }); }
 });
 
 // ────────────────────────────────────────────────
-// 10. STUDENT EXAM ROUTE
-// Returns: upcoming (scheduled), live, or null
+// 12. AUTO-DELETE QUESTIONS HELPER
+// ────────────────────────────────────────────────
+async function autoDeleteQuestionsIfEnded(exam) {
+    if (exam.status === 'ended' && !exam.questionsDeleted) {
+        await ScheduledExam.findByIdAndUpdate(exam._id, {
+            questions: [],
+            questionsDeleted: true
+        });
+        console.log(`🗑️ Questions auto-deleted for exam: "${exam.title}"`);
+    }
+}
+
+// ────────────────────────────────────────────────
+// 13. STUDENT EXAM ROUTE
 // ────────────────────────────────────────────────
 
 app.get('/active-exam', async (req, res) => {
     try {
         const now = new Date();
 
-        // Auto-expire ended exams
+        // Auto-expire + auto-delete questions for ended exams
+        const expiredExams = await ScheduledExam.find({
+            status: 'live', expiresAt: { $lt: now }, questionsDeleted: false
+        });
+        for (const exam of expiredExams) {
+            await ScheduledExam.findByIdAndUpdate(exam._id, {
+                status: 'ended', questions: [], questionsDeleted: true
+            });
+            console.log(`🗑️ Auto-ended & questions deleted: "${exam.title}"`);
+        }
+
+        // Also mark any that were updated
         await ScheduledExam.updateMany(
             { status: 'live', expiresAt: { $lt: now } },
             { status: 'ended' }
         );
 
-        // Auto-activate scheduled exams whose time has come
+        // Auto-activate scheduled exams
         await ScheduledExam.updateMany(
             { status: 'scheduled', scheduledAt: { $lte: now }, expiresAt: { $gt: now } },
             { status: 'live' }
         );
 
-        // First check for a live exam
-        let exam = await ScheduledExam.findOne({ status: 'live' });
-
+        const exam = await ScheduledExam.findOne({ status: 'live' });
         if (exam) {
-            // Return live exam (no correct answers)
             return res.json({
                 state: 'live',
                 exam: {
@@ -387,13 +477,11 @@ app.get('/active-exam', async (req, res) => {
                         questionNumber: q.questionNumber,
                         questionText: q.questionText,
                         options: q.options
-                        // correctAnswer excluded
                     }))
                 }
             });
         }
 
-        // Check for upcoming scheduled exam
         const upcoming = await ScheduledExam.findOne({ status: 'scheduled' }).sort({ scheduledAt: 1 });
         if (upcoming) {
             return res.json({
@@ -407,21 +495,18 @@ app.get('/active-exam', async (req, res) => {
                     durationMinutes: upcoming.durationMinutes,
                     scheduledAt: upcoming.scheduledAt,
                     expiresAt: upcoming.expiresAt
-                    // No questions sent until live
                 }
             });
         }
 
-        // Nothing available
         return res.json({ state: 'none', exam: null });
-
     } catch (err) {
         res.status(500).json({ error: "Failed to fetch exam" });
     }
 });
 
 // ────────────────────────────────────────────────
-// 11. SUBMIT EXAM
+// 14. SUBMIT EXAM
 // ────────────────────────────────────────────────
 
 app.post('/submit-exam', authenticate, async (req, res) => {
@@ -448,24 +533,48 @@ app.post('/submit-exam', authenticate, async (req, res) => {
             score: correct, total: exam.totalQuestions, answers
         }).save();
 
+        // Auto-delete questions after last submission check is not needed here
+        // Questions are deleted when exam expires via active-exam route
+
         res.json({ message: "Submitted!", correct, wrong, unanswered, total: exam.totalQuestions });
     } catch {
         res.status(500).json({ error: "Submission failed" });
     }
 });
 
+// ────────────────────────────────────────────────
+// 15. RESULT ROUTES
+// ────────────────────────────────────────────────
+
+// Student: own results only (requires login)
 app.get('/my-results', authenticate, async (req, res) => {
-    try { res.json(await Result.find({ studentMobile: req.user.mobile }).sort({ submittedAt: -1 })); }
-    catch { res.status(500).json({ error: "Failed to fetch results" }); }
+    try {
+        const results = await Result.find({ studentMobile: req.user.mobile })
+            .select('-answers')
+            .sort({ submittedAt: -1 });
+        res.json(results);
+    } catch { res.status(500).json({ error: "Failed to fetch results" }); }
 });
 
+// Admin: all results (no auth — admin page only)
 app.get('/api/all-results', async (req, res) => {
-    try { res.json(await Result.find().sort({ submittedAt: -1 })); }
-    catch { res.status(500).json({ error: "Failed to fetch results" }); }
+    try {
+        const results = await Result.find().select('-answers').sort({ submittedAt: -1 });
+        res.json(results);
+    } catch { res.status(500).json({ error: "Failed to fetch results" }); }
+});
+
+// Admin: results filtered by exam
+app.get('/api/results-by-exam/:examId', async (req, res) => {
+    try {
+        const results = await Result.find({ examId: req.params.examId })
+            .select('-answers').sort({ score: -1 });
+        res.json(results);
+    } catch { res.status(500).json({ error: "Failed to fetch" }); }
 });
 
 // ────────────────────────────────────────────────
-// 12. SPA FALLBACK & START
+// 16. SPA FALLBACK & START
 // ────────────────────────────────────────────────
 app.get('*', (req, res) => {
     res.sendFile(path.join(frontendPath, 'index.html'));
@@ -473,4 +582,3 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => console.log(`🚀 SERVER ON PORT ${PORT}`));
-
