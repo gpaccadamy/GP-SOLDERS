@@ -13,7 +13,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key_2026';
 const COMPANY_PASSWORD = process.env.COMPANY_PASSWORD || 'gpsoldiers@company2026';
 
 // ────────────────────────────────────────────────
-// 1. MIDDLEWARES & CORS
+// 1. MIDDLEWARES & CORS 
 // ────────────────────────────────────────────────
 const allowedOrigins = [
     'https://academy-student-portal.onrender.com',
@@ -582,3 +582,4 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => console.log(`🚀 SERVER ON PORT ${PORT}`));
+
