@@ -1,23 +1,25 @@
 {
   "name": "GP Soldiers Academy",
   "short_name": "GP Academy",
+  "description": "GP Soldiers Defence Academy - Exam Portal",
   "start_url": "/GP-SOLDERS/index.html",
   "scope": "/GP-SOLDERS/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#020817",
   "theme_color": "#1e40af",
   "orientation": "portrait-primary",
-
   "icons": [
-    {
-      "src": "gplogo-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    },
     {
       "src": "gplogo-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "gplogo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
