@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Company Control Panel</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" href="data:,">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #060a10;
+      --surface: #0d1117;
+      --surface2: #161b22;
+      --surface3: #21262d;
+      --border: #30363d;
+      --accent: #1f6feb;
+      --gold: #f0a500;
+      --green: #238636;
+      --green-h: #2ea043;
+      --danger: #da3633;
+      --text: #e6edf3;
+      --muted: #8b949e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── LOGIN SCREEN ── */
+    .login-screen {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px;
+      background: radial-gradient(ellipse at top, #0d1117 0%, #060a10 70%);
+    }
+
+    .company-logo {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      border: 3px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.2rem;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      box-shadow: 0 0 30px rgba(240,165,0,0.3);
+      margin-bottom: 16px;
+    }
+
+    .login-screen h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.6rem; font-weight: 700;
+      letter-spacing: 2px; color: var(--gold);
+      margin-bottom: 4px; text-align: center;
+    }
+    .login-screen p { font-size: 0.82rem; color: var(--muted); margin-bottom: 28px; text-align: center; }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 26px;
+      width: 100%; max-width: 380px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .login-card h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--muted); letter-spacing: 1px;
+      margin-bottom: 20px; text-align: center;
+      text-transform: uppercase;
+    }
+
+    .inp-group { margin-bottom: 16px; }
+    .inp-group label { display: block; font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px; }
+    .inp-group input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 1rem; font-family: inherit;
+      outline: none; transition: border-color 0.2s;
+      letter-spacing: 2px;
+    }
+    .inp-group input:focus { border-color: var(--gold); }
+
+    .btn-unlock {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--gold), #d97706);
+      color: #000;
+      border: none; border-radius: 10px;
+      font-size: 1rem; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 4px 18px rgba(240,165,0,0.3);
+      transition: all 0.2s;
+    }
+    .btn-unlock:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(240,165,0,0.4); }
+    .btn-unlock:disabled { opacity: 0.5; transform: none; }
+
+    .login-error {
+      background: rgba(218,54,51,0.12);
+      border: 1px solid rgba(218,54,51,0.4);
+      color: #f85149;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.84rem;
+      margin-bottom: 14px;
+      display: none; align-items: center; gap: 8px;
+    }
+    .login-error.show { display: flex; }
+
+    .security-note {
+      margin-top: 16px; text-align: center;
+      font-size: 0.74rem; color: var(--muted);
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+
+    /* ── DASHBOARD ── */
+    #dashboard { display: none; }
+
+    .dash-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 22px;
+      display: flex; align-items: center; gap: 12px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .dash-header .logo-sm {
+      font-size: 1.5rem;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      border: 2px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface2);
+    }
+    .dash-header h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.2rem; font-weight: 700;
+      color: var(--gold); letter-spacing: 1px;
+    }
+    .dash-header p { font-size: 0.74rem; color: var(--muted); margin-top: 1px; }
+    .btn-signout {
+      margin-left: auto;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted); border-radius: 8px;
+      padding: 6px 12px; font-size: 0.78rem;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-signout:hover { border-color: var(--danger); color: #f85149; }
+
+    .dash-main { padding: 20px; max-width: 600px; margin: 0 auto; }
+
+    /* License Overview Card */
+    .license-overview {
+      background: linear-gradient(135deg, #0d1117, #161b22);
+      border: 1px solid var(--gold);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 24px rgba(240,165,0,0.1);
+    }
+
+    .lo-title {
+      font-size: 0.74rem; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--gold); font-weight: 700;
+      margin-bottom: 18px; display: flex; align-items: center; gap: 6px;
+    }
+
+    .lo-numbers {
+      display: flex; align-items: center; justify-content: space-around;
+      margin-bottom: 20px; text-align: center;
+    }
+    .lo-num-box .lo-num {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 2.8rem; font-weight: 700; line-height: 1;
+    }
+    .lo-num-box.used .lo-num { color: #f85149; }
+    .lo-num-box.allowed .lo-num { color: var(--gold); }
+    .lo-num-box.remaining .lo-num { color: #3fb950; }
+    .lo-num-box .lo-num-lbl { font-size: 0.72rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .lo-divider { font-size: 1.5rem; color: var(--border); }
+
+    /* Progress bar */
+    .lo-progress { margin-bottom: 14px; }
+    .lo-bar-bg { height: 10px; background: var(--surface3); border-radius: 6px; overflow: hidden; }
+    .lo-bar-fill { height: 100%; border-radius: 6px; transition: width 0.6s ease; background: linear-gradient(90deg, #3fb950, #f0a500, #f85149); }
+    .lo-bar-labels { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); margin-top: 5px; }
+
+    .lo-status-row {
+      background: var(--surface3);
+      border-radius: 8px; padding: 10px 14px;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.82rem;
+    }
+    .lo-status-row.ok { border-left: 3px solid #3fb950; }
+    .lo-status-row.warn { border-left: 3px solid var(--gold); }
+    .lo-status-row.blocked { border-left: 3px solid #f85149; }
+
+    /* Section Cards */
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .sc-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      letter-spacing: 0.5px; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .sc-title i { color: var(--accent); }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px; }
+    .form-group input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 11px 14px;
+      color: var(--text); font-size: 1rem; font-family: inherit;
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus { border-color: var(--accent); }
+
+    .hint { font-size: 0.76rem; color: var(--muted); margin-top: 5px; }
+
+    /* Buttons */
+    .btn {
+      padding: 11px 20px;
+      border: none; border-radius: 8px;
+      font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-block { width: 100%; justify-content: center; padding: 13px; }
+    .btn-gold { background: linear-gradient(135deg, var(--gold), #d97706); color: #000; }
+    .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(240,165,0,0.3); }
+    .btn-green { background: var(--green); color: white; }
+    .btn-green:hover { background: var(--green-h); }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { background: #f85149; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+
+    /* Alert */
+    .alert {
+      padding: 11px 14px; border-radius: 8px;
+      font-size: 0.86rem; margin-bottom: 14px;
+      display: none; align-items: center; gap: 8px;
+    }
+    .alert.show { display: flex; }
+    .alert-success { background: rgba(35,134,54,0.15); border: 1px solid var(--green); color: #3fb950; }
+    .alert-error { background: rgba(218,54,51,0.15); border: 1px solid var(--danger); color: #f85149; }
+    .alert-info { background: rgba(31,111,235,0.15); border: 1px solid var(--accent); color: #58a6ff; }
+
+    /* History table */
+    .history-list { display: flex; flex-direction: column; gap: 8px; }
+    .hist-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .hist-label { font-size: 0.86rem; font-weight: 600; }
+    .hist-meta { font-size: 0.74rem; color: var(--muted); margin-top: 2px; }
+    .hist-badge {
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      color: var(--gold);
+      border-radius: 8px; padding: 4px 10px;
+      font-size: 0.8rem; font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* Danger zone */
+    .danger-zone {
+      background: rgba(218,54,51,0.06);
+      border: 1px solid rgba(218,54,51,0.3);
+      border-radius: 12px; padding: 18px;
+      margin-bottom: 16px;
+    }
+    .dz-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      color: #f85149; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .dz-desc { font-size: 0.82rem; color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
+
+    .spinner-sm { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.3); border-top-color: #000; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════ -->
+<div id="loginScreen" class="login-screen">
+  <div class="company-logo">🏢</div>
+  <h1>GP SOLDIERS</h1>
+  <p>Company Control Panel &nbsp;•&nbsp; Restricted Access</p>
+
+  <div class="login-card">
+    <h2><i class="fas fa-lock" style="margin-right:6px;"></i>Authenticate</h2>
+    <div class="login-error" id="loginError"></div>
+    <div class="inp-group">
+      <label>Company Password</label>
+      <input type="password" id="companyPass" placeholder="••••••••••••" autocomplete="off">
+    </div>
+    <button class="btn-unlock" id="unlockBtn" onclick="doLogin()">
+      <i class="fas fa-key"></i> Unlock Panel
+    </button>
+    <div class="security-note">
+      <i class="fas fa-shield-alt" style="color:var(--gold);"></i>
+      This page is for authorized company use only
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     DASHBOARD
+══════════════════════════════════════ -->
+<div id="dashboard">
+
+  <div class="dash-header">
+    <div class="logo-sm">🏢</div>
+    <div>
+      <h1>COMPANY PANEL</h1>
+      <p>GP Soldiers Academy — Exam License Control</p>
+    </div>
+    <button class="btn-signout" onclick="signOut()"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+  </div>
+
+  <div class="dash-main">
+
+    <!-- Global Alert -->
+    <div class="alert" id="alertBox"></div>
+
+    <!-- ── LICENSE OVERVIEW ── -->
+    <div class="license-overview">
+      <div class="lo-title"><i class="fas fa-certificate"></i> ACTIVE LICENSE STATUS</div>
+
+      <div class="lo-numbers">
+        <div class="lo-num-box used">
+          <div class="lo-num" id="ovUsed">—</div>
+          <div class="lo-num-lbl">Used</div>
+        </div>
+        <div class="lo-divider">/</div>
+        <div class="lo-num-box allowed">
+          <div class="lo-num" id="ovAllowed">—</div>
+          <div class="lo-num-lbl">Allowed</div>
+        </div>
+        <div class="lo-divider">=</div>
+        <div class="lo-num-box remaining">
+          <div class="lo-num" id="ovRemaining">—</div>
+          <div class="lo-num-lbl">Remaining</div>
+        </div>
+      </div>
+
+      <div class="lo-progress">
+        <div class="lo-bar-bg">
+          <div class="lo-bar-fill" id="ovBar" style="width:0%;"></div>
+        </div>
+        <div class="lo-bar-labels">
+          <span>0 exams</span>
+          <span id="ovBarPct">0% used</span>
+          <span id="ovBarTotal">of 0</span>
+        </div>
+      </div>
+
+      <div class="lo-status-row ok" id="statusRow">
+        <i class="fas fa-check-circle" style="color:#3fb950;"></i>
+        <span id="statusText">Loading license status...</span>
+      </div>
+    </div>
+
+    <!-- ── SET EXAM LIMIT ── -->
+    <div class="section-card">
+      <div class="sc-title"><i class="fas fa-sliders-h"></i> Set Exam Allowance</div>
+      <div class="form-group">
+        <label>Total Exams Allowed</label>
+        <input type="number" id="newLimit" placeholder="e.g. 50" min="1" max="9999">
+        <div class="hint">This is the total number of exams the admin can conduct. Once the admin uses all exams, they must wait for you to increase this.</div>
+      </div>
+      <button class="btn btn-gold btn-block" id="setLimitBtn" onclick="setLimit()">
+        <i class="fas fa-save"></i> Save New Limit
+      </button>
+    </div>
+
+    <!-- ── PRICING REFERENCE ── -->
+    <div class="section-card">
+      <div class="sc-title"><i class="fas fa-rupee-sign"></i> Exam Pricing Reference</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;color:var(--gold);" id="pricePerExam">₹ —</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">Per Exam</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;color:#3fb950;" id="totalValue">₹ —</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">Total Value</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <div class="form-group" style="margin-bottom:8px;">
+          <label>Price Per Exam (₹)</label>
+          <input type="number" id="priceInput" placeholder="e.g. 500" min="0" oninput="calcPrice()">
+        </div>
+        <div class="hint" id="priceCalcNote">Enter price per exam to calculate total value</div>
+      </div>
+    </div>
+
+    <!-- ── NOTES / HISTORY ── -->
+    <div class="section-card">
+      <div class="sc-title"><i class="fas fa-history"></i> License Log</div>
+      <div class="history-list" id="historyList">
+        <div style="text-align:center;padding:16px;color:var(--muted);font-size:0.84rem;">No history yet</div>
+      </div>
+    </div>
+
+    <!-- ── DANGER ZONE ── -->
+    <div class="danger-zone">
+      <div class="dz-title"><i class="fas fa-exclamation-triangle"></i> Danger Zone</div>
+      <div class="dz-desc">
+        <strong>Reset Exam Count</strong> — This will reset the conducted exam count back to 0.
+        The total allowed limit will remain unchanged. Use this only at the start of a new billing cycle.
+      </div>
+      <button class="btn btn-danger btn-block" onclick="resetCount()">
+        <i class="fas fa-redo"></i> Reset Conducted Count to 0
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const API = 'https://academy-backend-e02j.onrender.com';
+  let companyPass = '';
+  let licenseHistory = JSON.parse(localStorage.getItem('company_history') || '[]');
+
+  // ── Login ──
+  async function doLogin() {
+    const pass = document.getElementById('companyPass').value;
+    if (!pass) return showLoginError('Enter the company password');
+
+    document.getElementById('unlockBtn').disabled = true;
+    document.getElementById('unlockBtn').innerHTML = '<div class="spinner-sm"></div> Authenticating...';
+
+    try {
+      const res = await fetch(`${API}/api/company/login`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pass })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        companyPass = pass;
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        loadLicense();
+        renderHistory();
+      } else {
+        showLoginError(data.error || 'Invalid password');
+        document.getElementById('unlockBtn').disabled = false;
+        document.getElementById('unlockBtn').innerHTML = '<i class="fas fa-key"></i> Unlock Panel';
+      }
+    } catch {
+      showLoginError('Cannot connect to server. Check your connection.');
+      document.getElementById('unlockBtn').disabled = false;
+      document.getElementById('unlockBtn').innerHTML = '<i class="fas fa-key"></i> Unlock Panel';
+    }
+  }
+
+  function showLoginError(msg) {
+    const el = document.getElementById('loginError');
+    el.className = 'login-error show';
+    el.innerHTML = `<i class="fas fa-times-circle"></i> ${msg}`;
+  }
+
+  function signOut() {
+    companyPass = '';
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('companyPass').value = '';
+    document.getElementById('loginError').classList.remove('show');
+    document.getElementById('unlockBtn').disabled = false;
+    document.getElementById('unlockBtn').innerHTML = '<i class="fas fa-key"></i> Unlock Panel';
+  }
+
+  // ── Load License ──
+  async function loadLicense() {
+    try {
+      const res = await fetch(`${API}/api/company/license`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: companyPass })
+      });
+      const data = await res.json();
+      if (res.ok) updateOverview(data);
+    } catch {}
+  }
+
+  function updateOverview(data) {
+    const { totalAllowed, totalConducted, remaining } = data;
+    const used = totalConducted;
+    const pct = totalAllowed > 0 ? Math.round((used / totalAllowed) * 100) : 0;
+
+    document.getElementById('ovUsed').textContent = used;
+    document.getElementById('ovAllowed').textContent = totalAllowed;
+    document.getElementById('ovRemaining').textContent = remaining;
+    document.getElementById('ovBar').style.width = Math.min(pct, 100) + '%';
+    document.getElementById('ovBarPct').textContent = pct + '% used';
+    document.getElementById('ovBarTotal').textContent = 'of ' + totalAllowed;
+
+    // Pre-fill limit input
+    document.getElementById('newLimit').value = totalAllowed;
+
+    // Status row
+    const sr = document.getElementById('statusRow');
+    const st = document.getElementById('statusText');
+    if (remaining <= 0) {
+      sr.className = 'lo-status-row blocked';
+      st.innerHTML = '<strong style="color:#f85149;">⛔ LIMIT REACHED</strong> — Admin is blocked. Increase the limit to allow more exams.';
+    } else if (pct >= 80) {
+      sr.className = 'lo-status-row warn';
+      st.innerHTML = `<strong style="color:var(--gold);">⚠️ ALMOST FULL</strong> — Only ${remaining} exam(s) remaining. Consider increasing the limit.`;
+    } else {
+      sr.className = 'lo-status-row ok';
+      st.innerHTML = `<strong style="color:#3fb950;">✅ ACTIVE</strong> — Admin has ${remaining} exam(s) remaining out of ${totalAllowed} allowed.`;
+    }
+
+    calcPrice();
+  }
+
+  // ── Set Limit ──
+  async function setLimit() {
+    const newLimit = Number(document.getElementById('newLimit').value);
+    if (!newLimit || newLimit < 1) return showAlert('Enter a valid number (minimum 1)', 'error');
+
+    if (!confirm(`Set exam allowance to ${newLimit}?\n\nAdmin will be able to conduct up to ${newLimit} exams total.`)) return;
+
+    document.getElementById('setLimitBtn').disabled = true;
+
+    try {
+      const res = await fetch(`${API}/api/company/set-limit`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: companyPass, totalAllowed: newLimit })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showAlert(`✅ Exam limit updated to ${newLimit}`, 'success');
+        addHistory(`Limit set to ${newLimit} exams`);
+        loadLicense();
+      } else {
+        showAlert(data.error || 'Failed to update', 'error');
+      }
+    } catch {
+      showAlert('Network error. Try again.', 'error');
+    }
+    document.getElementById('setLimitBtn').disabled = false;
+  }
+
+  // ── Reset Count ──
+  async function resetCount() {
+    if (!confirm('Reset the conducted exam count to 0?\n\nThis will NOT change the allowed limit.\nOnly do this at the start of a new billing cycle.')) return;
+
+    try {
+      const res = await fetch(`${API}/api/company/reset-count`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: companyPass })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showAlert('✅ Exam count reset to 0 successfully', 'success');
+        addHistory('Conducted count reset to 0');
+        loadLicense();
+      } else {
+        showAlert(data.error || 'Failed to reset', 'error');
+      }
+    } catch {
+      showAlert('Network error. Try again.', 'error');
+    }
+  }
+
+  // ── Price Calculator ──
+  function calcPrice() {
+    const price = Number(document.getElementById('priceInput').value);
+    const allowed = Number(document.getElementById('ovAllowed').textContent) || 0;
+    if (price > 0 && allowed > 0) {
+      document.getElementById('pricePerExam').textContent = '₹ ' + price.toLocaleString('en-IN');
+      document.getElementById('totalValue').textContent = '₹ ' + (price * allowed).toLocaleString('en-IN');
+      document.getElementById('priceCalcNote').textContent =
+        `${allowed} exams × ₹${price} = ₹${(price * allowed).toLocaleString('en-IN')} total`;
+    } else {
+      document.getElementById('pricePerExam').textContent = '₹ —';
+      document.getElementById('totalValue').textContent = '₹ —';
+    }
+  }
+
+  // ── History ──
+  function addHistory(action) {
+    licenseHistory.unshift({
+      action,
+      time: new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    });
+    if (licenseHistory.length > 10) licenseHistory = licenseHistory.slice(0, 10);
+    localStorage.setItem('company_history', JSON.stringify(licenseHistory));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const el = document.getElementById('historyList');
+    if (!licenseHistory.length) {
+      el.innerHTML = `<div style="text-align:center;padding:16px;color:var(--muted);font-size:0.84rem;">No history yet</div>`;
+      return;
+    }
+    el.innerHTML = licenseHistory.map(h => `
+      <div class="hist-item">
+        <div>
+          <div class="hist-label">${h.action}</div>
+          <div class="hist-meta"><i class="fas fa-clock" style="margin-right:3px;"></i>${h.time}</div>
+        </div>
+        <div class="hist-badge"><i class="fas fa-check"></i> Done</div>
+      </div>
+    `).join('');
+  }
+
+  // ── Alert ──
+  function showAlert(msg, type = 'info') {
+    const el = document.getElementById('alertBox');
+    const icons = { success: 'check-circle', error: 'times-circle', info: 'info-circle' };
+    el.className = `alert alert-${type} show`;
+    el.innerHTML = `<i class="fas fa-${icons[type]}"></i> ${msg}`;
+    setTimeout(() => el.classList.remove('show'), 5000);
+  }
+
+  // Enter key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') doLogin();
+  });
+</script>
+</body>
+</html>
