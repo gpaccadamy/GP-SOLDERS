@@ -2,21 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
   <title>GP Soldier Academy</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: fixed;
+      background: #020817;
     }
 
     body {
-      height: 100vh;
       background: radial-gradient(circle at 20% 30%, #0f172a 0%, #020817 100%);
       color: #e2e8f0;
       font-family: 'Segoe UI', system-ui, sans-serif;
-      overflow: hidden;
     }
 
     .bg-particles {
@@ -37,21 +44,22 @@
 
     @keyframes float {
       0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
-      25% { transform: translateY(-60px) translateX(40px) rotate(15deg); }
-      50% { transform: translateY(-120px) translateX(-30px) rotate(-10deg); }
-      75% { transform: translateY(-40px) translateX(50px) rotate(20deg); }
+      25%       { transform: translateY(-60px) translateX(40px) rotate(15deg); }
+      50%       { transform: translateY(-120px) translateX(-30px) rotate(-10deg); }
+      75%       { transform: translateY(-40px) translateX(50px) rotate(20deg); }
     }
 
     .welcome-screen {
       position: fixed;
       inset: 0;
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(2, 8, 23, 0.97));
+      background: linear-gradient(135deg, rgba(15,23,42,0.94), rgba(2,8,23,0.97));
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 200;
       opacity: 0;
       animation: fadeInBg 0.8s forwards 0.2s;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     }
 
     @keyframes fadeInBg {
@@ -60,50 +68,85 @@
 
     .welcome-content {
       text-align: center;
-      transform: translateY(180px);
+      transform: translateY(120px);
       opacity: 0;
       animation: popupFromBottom 0.9s cubic-bezier(0.23, 1, 0.32, 1) forwards 0.4s;
+      padding: 24px 20px;
+      width: 100%;
+      max-width: 420px;
     }
 
     @keyframes popupFromBottom {
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .logo-ring {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      border: 3px solid rgba(96,165,250,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      background: rgba(15,23,42,0.8);
+      box-shadow: 0 0 30px rgba(96,165,250,0.3);
+      animation: ring-pulse 2.5s ease-in-out infinite;
+    }
+    @keyframes ring-pulse {
+      0%,100% { box-shadow: 0 0 20px rgba(96,165,250,0.3); }
+      50%      { box-shadow: 0 0 50px rgba(96,165,250,0.6); }
+    }
+    .logo-ring img {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .logo-ring .logo-fallback {
+      font-size: 2.8rem;
     }
 
     h1 {
-      font-size: clamp(2.8rem, 9vw, 6.5rem);
+      font-size: clamp(2rem, 10vw, 3.8rem);
       font-weight: 800;
-      letter-spacing: -2px;
+      letter-spacing: -1px;
+      line-height: 1.1;
       background: linear-gradient(90deg, #60a5fa, #a5b4fc, #c084fc);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      text-shadow: 0 0 40px rgba(96, 165, 250, 0.5);
-      margin-bottom: 0.9rem;
+      margin-bottom: 10px;
       animation: glow 2.5s ease-in-out infinite alternate;
     }
 
     @keyframes glow {
-      from { text-shadow: 0 0 20px rgba(96, 165, 250, 0.5); }
-      to   { text-shadow: 0 0 60px rgba(96, 165, 250, 0.9), 0 0 100px rgba(165, 180, 252, 0.6); }
+      from { text-shadow: 0 0 20px rgba(96,165,250,0.4); }
+      to   { text-shadow: 0 0 50px rgba(96,165,250,0.8), 0 0 80px rgba(165,180,252,0.5); }
     }
 
     .subtitle {
-      font-size: clamp(1.3rem, 4.5vw, 2rem);
+      font-size: clamp(0.85rem, 3.5vw, 1.1rem);
       color: #94a3b8;
-      margin-bottom: 2rem;
-      opacity: 0.92;
+      margin-bottom: 6px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .tagline {
+      font-size: clamp(0.75rem, 3vw, 0.95rem);
+      color: #475569;
+      margin-bottom: 28px;
+      font-style: italic;
     }
 
     .loading-bar {
-      width: 260px;
-      height: 5px;
-      background: rgba(71, 85, 105, 0.4);
+      width: 200px;
+      height: 4px;
+      background: rgba(71,85,105,0.4);
       border-radius: 10px;
       overflow: hidden;
-      margin: 0 auto;
+      margin: 0 auto 12px;
     }
 
     .bar {
@@ -118,28 +161,41 @@
       to { width: 100%; }
     }
 
+    .loading-text {
+      font-size: 0.72rem;
+      color: #475569;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 0.4; }
+      50%      { opacity: 1; }
+    }
+
     .fade-out {
-      animation: fadeOut 0.8s forwards;
+      animation: fadeOut 0.7s forwards;
       pointer-events: none;
     }
 
     @keyframes fadeOut {
-      to {
-        opacity: 0;
-        transform: scale(1.02);
-      }
+      to { opacity: 0; transform: scale(1.015); }
     }
 
-    /* The real app will appear here */
+    /* ── IFRAME — fills entire screen, no scroll ── */
     #app-frame {
       position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      /* iOS safe area support */
+      height: -webkit-fill-available;
       border: none;
       display: none;
       z-index: 10;
       background: #020817;
+      overflow: hidden;
     }
   </style>
 </head>
@@ -149,39 +205,51 @@
 
   <div class="welcome-screen" id="welcome">
     <div class="welcome-content">
+
+      <div class="logo-ring">
+        <img src="gplogo.jpg" alt="GP Soldiers"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <span class="logo-fallback" style="display:none;">🎖️</span>
+      </div>
+
       <h1>GP SOLDIER<br>ACADEMY</h1>
-      <div class="subtitle">Discipline • Courage • Victory</div>
+      <div class="subtitle">Discipline &nbsp;•&nbsp; Courage &nbsp;•&nbsp; Victory</div>
+      <div class="tagline">ನಮ್ಮ ರಾಷ್ಟ್ರ ಧ್ವಜ ಹಾರುತ್ತಿರುವವರೆಗೂ</div>
+
       <div class="loading-bar">
         <div class="bar"></div>
       </div>
+      <div class="loading-text">Loading...</div>
+
     </div>
   </div>
 
-  <!-- The embedded student portal -->
-  <iframe 
-    id="app-frame" 
-    src="https://academy-student-portal.onrender.com" 
+  <iframe
+    id="app-frame"
+    src="https://academy-student-portal.onrender.com"
     allowfullscreen
+    scrolling="yes"
   ></iframe>
 
 <script>
-  // Floating particles for background effect
-  const particlesContainer = document.getElementById('particles');
-  
-  for (let i = 0; i < 16; i++) {
+  // ── Particles ──
+  const pc = document.getElementById('particles');
+  for (let i = 0; i < 14; i++) {
     const p = document.createElement('div');
     p.className = 'particle';
-    const size = Math.random() * 4 + 2;
-    p.style.width = p.style.height = `${size}px`;
-    p.style.left = Math.random() * 100 + 'vw';
-    p.style.top  = Math.random() * 120 + 'vh';
-    p.style.animationDuration = (Math.random() * 10 + 12) + 's';
-    p.style.animationDelay    = Math.random() * -12 + 's';
-    particlesContainer.appendChild(p);
+    const size = Math.random() * 3 + 2;
+    p.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}vw;
+      top:${Math.random()*120}vh;
+      animation-duration:${Math.random()*10+12}s;
+      animation-delay:${Math.random()*-12}s;
+    `;
+    pc.appendChild(p);
   }
 
-  // Timing control: show welcome → after ~4 seconds fade out → show iframe
-  const DISPLAY_DURATION = 4000;   // 4000 ms = 4 seconds (change to 3000 or 5000 if needed)
+  // ── Splash → App ──
+  const DISPLAY_DURATION = 4000;
 
   setTimeout(() => {
     const welcome = document.getElementById('welcome');
@@ -189,20 +257,12 @@
 
     setTimeout(() => {
       welcome.style.display = 'none';
-      
-      // Reveal the embedded portal
       const frame = document.getElementById('app-frame');
       frame.style.display = 'block';
-      
-      // Optional: hide particles after transition
-      setTimeout(() => {
-        particlesContainer.style.display = 'none';
-      }, 800);
-
-    }, 800); // match fade-out duration
+      setTimeout(() => { pc.style.display = 'none'; }, 800);
+    }, 700);
 
   }, DISPLAY_DURATION);
-
 </script>
 </body>
 </html>
