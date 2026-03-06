@@ -13,7 +13,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key_2026';
 const COMPANY_PASSWORD = process.env.COMPANY_PASSWORD || 'gpsoldiers@company2026';
 
 // ────────────────────────────────────────────────
-// 1. MIDDLEWARES & CORS 
+// 1. MIDDLEWARES & CORS
 // ────────────────────────────────────────────────
 const allowedOrigins = [
     'https://academy-student-portal.onrender.com',
@@ -574,7 +574,118 @@ app.get('/api/results-by-exam/:examId', async (req, res) => {
 });
 
 // ────────────────────────────────────────────────
-// 16. SPA FALLBACK & START
+// 16. VIDEO CLASSES (YouTube + Subject + Class Number)
+// ────────────────────────────────────────────────
+
+const VALID_SUBJECTS = [
+    'General Knowledge (GK)',
+    'English',
+    'Kannada',
+    'Maths'
+];
+
+const Video = mongoose.model('Video', new mongoose.Schema({
+    title:       { type: String, required: true },
+    subject:     { type: String, required: true, enum: VALID_SUBJECTS },
+    classNumber: { type: Number, required: true, min: 1 },
+    youtubeUrl:  { type: String, required: true },
+    youtubeId:   { type: String, required: true },
+    createdAt:   { type: Date, default: Date.now }
+}));
+
+// Helper — extract YouTube video ID from any URL format
+function extractYouTubeId(url) {
+    const patterns = [
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+        /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/
+    ];
+    for (const p of patterns) {
+        const m = url.match(p);
+        if (m) return m[1];
+    }
+    return null;
+}
+
+// POST /api/videos — Admin: add video class
+app.post('/api/videos', async (req, res) => {
+    try {
+        const { title, subject, classNumber, youtubeUrl } = req.body;
+        if (!title || !subject || !classNumber || !youtubeUrl)
+            return res.status(400).json({ error: "Title, subject, class number and YouTube URL are all required" });
+        if (!VALID_SUBJECTS.includes(subject))
+            return res.status(400).json({ error: "Invalid subject" });
+        const youtubeId = extractYouTubeId(youtubeUrl);
+        if (!youtubeId) return res.status(400).json({ error: "Invalid YouTube URL. Paste a youtube.com or youtu.be link." });
+
+        // Prevent duplicate class numbers per subject
+        const exists = await Video.findOne({ subject, classNumber: Number(classNumber) });
+        if (exists) return res.status(400).json({ error: `Class ${classNumber} for "${subject}" already exists. Use a different class number.` });
+
+        const video = await new Video({ title, subject, classNumber: Number(classNumber), youtubeUrl, youtubeId }).save();
+        res.status(201).json({ success: true, video });
+    } catch (err) { res.status(500).json({ error: "Failed to save: " + err.message }); }
+});
+
+// PUT /api/videos/:id — Admin: edit video class
+app.put('/api/videos/:id', async (req, res) => {
+    try {
+        const { title, subject, classNumber, youtubeUrl } = req.body;
+        if (!title || !subject || !classNumber || !youtubeUrl)
+            return res.status(400).json({ error: "All fields required" });
+        if (!VALID_SUBJECTS.includes(subject))
+            return res.status(400).json({ error: "Invalid subject" });
+
+        const youtubeId = extractYouTubeId(youtubeUrl);
+        if (!youtubeId) return res.status(400).json({ error: "Invalid YouTube URL" });
+
+        // Check duplicate (exclude current doc)
+        const exists = await Video.findOne({ subject, classNumber: Number(classNumber), _id: { $ne: req.params.id } });
+        if (exists) return res.status(400).json({ error: `Class ${classNumber} for "${subject}" already exists.` });
+
+        const video = await Video.findByIdAndUpdate(
+            req.params.id,
+            { title, subject, classNumber: Number(classNumber), youtubeUrl, youtubeId },
+            { new: true }
+        );
+        if (!video) return res.status(404).json({ error: "Video not found" });
+        res.json({ success: true, video });
+    } catch { res.status(500).json({ error: "Failed to update" }); }
+});
+
+// DELETE /api/videos/:id — Admin: delete video class
+app.delete('/api/videos/:id', async (req, res) => {
+    try {
+        await Video.findByIdAndDelete(req.params.id);
+        res.json({ success: true, message: "Deleted" });
+    } catch { res.status(500).json({ error: "Failed to delete" }); }
+});
+
+// GET /api/videos — All videos sorted by subject then classNumber
+app.get('/api/videos', async (req, res) => {
+    try {
+        const { subject } = req.query;
+        const filter = subject ? { subject } : {};
+        const videos = await Video.find(filter).sort({ subject: 1, classNumber: 1 });
+        res.json(videos);
+    } catch { res.status(500).json({ error: "Failed to fetch" }); }
+});
+
+// GET /api/videos/:id — Single video
+app.get('/api/videos/:id', async (req, res) => {
+    try {
+        const video = await Video.findById(req.params.id);
+        if (!video) return res.status(404).json({ error: "Not found" });
+        res.json(video);
+    } catch { res.status(500).json({ error: "Failed to fetch" }); }
+});
+
+// GET /api/subjects — Return list of valid subjects
+app.get('/api/subjects', (req, res) => {
+    res.json(VALID_SUBJECTS);
+});
+
+// ────────────────────────────────────────────────
+// 17. SPA FALLBACK & START
 // ────────────────────────────────────────────────
 app.get('*', (req, res) => {
     res.sendFile(path.join(frontendPath, 'index.html'));
@@ -582,4 +693,3 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => console.log(`🚀 SERVER ON PORT ${PORT}`));
-
