@@ -276,15 +276,33 @@ app.post('/api/upload-exam', upload.single('examFile'), async (req, res) => {
         if (!rows || rows.length === 0) return res.status(400).json({ error: "Excel file is empty" });
 
         const questions = [];
+        const SKIP_ANS   = ['ANSWER', 'ANS', 'A / B / C / D', 'A/B/C/D', 'ANSWER\n(A/B/C/D)'];
+        const SKIP_QTEXT = ['type question here', 'kannada', 'q.no', '1, 2, 3'];
+
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
             const qText = String(row[1] || '').trim();
             if (!qText) continue;
+
+            // Skip header/label rows — Q.No must be a real number
+            const qNoRaw = row[0];
+            const qNoNum = Number(String(qNoRaw).trim());
+            if (!qNoRaw || isNaN(qNoNum)) continue;
+
+            // Skip template instruction rows by question text keywords
+            const qLower = qText.toLowerCase();
+            if (SKIP_QTEXT.some(kw => qLower.includes(kw))) continue;
+
             const answer = String(row[6] || '').trim().toUpperCase();
+
+            // Skip rows where answer column is a header label
+            if (SKIP_ANS.includes(answer)) continue;
+
             if (!['A', 'B', 'C', 'D'].includes(answer))
                 return res.status(400).json({ error: `Row ${i + 1}: Answer must be A/B/C/D. Got: "${row[6]}"` });
+
             questions.push({
-                questionNumber: Number(row[0]) || (questions.length + 1),
+                questionNumber: qNoNum,
                 questionText: qText,
                 options: {
                     A: String(row[2] || '').trim(),
