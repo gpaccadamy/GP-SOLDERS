@@ -16,6 +16,8 @@ export default function AdminStudents() {
   const [newPassword, setNewPassword] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobile, setIsMobile] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createForm, setCreateForm] = useState({ name: "", mobile: "", password: "", roll: "" });
 
   // Detect mobile screen
   useEffect(() => {
@@ -108,6 +110,43 @@ export default function AdminStudents() {
         showToast(data.message, "success");
       } else {
         showToast(data.error || "Failed to update status", "error");
+      }
+    } catch (err) {
+      showToast("Connection error: " + err.message, "error");
+    }
+  };
+
+  // Create new student
+  const handleCreateStudent = async () => {
+    if (!createForm.name || !createForm.mobile || !createForm.password) {
+      showToast("Name, mobile and password are required", "error");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(createForm),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        if (data.student) {
+          setStudents([...students, data.student]);
+        } else {
+          const listRes = await fetch(`${API}/all`);
+          if (listRes.ok) {
+            const refreshed = await listRes.json();
+            setStudents(refreshed);
+          }
+        }
+        setCreateForm({ name: "", mobile: "", password: "", roll: "" });
+        setShowCreateForm(false);
+        showToast("Student created successfully!", "success");
+      } else {
+        showToast(data.error || "Failed to create student", "error");
       }
     } catch (err) {
       showToast("Connection error: " + err.message, "error");
@@ -210,6 +249,57 @@ export default function AdminStudents() {
           <p style={styles.statValue}>{inactiveStudents}</p>
         </div>
       </div>
+
+      {/* Create Student Button */}
+      <div style={isMobile ? styles.mobileCreateContainer : styles.createContainer}>
+        <button
+          onClick={() => setShowCreateForm(!showCreateForm)}
+          style={isMobile ? { ...styles.createBtn, ...styles.mobileCreateBtn } : styles.createBtn}
+        >
+          {showCreateForm ? "Cancel" : "+ Create Student"}
+        </button>
+      </div>
+
+      {/* Create Student Form */}
+      {showCreateForm && (
+        <div style={isMobile ? styles.mobileCreateForm : styles.createForm}>
+          <h3 style={styles.formTitle}>Create New Student</h3>
+          <div style={isMobile ? styles.mobileFormGrid : styles.formGrid}>
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={createForm.name}
+              onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+              style={isMobile ? { ...styles.formInput, ...styles.mobileFormInput } : styles.formInput}
+            />
+            <input
+              type="tel"
+              placeholder="Mobile Number"
+              value={createForm.mobile}
+              onChange={(e) => setCreateForm({ ...createForm, mobile: e.target.value })}
+              style={isMobile ? { ...styles.formInput, ...styles.mobileFormInput } : styles.formInput}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={createForm.password}
+              onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+              style={isMobile ? { ...styles.formInput, ...styles.mobileFormInput } : styles.formInput}
+            />
+            <input
+              type="text"
+              placeholder="Roll Number (optional)"
+              value={createForm.roll}
+              onChange={(e) => setCreateForm({ ...createForm, roll: e.target.value })}
+              style={isMobile ? { ...styles.formInput, ...styles.mobileFormInput } : styles.formInput}
+            />
+          </div>
+          <div style={styles.formActions}>
+            <button onClick={handleCreateStudent} style={styles.submitBtn}>Create Student</button>
+            <button onClick={() => setShowCreateForm(false)} style={styles.cancelBtn}>Cancel</button>
+          </div>
+        </div>
+      )}
 
       {/* Students List - Cards for Mobile, Table for Desktop */}
       {filteredStudents.length === 0 ? (
@@ -913,6 +1003,99 @@ const styles = {
     border: "none",
     borderRadius: "6px",
     fontSize: "0.85rem",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+
+  // Create Student Styles
+  createContainer: {
+    display: "flex",
+    justifyContent: "center",
+    margin: "20px 0",
+  },
+  mobileCreateContainer: {
+    margin: "15px 0",
+  },
+  createBtn: {
+    padding: "12px 24px",
+    background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "1rem",
+    fontWeight: "600",
+    cursor: "pointer",
+    transition: "transform 0.2s",
+  },
+  mobileCreateBtn: {
+    width: "100%",
+    padding: "10px",
+    fontSize: "0.9rem",
+  },
+  createForm: {
+    background: "#1e2937",
+    borderRadius: "12px",
+    padding: "24px",
+    marginBottom: "24px",
+    border: "1px solid #334155",
+  },
+  mobileCreateForm: {
+    padding: "16px",
+    marginBottom: "16px",
+  },
+  formTitle: {
+    margin: "0 0 20px 0",
+    fontSize: "1.25rem",
+    fontWeight: "700",
+    color: "#e2e8f0",
+  },
+  formGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "16px",
+    marginBottom: "20px",
+  },
+  mobileFormGrid: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+    marginBottom: "16px",
+  },
+  formInput: {
+    padding: "12px 16px",
+    background: "#0f172a",
+    border: "1px solid #334155",
+    borderRadius: "8px",
+    color: "#e2e8f0",
+    fontSize: "0.95rem",
+    outline: "none",
+  },
+  mobileFormInput: {
+    padding: "10px 12px",
+    fontSize: "0.9rem",
+  },
+  formActions: {
+    display: "flex",
+    gap: "12px",
+    justifyContent: "flex-end",
+  },
+  submitBtn: {
+    padding: "10px 20px",
+    background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    fontSize: "0.95rem",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+  cancelBtn: {
+    padding: "10px 20px",
+    background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    fontSize: "0.95rem",
     fontWeight: "600",
     cursor: "pointer",
   },
