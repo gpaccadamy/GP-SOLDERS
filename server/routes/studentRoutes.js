@@ -32,7 +32,24 @@ router.post("/register", async (req, res) => {
     if (existing) return res.status(400).json({ error: "Mobile already registered" });
     
     const student = await new Student({ name, mobile, password, roll }).save();
-    res.json({ success: true, message: "Registered" });
+    res.json({ success: true, message: "Registered", student });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create student (admin only)
+router.post("/create", async (req, res) => {
+  try {
+    const { name, mobile, password, roll } = req.body;
+    if (!name || !mobile || !password) {
+      return res.status(400).json({ error: "Name, mobile and password required" });
+    }
+    const existing = await Student.findOne({ mobile });
+    if (existing) return res.status(400).json({ error: "Mobile already exists" });
+    
+    const student = await new Student({ name, mobile, password, roll }).save();
+    res.json({ success: true, student, message: "Student created successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
