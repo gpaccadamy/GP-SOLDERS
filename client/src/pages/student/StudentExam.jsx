@@ -6,7 +6,7 @@ const API = "https://academy-backend-e02j.onrender.com/api";
 
 export default function StudentExam() {
   const navigate = useNavigate();
-  const [screen, setScreen] = useState("login");
+  const [screen, setScreen] = useState("checking");
   const [token, setToken] = useState(() => localStorage.getItem("gp_token"));
   const [studentName, setStudentName] = useState(() => localStorage.getItem("gp_name") || "");
   const [exam, setExam] = useState(null);
@@ -24,10 +24,19 @@ export default function StudentExam() {
   const backgroundRetryRef = useRef(null);
 
   const [loginForm, setLoginForm] = useState({ mobile: "", password: "" });
-  const [regForm, setRegForm] = useState({ name: "", mobile: "", password: "", roll: "" });
 
   useEffect(() => {
-    if (token) checkAndRoute(token);
+    const savedToken = localStorage.getItem("gp_token");
+    const savedName = localStorage.getItem("gp_name") || "";
+    setToken(savedToken);
+    setStudentName(savedName);
+
+    if (!savedToken) {
+      navigate("/student/login", { state: { from: { pathname: "/student/exam" } } });
+      return;
+    }
+
+    checkAndRoute(savedToken);
     // Check for pending submissions on app load
     checkPendingSubmissions();
     return () => {
@@ -35,7 +44,7 @@ export default function StudentExam() {
       clearInterval(countdownRef.current);
       clearInterval(backgroundRetryRef.current);
     };
-  }, []);
+  }, [navigate]);
 
   const openConfirmDialog = (title, description, action) => {
     setConfirmDialog({ open: true, title, description, action });
@@ -221,27 +230,6 @@ export default function StudentExam() {
     setLoading(false);
   };
 
-  const doRegister = async () => {
-    setMsg(null);
-    if (!regForm.name || !regForm.mobile || !regForm.password)
-      return setMsg({ type: "error", text: "Name, mobile and password required" });
-    setLoading(true);
-    try {
-      const res = await fetch(`${API}/students/register`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(regForm),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setMsg({ type: "success", text: "Registered! Please login." });
-        setTimeout(() => { setScreen("login"); setMsg(null); }, 1500);
-      } else {
-        setMsg({ type: "error", text: data.error || "Registration failed" });
-      }
-    } catch { setMsg({ type: "error", text: "Connection error" }); }
-    setLoading(false);
-  };
-
   const pickAnswer = (qId, opt) => {
     setAnswers((a) => {
       const updated = { ...a, [qId]: opt };
@@ -276,6 +264,8 @@ export default function StudentExam() {
     clearInterval(timerRef.current);
 
     const finalAnswers = { ...answers };
+    const authToken = token || localStorage.getItem("gp_token");
+
     localStorage.setItem("gp_exam_answers_final", JSON.stringify(finalAnswers));
     localStorage.setItem("gp_exam_id_final", exam._id);
     localStorage.setItem("gp_exam_locked", "true");
@@ -283,7 +273,12 @@ export default function StudentExam() {
     // Save for background retry in case of failure
     localStorage.setItem("gp_pending_exam_id", exam._id);
     localStorage.setItem("gp_pending_answers", JSON.stringify(finalAnswers));
-    localStorage.setItem("gp_pending_token", token);
+    localStorage.setItem("gp_pending_token", authToken || "");
+
+    if (!authToken) {
+      navigate("/student/login", { state: { from: { pathname: "/student/exam" } } });
+      return;
+    }
 
     setScreen("submitting");
     setMsg({ type: "success", text: "Exam submitted! Processing results..." });
@@ -292,11 +287,12 @@ export default function StudentExam() {
     const maxAttempts = 10;
     const submitWithRetry = async () => {
       try {
+        const authToken = token || localStorage.getItem("gp_token");
         const res = await fetch(`${API}/students/submit-exam`, {
           method: "POST",
           headers: { 
             "Content-Type": "application/json", 
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authToken}`,
             "X-Retry-Attempt": attempts.toString()
           },
           body: JSON.stringify({ examId: exam._id, answers: finalAnswers }),
@@ -344,8 +340,9 @@ export default function StudentExam() {
 
     const pollForResult = async () => {
       try {
+        const authToken = token || localStorage.getItem("gp_token");
         const res = await fetch(`${API}/students/submission-status/${exam._id}`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${authToken}` },
         });
         const data = await res.json();
         if (data.saved && data.result) {
@@ -378,52 +375,8 @@ export default function StudentExam() {
   const circ = 2 * Math.PI * radius;
   const dashOffset = circ * (1 - timerPct / 100);
 
-  if (screen === "login" || screen === "register") {
-    const isLogin = screen === "login";
-    return (
-      <div style={styles.container}>
-        <div style={styles.card}>
-          <div style={styles.header}>
-            <div style={styles.logoCircle}><FiUser size={28} color="#1e3a8a" /></div>
-            <h1 style={styles.title}>GP SOLDIERS</h1>
-            <p style={styles.subtitle}>Army Exam Portal</p>
-          </div>
-
-          <div style={styles.form}>
-            <h2 style={styles.formTitle}>{isLogin ? "Student Login" : "Create Account"}</h2>
-            
-            {msg && (
-              <div style={{...styles.alert, background: msg.type === "success" ? "#dcfce7" : "#fee2e2", color: msg.type === "success" ? "#166534" : "#dc2626"}}>
-                {msg.type === "error" ? <FiAlertCircle size={16} /> : <FiCheckCircle size={16} />}
-                <span style={{marginLeft: 8}}>{msg.text}</span>
-              </div>
-            )}
-
-            {isLogin ? (
-              <>
-                <input style={styles.input} type="tel" placeholder="Mobile Number" value={loginForm.mobile} onChange={(e) => setLoginForm({...loginForm, mobile: e.target.value})} />
-                <input style={styles.input} type="password" placeholder="Password" value={loginForm.password} onChange={(e) => setLoginForm({...loginForm, password: e.target.value})} onKeyPress={(e) => e.key === "Enter" && doLogin()} />
-                <button style={styles.btnPrimary} onClick={doLogin} disabled={loading}>
-                  {loading ? "Please wait..." : "Login"}
-                </button>
-                <p style={styles.switch}>New student? <span style={styles.link} onClick={() => setScreen("register")}>Register</span></p>
-              </>
-            ) : (
-              <>
-                <input style={styles.input} type="text" placeholder="Full Name" value={regForm.name} onChange={(e) => setRegForm({...regForm, name: e.target.value})} />
-                <input style={styles.input} type="tel" placeholder="Mobile Number" value={regForm.mobile} onChange={(e) => setRegForm({...regForm, mobile: e.target.value})} />
-                <input style={styles.input} type="password" placeholder="Password" value={regForm.password} onChange={(e) => setRegForm({...regForm, password: e.target.value})} />
-                <input style={styles.input} type="text" placeholder="Roll Number (optional)" value={regForm.roll} onChange={(e) => setRegForm({...regForm, roll: e.target.value})} />
-                <button style={styles.btnPrimary} onClick={doRegister} disabled={loading}>
-                  {loading ? "Creating..." : "Register"}
-                </button>
-                <p style={styles.switch}>Have account? <span style={styles.link} onClick={() => setScreen("login")}>Login</span></p>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    );
+  if (screen === "checking") {
+    return null;
   }
 
   if (screen === "upcoming") {
@@ -452,7 +405,7 @@ export default function StudentExam() {
           )}
 
           <button style={styles.btnPrimary} onClick={() => checkAndRoute()}>Refresh</button>
-          <button style={styles.btnOutline} onClick={logout}>Logout</button>
+          <button style={styles.btnOutline} onClick={() => navigate("/student")}>Back to Home</button>
         </div>
       </div>
     );
@@ -466,7 +419,7 @@ export default function StudentExam() {
           <h2 style={styles.emptyTitle}>No Exam Available</h2>
           <p style={styles.emptyText}>Check back later for your scheduled exam</p>
           <button style={styles.btnPrimary} onClick={() => checkAndRoute()}>Check Again</button>
-          <button style={styles.btnOutline} onClick={logout}>Logout</button>
+          <button style={styles.btnOutline} onClick={() => navigate("/student")}>Back to Home</button>
         </div>
       </div>
     );
