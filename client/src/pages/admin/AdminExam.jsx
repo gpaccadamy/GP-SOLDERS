@@ -266,9 +266,10 @@ function DraftsTab({ onScheduled }) {
     if (!schedForm.scheduledAt || !schedForm.durationMinutes) return setMsg({ type: "error", text: "Fill date and duration" });
     if (new Date(schedForm.scheduledAt) <= new Date()) return setMsg({ type: "error", text: "Time must be in the future" });
     try {
+      const scheduledDate = new Date(schedForm.scheduledAt).toISOString();
       const r = await fetch(`${API}/schedule/${selected._id}`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scheduledAt: schedForm.scheduledAt, durationMinutes: Number(schedForm.durationMinutes) }),
+        body: JSON.stringify({ scheduledAt: scheduledDate, durationMinutes: Number(schedForm.durationMinutes) }),
       });
       const d = await r.json();
       if (r.ok) {
