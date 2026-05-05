@@ -138,7 +138,7 @@ export default function StudentExam() {
   const checkAndRoute = async (t = token) => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/active-exam`);
+      const res = await fetch(`${API}/exam/active-exam`);
       const data = await res.json();
       setLoading(false);
       if (data.state === "live") {
