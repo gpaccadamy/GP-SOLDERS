@@ -55,12 +55,7 @@ export default function StudentLanding() {
   ];
 
   useEffect(() => {
-    const token = localStorage.getItem("gp_token");
-    const name = localStorage.getItem("gp_name");
-    if (!token || !name) {
-      navigate("/student/login", { state: { from: { pathname: "/student" } } });
-      return;
-    }
+ 
 
     const fetchNotifications = async () => {
       try {
