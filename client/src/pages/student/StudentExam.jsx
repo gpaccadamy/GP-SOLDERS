@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+  import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiHome, FiVideo, FiFileText, FiUser, FiLock, FiPhone, FiCheckCircle, FiChevronLeft, FiChevronRight, FiSend, FiClock, FiAlertCircle } from "react-icons/fi";
 
@@ -376,8 +376,12 @@ export default function StudentExam() {
   const dashOffset = circ * (1 - timerPct / 100);
 
   if (screen === "checking") {
-    return null;
-  }
+  return (
+    <div style={styles.container}>
+      <div style={styles.spinnerLarge} />
+    </div>
+  );
+}
 
   if (screen === "upcoming") {
     return (
@@ -1118,7 +1122,32 @@ const styles = {
   },
 };
 
-// Add keyframes
-const styleSheet = document.createElement("style");
-styleSheet.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
-document.head.appendChild(styleSheet);
+useEffect(() => {
+  const style = document.createElement("style");
+
+  style.textContent = `
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+
+  return () => {
+    document.head.removeChild(style);
+  };
+}, []);
+useEffect(() => {
+  const handleBackButton = () => {
+    navigate("/student", { replace: true });
+  };
+
+  window.history.pushState(null, "", window.location.pathname);
+  window.addEventListener("popstate", handleBackButton);
+
+  return () => {
+    window.removeEventListener("popstate", handleBackButton);
+  };
+}, [navigate]);
