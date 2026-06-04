@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   FiSave, 
   FiTrash2, 
@@ -14,6 +15,7 @@ const TIMESTAMP_KEY = 'gpsoldiers_notes_timestamp';
 const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 
 export default function StudentNotes() {
+  const navigate = useNavigate();
   const [content, setContent] = useState('');
   const [lastSaved, setLastSaved] = useState(null);
   const [saveStatus, setSaveStatus] = useState('Ready to write...');
@@ -24,14 +26,10 @@ export default function StudentNotes() {
   const textareaRef = useRef(null);
   const saveTimeoutRef = useRef(null);
 
-  // Detect mobile screen
   useEffect(() => {
     const token = localStorage.getItem("gp_token");
     const name = localStorage.getItem("gp_name");
     if (!token || !name) {
-      // For notes, we can allow access but maybe redirect to login
-      // Since notes are local, perhaps allow but redirect if not logged in
-      const navigate = (path) => window.location.href = path;
       navigate("/student/login");
       return;
     }
@@ -44,7 +42,16 @@ export default function StudentNotes() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Load saved notes on mount
+  // Intercept phone hardware back button → go to /student
+  useEffect(() => {
+    window.history.pushState(null, '', window.location.href);
+    const handlePopState = () => {
+      navigate('/student');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [navigate]);
+
   useEffect(() => {
     const savedContent = localStorage.getItem(STORAGE_KEY);
     const savedTimestamp = localStorage.getItem(TIMESTAMP_KEY);
@@ -67,7 +74,6 @@ export default function StudentNotes() {
     }
   }, []);
 
-  // Update word and character counts
   const updateCounts = (text) => {
     const words = text.trim() ? text.trim().split(/\s+/).length : 0;
     const chars = text.length;
@@ -75,7 +81,6 @@ export default function StudentNotes() {
     setCharCount(chars);
   };
 
-  // Auto-save function
   const saveNote = useCallback((text) => {
     if (text.trim()) {
       const now = Date.now();
@@ -90,7 +95,6 @@ export default function StudentNotes() {
     }
   }, []);
 
-  // Handle content change with debounced auto-save
   const handleChange = (e) => {
     const newContent = e.target.value;
     setContent(newContent);
@@ -106,7 +110,6 @@ export default function StudentNotes() {
     }, 1000);
   };
 
-  // Clear all notes
   const handleClear = () => {
     if (window.confirm('Delete all notes permanently? This cannot be undone.')) {
       setContent('');
@@ -119,7 +122,6 @@ export default function StudentNotes() {
     }
   };
 
-  // Format time remaining
   const getTimeRemaining = () => {
     if (!lastSaved) return null;
     const expiresAt = lastSaved.getTime() + TWELVE_HOURS_MS;
@@ -131,7 +133,6 @@ export default function StudentNotes() {
     return `${hours}h ${minutes}m`;
   };
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
@@ -146,9 +147,10 @@ export default function StudentNotes() {
 
   return (
     <div style={styles.container}>
-      {/* Header - Mobile Optimized */}
+      {/* Header */}
       <header style={isMobile ? styles.mobileHeader : styles.header}>
         <div style={isMobile ? styles.mobileHeaderLeft : styles.headerLeft}>
+
           <div style={isMobile ? styles.mobileIconWrapper : styles.iconWrapper}>
             <FiType size={isMobile ? 24 : 28} color="#f59e0b" />
           </div>
@@ -159,7 +161,7 @@ export default function StudentNotes() {
             </p>
           </div>
         </div>
-        
+
         <div style={isMobile ? styles.mobileHeaderRight : styles.headerRight}>
           <div style={isMobile ? styles.mobileStatusBadge : styles.statusBadge}>
             {saveStatus.includes('Saved') ? (
@@ -183,7 +185,7 @@ export default function StudentNotes() {
         </div>
       </header>
 
-      {/* Stats Bar - Mobile Optimized */}
+      {/* Stats Bar */}
       <div style={isMobile ? styles.mobileStatsBar : styles.statsBar}>
         <div style={styles.stat}>
           <FiAlignLeft size={isMobile ? 14 : 16} color="#64748b" />
@@ -202,7 +204,7 @@ export default function StudentNotes() {
         </div>
       </div>
 
-      {/* Main Editor - Full Screen on Mobile */}
+      {/* Main Editor */}
       <main style={styles.main}>
         <div style={isMobile ? styles.mobileEditorWrapper : styles.editorWrapper}>
           <textarea
@@ -217,9 +219,9 @@ export default function StudentNotes() {
             style={isMobile ? styles.mobileTextarea : styles.textarea}
             spellCheck={false}
           />
-          
-          {/* Floating Clear Button - Bottom Right */}
-          <button 
+
+          {/* Floating Clear Button */}
+          <button
             onClick={handleClear}
             style={isMobile ? styles.mobileFloatingClearBtn : styles.floatingClearBtn}
             title="Clear all notes"
@@ -228,11 +230,11 @@ export default function StudentNotes() {
           </button>
         </div>
 
-        {/* Info Footer - Mobile Optimized */}
+        {/* Info Footer */}
         <div style={isMobile ? styles.mobileInfoFooter : styles.infoFooter}>
           <FiInfo size={isMobile ? 12 : 14} color="#64748b" />
           <span style={isMobile ? styles.mobileInfoText : styles.infoText}>
-            {isMobile 
+            {isMobile
               ? "Saved locally. Auto-deleted after 12h of inactivity."
               : "Notes are saved locally in your browser. They will be automatically deleted after 12 hours of inactivity."
             }
@@ -252,10 +254,10 @@ const styles = {
     padding: '16px',
     display: 'flex',
     flexDirection: 'column',
-    overflowX: 'hidden', // Prevent horizontal scroll [^36^]
+    overflowX: 'hidden',
   },
-  
-  // Desktop Header Styles
+
+  // Desktop Header
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -320,7 +322,7 @@ const styles = {
     fontWeight: 500,
   },
 
-  // Mobile Header Styles
+  // Mobile Header
   mobileHeader: {
     display: 'flex',
     flexDirection: 'column',
@@ -380,7 +382,7 @@ const styles = {
     fontWeight: 500,
   },
 
-  // Desktop Stats Styles
+  // Desktop Stats
   statsBar: {
     display: 'flex',
     gap: '24px',
@@ -406,7 +408,7 @@ const styles = {
     color: '#64748b',
   },
 
-  // Mobile Stats Styles
+  // Mobile Stats
   mobileStatsBar: {
     display: 'flex',
     justifyContent: 'space-around',
@@ -427,16 +429,16 @@ const styles = {
     color: '#64748b',
   },
 
-  // Main Content Styles
+  // Main
   main: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
-    minHeight: 0, // Important for flex child
+    minHeight: 0,
   },
 
-  // Desktop Editor Styles
+  // Desktop Editor
   editorWrapper: {
     position: 'relative',
     flex: 1,
@@ -457,7 +459,7 @@ const styles = {
     fontFamily: 'inherit',
     transition: 'all 0.3s ease',
     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-    boxSizing: 'border-box', // Prevent padding overflow [^33^]
+    boxSizing: 'border-box',
   },
   floatingClearBtn: {
     position: 'absolute',
@@ -476,35 +478,35 @@ const styles = {
     boxShadow: '0 4px 15px rgba(239, 68, 68, 0.4)',
     transition: 'all 0.3s ease',
     zIndex: 10,
-    minHeight: '48px', // Touch target size [^36^]
+    minHeight: '48px',
     minWidth: '48px',
   },
 
-  // Mobile Editor Styles - Full Screen Optimized
+  // Mobile Editor
   mobileEditorWrapper: {
     position: 'relative',
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    minHeight: 'calc(100vh - 200px)', // Account for header and footer
+    minHeight: 'calc(100vh - 200px)',
   },
   mobileTextarea: {
     width: '100%',
     flex: 1,
     minHeight: '50vh',
     padding: '16px',
-    fontSize: '16px', // Prevent iOS zoom on focus [^36^]
+    fontSize: '16px',
     lineHeight: 1.5,
     background: '#1e293b',
     color: '#f1f5f9',
     border: '2px solid #334155',
     borderRadius: '12px',
-    resize: 'none', // Disable resize on mobile [^31^]
+    resize: 'none',
     outline: 'none',
     fontFamily: 'inherit',
     boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
     boxSizing: 'border-box',
-    WebkitAppearance: 'none', // Remove iOS default styling
+    WebkitAppearance: 'none',
   },
   mobileFloatingClearBtn: {
     position: 'absolute',
@@ -526,7 +528,7 @@ const styles = {
     minWidth: '48px',
   },
 
-  // Footer Styles
+  // Footer
   infoFooter: {
     display: 'flex',
     alignItems: 'center',
@@ -562,7 +564,6 @@ const styles = {
   },
 };
 
-// Add hover effects and focus styles via CSS-in-JS
 const styleTag = document.createElement('style');
 styleTag.textContent = `
   textarea:focus {
@@ -575,7 +576,6 @@ styleTag.textContent = `
   button:active {
     transform: translateY(0) scale(0.95);
   }
-  /* Prevent horizontal overflow on mobile */
   html, body {
     overflow-x: hidden;
     max-width: 100vw;
