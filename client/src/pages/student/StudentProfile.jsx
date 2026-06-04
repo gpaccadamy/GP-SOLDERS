@@ -1,8 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiArrowLeft, FiUser, FiPhone, FiHash, FiCalendar, FiShield, FiLock } from "react-icons/fi";
+import { FiArrowLeft, FiUser, FiPhone, FiHash, FiCalendar, FiShield } from "react-icons/fi";
 
 const API = "https://academy-backend-e02j.onrender.com/api/students";
+
+// inject spin keyframe once
+const styleTag = document.createElement("style");
+styleTag.innerHTML = `@keyframes spin { to { transform: rotate(360deg); } }`;
+document.head.appendChild(styleTag);
 
 export default function StudentProfile() {
   const navigate = useNavigate();
@@ -14,12 +19,8 @@ export default function StudentProfile() {
 
   const token = localStorage.getItem("gp_token");
 
-  // Detect mobile screen
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -75,7 +76,19 @@ export default function StudentProfile() {
           </button>
           <h1 style={styles.title}>MY PROFILE</h1>
         </div>
-        <div style={styles.center}>Loading profile...</div>
+        <div style={styles.center}>
+          <div style={{
+            width: 44,
+            height: 44,
+            borderRadius: "50%",
+            border: "3px solid #1e293b",
+            borderTop: "3px solid #3b82f6",
+            animation: "spin 0.8s linear infinite",
+          }} />
+          <p style={{ color: "#64748b", marginTop: 16, fontSize: 13 }}>
+            Loading profile...
+          </p>
+        </div>
       </div>
     );
   }
@@ -178,9 +191,6 @@ export default function StudentProfile() {
         </div>
       </div>
 
-      
-     
-
       {/* Exam Status */}
       <div style={isMobile ? styles.mobileStatusCard : styles.statusCard}>
         <h3 style={isMobile ? styles.mobileStatusTitle : styles.statusTitle}>Exam Eligibility</h3>
@@ -212,7 +222,6 @@ const styles = {
     fontFamily: "'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', sans-serif",
     paddingBottom: "40px",
   },
-
   header: {
     padding: "20px 24px",
     background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
@@ -231,7 +240,6 @@ const styles = {
     alignItems: "center",
     padding: "8px",
     borderRadius: "8px",
-    transition: "all 0.3s ease",
   },
   title: {
     fontSize: "1.75rem",
@@ -253,13 +261,13 @@ const styles = {
     fontWeight: "600",
     cursor: "pointer",
     boxShadow: "0 2px 8px rgba(239, 68, 68, 0.3)",
-    transition: "all 0.3s ease",
   },
-
   center: {
-    textAlign: "center",
-    padding: "80px 20px",
-    color: "#94a3b8",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 60,
   },
   errorBox: {
     margin: "16px",
@@ -271,7 +279,6 @@ const styles = {
     border: "1px solid #dc2626",
     boxShadow: "0 4px 12px rgba(220, 38, 38, 0.2)",
   },
-
   profileCard: {
     margin: "20px 16px",
     background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
@@ -280,7 +287,6 @@ const styles = {
     border: "1px solid #334155",
     boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
   },
-
   avatarSection: {
     display: "flex",
     flexDirection: "column",
@@ -310,7 +316,6 @@ const styles = {
     fontWeight: "600",
     boxShadow: "0 2px 8px rgba(16, 185, 129, 0.3)",
   },
-
   profileInfo: {
     textAlign: "center",
   },
@@ -320,7 +325,6 @@ const styles = {
     fontWeight: "800",
     color: "#e2e8f0",
   },
-
   infoGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
@@ -350,31 +354,6 @@ const styles = {
     color: "#e2e8f0",
     fontWeight: "500",
   },
-
-  noticeCard: {
-    margin: "20px 16px",
-    padding: "20px",
-    background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
-    borderRadius: "16px",
-    border: "1px solid #f59e0b",
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-    boxShadow: "0 4px 20px rgba(245, 158, 11, 0.1)",
-  },
-  noticeTitle: {
-    margin: "0 0 8px 0",
-    fontSize: "1.1rem",
-    fontWeight: "700",
-    color: "#f59e0b",
-  },
-  noticeText: {
-    margin: 0,
-    color: "#94a3b8",
-    fontSize: "0.9rem",
-    lineHeight: "1.5",
-  },
-
   statusCard: {
     margin: "20px 16px",
     padding: "20px",
@@ -404,7 +383,6 @@ const styles = {
     fontSize: "0.95rem",
     fontWeight: "500",
   },
-
   backToHomeBtn: {
     padding: "12px 24px",
     background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
@@ -415,29 +393,42 @@ const styles = {
     fontWeight: "600",
     cursor: "pointer",
     boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)",
-    transition: "all 0.3s ease",
   },
-
-  // Mobile responsive styles
   mobileHeader: {
     padding: "16px 12px",
-    flexDirection: "column",
-    alignItems: "flex-start",
+    background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+    display: "flex",
+    alignItems: "center",
     gap: "12px",
+    borderBottom: "2px solid #3b82f6",
   },
   mobileTitle: {
     fontSize: "1.5rem",
+    fontWeight: "800",
     margin: 0,
     flex: 1,
+    background: "linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    backgroundClip: "text",
   },
   mobileLogoutBtn: {
-    alignSelf: "flex-end",
+    background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
     padding: "6px 12px",
     fontSize: "0.8rem",
+    fontWeight: "600",
+    cursor: "pointer",
   },
   mobileProfileCard: {
     margin: "16px 12px",
+    background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+    borderRadius: "16px",
     padding: "20px",
+    border: "1px solid #334155",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
   },
   mobileAvatar: {
     width: "70px",
@@ -445,29 +436,36 @@ const styles = {
   },
   mobileStudentName: {
     fontSize: "1.5rem",
-    marginBottom: "20px",
+    margin: "0 0 20px 0",
+    fontWeight: "800",
+    color: "#e2e8f0",
   },
   mobileInfoGrid: {
+    display: "grid",
     gridTemplateColumns: "1fr",
     gap: "16px",
+    textAlign: "left",
   },
   mobileInfoItem: {
-    padding: "14px",
+    display: "flex",
+    alignItems: "center",
     gap: "10px",
-  },
-  mobileNoticeCard: {
-    margin: "16px 12px",
-    padding: "16px",
-    flexDirection: "column",
-    textAlign: "center",
-    gap: "12px",
+    padding: "14px",
+    background: "rgba(15, 23, 42, 0.5)",
+    borderRadius: "12px",
+    border: "1px solid #334155",
   },
   mobileStatusCard: {
     margin: "16px 12px",
     padding: "16px",
+    background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+    borderRadius: "16px",
+    border: "1px solid #334155",
   },
   mobileStatusTitle: {
+    margin: "0 0 12px 0",
     fontSize: "1.1rem",
-    marginBottom: "12px",
+    fontWeight: "700",
+    color: "#e2e8f0",
   },
-};
+};  
