@@ -7,7 +7,8 @@ import {
   FiType, 
   FiAlignLeft, 
   FiCheckCircle,
-  FiInfo
+  FiInfo,
+  FiArrowLeft
 } from 'react-icons/fi';
 
 const STORAGE_KEY = 'gpsoldiers_notes_content';
@@ -41,16 +42,6 @@ export default function StudentNotes() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  // Intercept phone hardware back button → go to /student
-  useEffect(() => {
-    window.history.pushState(null, '', window.location.href);
-    const handlePopState = () => {
-      navigate('/student');
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [navigate]);
 
   useEffect(() => {
     const savedContent = localStorage.getItem(STORAGE_KEY);
@@ -150,6 +141,16 @@ export default function StudentNotes() {
       {/* Header */}
       <header style={isMobile ? styles.mobileHeader : styles.header}>
         <div style={isMobile ? styles.mobileHeaderLeft : styles.headerLeft}>
+
+          {/* ← BACK BUTTON */}
+          <button
+            onClick={() => navigate('/student')}
+            style={isMobile ? styles.mobileBackBtn : styles.backBtn}
+            title="Back to Home"
+          >
+            <FiArrowLeft size={isMobile ? 16 : 18} />
+            {!isMobile && <span>Back</span>}
+          </button>
 
           <div style={isMobile ? styles.mobileIconWrapper : styles.iconWrapper}>
             <FiType size={isMobile ? 24 : 28} color="#f59e0b" />
@@ -255,6 +256,37 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     overflowX: 'hidden',
+  },
+
+  // Back Button Styles
+  backBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 16px',
+    background: 'rgba(30, 41, 59, 0.8)',
+    border: '1px solid #334155',
+    borderRadius: '10px',
+    color: '#94a3b8',
+    fontSize: '0.9rem',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    minHeight: '40px',
+  },
+  mobileBackBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '8px 12px',
+    background: 'rgba(30, 41, 59, 0.8)',
+    border: '1px solid #334155',
+    borderRadius: '8px',
+    color: '#94a3b8',
+    fontSize: '1rem',
+    cursor: 'pointer',
+    minHeight: '36px',
+    minWidth: '36px',
   },
 
   // Desktop Header
