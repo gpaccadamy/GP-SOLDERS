@@ -6,6 +6,7 @@ import VideoUpload from "./pages/admin/VideoUpload";
 import AdminTrainingVideos from "./pages/admin/AdminTrainingVideos";
 import AdminResults from "./pages/admin/AdminResults";
 import AdminStudents from "./pages/admin/AdminStudents";
+import SubjectVideos from "./pages/SubjectVideos";
 
 import StudentIndex from "./pages/student/StudentIndex";
 import StudentVideos from "./pages/student/StudentVideos";
@@ -33,7 +34,9 @@ export default function App() {
         <Route path="/student/exam" element={<StudentExam />} />
         
         {/* ✅ Real Results Page */}
-        <Route path="/student/results" element={<StudentResults />} />        <Route path="/student/profile" element={<StudentProfile />} />
+        <Route path="/student/results" element={<StudentResults />} />
+        <Route path="/student/profile" element={<StudentProfile />} />
+       <Route path="/student/videos/:subject" element={<SubjectVideos />} />
         {/* Default Route */}
         <Route path="/" element={<AdminIndex />} />
       </Routes>
