@@ -1,224 +1,244 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  FiArrowLeft, FiX, FiPlay, FiGrid, FiGlobe,
-  FiBook, FiVideo, FiSearch
-} from "react-icons/fi";
+import { FiArrowLeft } from "react-icons/fi";
+import { FiGlobe, FiBook } from "react-icons/fi";
 import { MdOutlineCalculate } from "react-icons/md";
 import { PiTextAa } from "react-icons/pi";
 
-const API = import.meta.env.VITE_API_URL || "https://academy-backend-e02j.onrender.com/api/videos";
-
-const SUBJECTS = {
-  "General Knowledge (GK)": { icon: <FiGlobe />, color: "#f59e0b" },
-  "English": { icon: <PiTextAa />, color: "#3b82f6" },
-  "Kannada": { icon: <FiBook />, color: "#10b981" },
-  "Maths": { icon: <MdOutlineCalculate />, color: "#8b5cf6" },
-};
-
-const TABS = [
-  { id: "all", label: "All", icon: <FiGrid /> },
-  ...Object.entries(SUBJECTS).map(([k, v]) => ({
-    id: k,
-    label: k.includes("GK") ? "GK" : k,
-    ...v
-  }))
+const SUBJECTS = [
+  {
+    id: "General Knowledge (GK)",
+    label: "General Knowledge",
+    desc: "GK & Current Affairs",
+    icon: <FiGlobe size={22} />,
+    gradient: ["#f59e0b", "#d97706"],
+  },
+  {
+    id: "English",
+    label: "English",
+    desc: "Grammar & Writing",
+    icon: <PiTextAa size={22} />,
+    gradient: ["#3b82f6", "#2563eb"],
+  },
+  {
+    id: "Kannada",
+    label: "Kannada",
+    desc: "Language & Literature",
+    icon: <FiBook size={22} />,
+    gradient: ["#10b981", "#059669"],
+  },
+  {
+    id: "Maths",
+    label: "Maths",
+    desc: "Algebra & Arithmetic",
+    icon: <MdOutlineCalculate size={22} />,
+    gradient: ["#8b5cf6", "#7c3aed"],
+  },
 ];
-
-function LitePlayer({ id, title, onClose }) {
-  const [play, setPlay] = useState(false);
-
-  return (
-    <div style={styles.playerWrap}>
-      {!play ? (
-        <div style={styles.thumbWrap} onClick={() => setPlay(true)}>
-          <img
-            src={`https://img.youtube.com/vi/${id}/hqdefault.jpg`}
-            alt=""
-            style={styles.thumb}
-          />
-          <div style={styles.overlay}>
-            <div style={styles.playBtn}><FiPlay size={22} /></div>
-          </div>
-
-          <button onClick={(e) => { e.stopPropagation(); onClose(); }} style={styles.closeBtn}>
-            <FiX />
-          </button>
-        </div>
-      ) : (
-        <iframe
-          src={`https://www.youtube.com/embed/${id}?autoplay=1&rel=0`}
-          title={title}
-          style={styles.iframe}
-          allow="autoplay; encrypted-media"
-          allowFullScreen
-        />
-      )}
-    </div>
-  );
-}
 
 export default function StudentVideos() {
   const nav = useNavigate();
-
-  const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [active, setActive] = useState("all");
-  const [playing, setPlaying] = useState(null);
-  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("gp_token");
     const name = localStorage.getItem("gp_name");
     if (!token || !name) {
       nav("/student/login", { state: { from: { pathname: "/student/videos" } } });
-      return;
     }
-    fetch(API)
-      .then(r => r.json())
-      .then(d => {
-        setVideos(Array.isArray(d) ? d.filter(v => v?.youtubeId) : []);
-        setLoading(false);
-      })
-      .catch(() => {
-        setVideos([]);
-        setLoading(false);
-      });
   }, [nav]);
 
-  const filtered = useMemo(() => {
-    return videos.filter(v => {
-      const matchSub = active === "all" || v?.subject === active;
-      const matchSearch =
-        !search ||
-        (v?.title || "").toLowerCase().includes(search.toLowerCase()) ||
-        (v?.subject || "").toLowerCase().includes(search.toLowerCase());
-      return matchSub && matchSearch;
-    });
-  }, [videos, active, search]);
-
-  const grouped = useMemo(() => {
-    return filtered.reduce((acc, v) => {
-      const s = v?.subject || "Other";
-      (acc[s] ||= []).push(v);
-      return acc;
-    }, {});
-  }, [filtered]);
-
   return (
-    <div style={styles.container}>
+    <div style={s.page}>
 
       {/* HEADER */}
-      <div style={styles.header}>
-        <button onClick={() => nav("/student")} style={styles.iconBtn}>
-          <FiArrowLeft />
+      <div style={s.header}>
+        <button onClick={() => nav("/student")} style={s.backBtn}>
+          <FiArrowLeft size={18} />
         </button>
-        <span style={styles.title}>Video Classes</span>
-        <span style={styles.count}>{filtered.length}</span>
+        <span style={s.headerTitle}>Video Class</span>
+        <div style={{ width: 36 }} />
       </div>
 
-      {/* SEARCH */}
-      <div style={styles.searchWrap}>
-        <FiSearch />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search..."
-          style={styles.input}
-        />
-        {search && (
-          <button onClick={() => setSearch("")}>
-            <FiX />
-          </button>
-        )}
+      {/* HERO BANNER */}
+      <div style={s.hero}>
+        <div style={s.heroTag}>📚 Live Classes</div>
+        <h2 style={s.heroH2}>Let's join<br />your class</h2>
+        <p style={s.heroP}>Choose a class to join now</p>
+        <div style={s.heroIcon}>🎓</div>
+        <div style={s.heroBubble1} />
+        <div style={s.heroBubble2} />
       </div>
 
-      {/* TABS */}
-      <div style={styles.tabs}>
-        {TABS.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setActive(t.id)}
+      {/* SECTION TITLE */}
+      <p style={s.sectionTitle}>Select a Subject</p>
+
+      {/* SUBJECT CARDS */}
+      <div style={s.cards}>
+        {SUBJECTS.map((sub) => (
+          <div
+            key={sub.id}
             style={{
-              ...styles.tab,
-              background: active === t.id ? t.color : "#1e293b",
-              color: active === t.id ? "#000" : "#94a3b8"
+              ...s.card,
+              background: `linear-gradient(135deg, ${sub.gradient[0]}, ${sub.gradient[1]})`,
             }}
+            onClick={() => nav(`/student/videos/${encodeURIComponent(sub.id)}`)}
           >
-            {t.icon} {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* PLAYER */}
-      {playing && (
-        <div style={{ padding: 16 }}>
-          <LitePlayer
-            id={playing.youtubeId}
-            title={playing.title}
-            onClose={() => setPlaying(null)}
-          />
-          <h3>{playing.title}</h3>
-        </div>
-      )}
-
-      {/* CONTENT */}
-      <div style={{ padding: 16 }}>
-        {loading ? (
-          <p>Loading...</p>
-        ) : filtered.length === 0 ? (
-          <p>No videos</p>
-        ) : (
-          Object.entries(grouped).map(([subject, vids]) => (
-            <div key={subject}>
-              <h4>{subject}</h4>
-
-              {vids.map(v => (
-                <div
-                  key={v._id || v.youtubeId}
-                  style={styles.card}
-                  onClick={() => setPlaying(v)}
-                >
-                  <img
-                    src={`https://img.youtube.com/vi/${v.youtubeId}/mqdefault.jpg`}
-                    style={styles.cardImg}
-                  />
-                  <div>
-                    <p>{v.title}</p>
-                    <small>Class {v.videoNumber}</small>
-                  </div>
-                </div>
-              ))}
+            <div style={s.cardIcon}>{sub.icon}</div>
+            <div style={s.cardInfo}>
+              <div style={s.cardName}>{sub.label}</div>
+              <div style={s.cardDesc}>{sub.desc}</div>
             </div>
-          ))
-        )}
+            <button
+              style={s.joinBtn}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                nav(`/student/videos/${encodeURIComponent(sub.id)}`);
+              }}
+            >
+              Join
+            </button>
+          </div>
+        ))}
       </div>
 
     </div>
   );
 }
 
-const styles = {
-  container: { background: "#0f172a", minHeight: "100vh", color: "#fff" },
-  header: { display: "flex", alignItems: "center", padding: 12, gap: 10 },
-  iconBtn: { background: "none", border: "none", color: "#fff" },
-  title: { flex: 1 },
-  count: { color: "#64748b" },
-
-  searchWrap: { display: "flex", gap: 8, padding: 10, background: "#1e293b" },
-  input: { flex: 1, background: "none", border: "none", color: "#fff" },
-
-  tabs: { display: "flex", gap: 8, padding: 10 },
-  tab: { padding: "6px 12px", borderRadius: 20, border: "none" },
-
-  playerWrap: { position: "relative", paddingBottom: "56.25%" },
-  thumbWrap: { position: "absolute", inset: 0, cursor: "pointer" },
-  thumb: { width: "100%", height: "100%", objectFit: "cover" },
-  overlay: { position: "absolute", inset: 0, display: "flex", justifyContent: "center", alignItems: "center", background: "rgba(0,0,0,0.3)" },
-  playBtn: { background: "#f59e0b", borderRadius: "50%", padding: 10 },
-  iframe: { position: "absolute", width: "100%", height: "100%", border: "none" },
-  closeBtn: { position: "absolute", top: 8, right: 8 },
-
-  card: { display: "flex", gap: 10, marginBottom: 10, cursor: "pointer" },
-  cardImg: { width: 100 }
+const s = {
+  page: {
+    background: "#0f172a",
+    minHeight: "100vh",
+    color: "#fff",
+    fontFamily: "'Segoe UI', sans-serif",
+  },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "18px 20px 12px",
+  },
+  backBtn: {
+    width: 36, height: 36,
+    background: "rgba(255,255,255,0.1)",
+    border: "none",
+    borderRadius: 10,
+    color: "#fff",
+    cursor: "pointer",
+    display: "flex", alignItems: "center", justifyContent: "center",
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: 700,
+    color: "#fff",
+  },
+  hero: {
+    margin: "0 16px 20px",
+    background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)",
+    borderRadius: 20,
+    padding: "22px 20px",
+    position: "relative",
+    overflow: "hidden",
+    minHeight: 130,
+  },
+  heroTag: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 5,
+    background: "rgba(255,255,255,0.18)",
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: 600,
+    padding: "4px 10px",
+    borderRadius: 20,
+    marginBottom: 10,
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+  },
+  heroH2: {
+    fontSize: 22,
+    fontWeight: 800,
+    color: "#fff",
+    lineHeight: 1.2,
+    marginBottom: 6,
+    position: "relative",
+    zIndex: 1,
+  },
+  heroP: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.75)",
+    position: "relative",
+    zIndex: 1,
+  },
+  heroIcon: {
+    position: "absolute",
+    right: 18, bottom: 14,
+    fontSize: 42,
+    opacity: 0.9,
+  },
+  heroBubble1: {
+    position: "absolute",
+    right: -20, top: -20,
+    width: 140, height: 140,
+    background: "rgba(255,255,255,0.08)",
+    borderRadius: "50%",
+  },
+  heroBubble2: {
+    position: "absolute",
+    right: 30, bottom: -30,
+    width: 100, height: 100,
+    background: "rgba(255,255,255,0.06)",
+    borderRadius: "50%",
+  },
+  sectionTitle: {
+    padding: "0 20px 12px",
+    fontSize: 15,
+    fontWeight: 700,
+    color: "#e2e8f0",
+  },
+  cards: {
+    padding: "0 16px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+  },
+  card: {
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+    padding: "14px 16px",
+    borderRadius: 16,
+    cursor: "pointer",
+  },
+  cardIcon: {
+    width: 46, height: 46,
+    borderRadius: 14,
+    background: "rgba(255,255,255,0.18)",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    color: "#fff",
+    flexShrink: 0,
+  },
+  cardInfo: { flex: 1 },
+  cardName: {
+    fontSize: 15,
+    fontWeight: 700,
+    color: "#fff",
+    marginBottom: 2,
+  },
+  cardDesc: {
+    fontSize: 11,
+    color: "rgba(255,255,255,0.65)",
+  },
+  joinBtn: {
+    background: "rgba(255,255,255,0.2)",
+    border: "1.5px solid rgba(255,255,255,0.35)",
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: 700,
+    padding: "7px 18px",
+    borderRadius: 20,
+    cursor: "pointer",
+    flexShrink: 0,
+  },
 };
