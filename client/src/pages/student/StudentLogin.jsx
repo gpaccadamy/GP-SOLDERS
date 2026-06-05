@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FiUser, FiLock, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
+import { FiUser, FiAlertCircle, FiCheckCircle, FiArrowLeft } from "react-icons/fi";
 
 const API = "https://academy-backend-e02j.onrender.com/api";
 
@@ -12,11 +12,9 @@ export default function StudentLogin() {
   const [msg, setMsg] = useState(null);
 
   useEffect(() => {
-    // Check if already logged in
     const token = localStorage.getItem("gp_token");
     const name = localStorage.getItem("gp_name");
     if (token && name) {
-      // Redirect to the intended page or default to index
       const from = location.state?.from?.pathname || "/student";
       navigate(from, { replace: true });
     }
@@ -36,14 +34,12 @@ export default function StudentLogin() {
       });
       const data = await res.json();
       if (res.ok) {
-        // Check if account is active
         if (!data.active) {
           setMsg({ type: "error", text: "Your account is inactive. Contact administrator." });
           return;
         }
         localStorage.setItem("gp_token", data.token);
         localStorage.setItem("gp_name", data.name);
-        // Redirect to the intended page or default to index
         const from = location.state?.from?.pathname || "/student";
         navigate(from, { replace: true });
       } else {
@@ -64,6 +60,23 @@ export default function StudentLogin() {
       background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
       fontFamily: "'Segoe UI', 'Roboto', sans-serif",
       padding: "20px",
+      position: "relative",
+    },
+    backBtn: {
+      position: "absolute",
+      top: 20,
+      left: 20,
+      width: 38,
+      height: 38,
+      background: "rgba(255,255,255,0.2)",
+      border: "none",
+      borderRadius: 10,
+      color: "#fff",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      backdropFilter: "blur(6px)",
     },
     card: {
       background: "white",
@@ -120,9 +133,6 @@ export default function StudentLogin() {
       transition: "border-color 0.2s",
       boxSizing: "border-box",
     },
-    inputFocus: {
-      borderColor: "#3b82f6",
-    },
     btnPrimary: {
       width: "100%",
       padding: "16px",
@@ -136,9 +146,6 @@ export default function StudentLogin() {
       transition: "transform 0.2s",
       marginTop: "8px",
     },
-    btnPrimaryHover: {
-      transform: "translateY(-2px)",
-    },
     alert: {
       padding: "12px 16px",
       borderRadius: "8px",
@@ -151,6 +158,12 @@ export default function StudentLogin() {
 
   return (
     <div style={styles.container}>
+
+      {/* BACK BUTTON */}
+      <button onClick={() => navigate("/student")} style={styles.backBtn}>
+        <FiArrowLeft size={18} />
+      </button>
+
       <div style={styles.card}>
         <div style={styles.header}>
           <div style={styles.logoCircle}>
@@ -164,9 +177,13 @@ export default function StudentLogin() {
           <h2 style={styles.formTitle}>Student Login</h2>
 
           {msg && (
-            <div style={{...styles.alert, background: msg.type === "success" ? "#dcfce7" : "#fee2e2", color: msg.type === "success" ? "#166534" : "#dc2626"}}>
+            <div style={{
+              ...styles.alert,
+              background: msg.type === "success" ? "#dcfce7" : "#fee2e2",
+              color: msg.type === "success" ? "#166534" : "#dc2626"
+            }}>
               {msg.type === "error" ? <FiAlertCircle size={16} /> : <FiCheckCircle size={16} />}
-              <span style={{marginLeft: 8}}>{msg.text}</span>
+              <span style={{ marginLeft: 8 }}>{msg.text}</span>
             </div>
           )}
 
@@ -175,7 +192,7 @@ export default function StudentLogin() {
             type="tel"
             placeholder="Mobile Number"
             value={loginForm.mobile}
-            onChange={(e) => setLoginForm({...loginForm, mobile: e.target.value})}
+            onChange={(e) => setLoginForm({ ...loginForm, mobile: e.target.value })}
             onKeyPress={(e) => e.key === "Enter" && doLogin()}
           />
           <input
@@ -183,7 +200,7 @@ export default function StudentLogin() {
             type="password"
             placeholder="Password"
             value={loginForm.password}
-            onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+            onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
             onKeyPress={(e) => e.key === "Enter" && doLogin()}
           />
           <button
@@ -199,4 +216,4 @@ export default function StudentLogin() {
       </div>
     </div>
   );
-}
+} 
