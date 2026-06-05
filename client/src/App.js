@@ -18,6 +18,7 @@ import StudentProfile from "./pages/student/StudentProfile";
 import StudentNotes from "./pages/student/StudentNotes";
 import StudentLogin from "./pages/student/StudentLogin";
 import { ToastProvider } from "./context/ToastContext";
+import SubjectVideos from "./pages/student/SubjectVideos";
 
 export default function App() {
   return (
@@ -33,7 +34,7 @@ export default function App() {
         <Route path="/admin/results" element={<AdminResults />} />
         <Route path="/admin/students" element={<AdminStudents />} />
         <Route path="/admin/notifications" element={<Notifications />} />
-
+        
         {/* ====================== STUDENT ROUTES ====================== */}
         <Route path="/student/login" element={<StudentLogin />} />
         <Route path="/student" element={<StudentIndex />} />
@@ -41,7 +42,7 @@ export default function App() {
         <Route path="/student/training-videos" element={<StudentTrainingVideos />} />
         <Route path="/student/exam" element={<StudentExam />} />
         <Route path="/student/notes" element={<StudentNotes />} />
-        
+        <Route path="/student/videos/:subject" element={<SubjectVideos />} />
         {/* ✅ Real Results Page (no more Coming Soon) */}
         <Route path="/student/results" element={<StudentResults />} />
         <Route path="/student/profile" element={<StudentProfile />} />
